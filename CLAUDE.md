@@ -28,6 +28,7 @@ team-claude-workflow/
 │   ├── verification-before-completion/  # No claims without evidence
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
 │   ├── agent-team-execution/    # Parallel exploration: research, review, debugging
+│   ├── design-doc-format/       # Notion-compatible document rules
 │   ├── writing-skills/          # Meta-skill: TDD for skill creation
 │   ├── requesting-code-review/  # Dispatch reviewer after tasks
 │   ├── receiving-code-review/   # Handle feedback (no sycophancy)
@@ -55,10 +56,7 @@ team-claude-workflow/
 
 ## Next Tasks
 
-1. **design-doc-format** skill - Notion-compatible Design Doc format
-   - No `####` (use `###` max), mermaid for diagrams, team review sections
-
-2. **incremental-review** skill - Show small changes with reasoning
+1. **incremental-review** skill - Show small changes with reasoning
    - No bulk implementations, explain "what" and "why" per change
 
 ## References

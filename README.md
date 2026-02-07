@@ -58,6 +58,7 @@ rm ~/.claude/skills/team-claude-workflow
 | `verification-before-completion` | No claims without fresh evidence |
 | `subagent-driven-development` | Fresh agent per task + two-stage review (implementation) |
 | `agent-team-execution` | Parallel exploration with agent teams (research, review, debugging) |
+| `design-doc-format` | Notion-compatible document format rules |
 | `writing-skills` | Meta-skill: TDD for creating new skills |
 | `requesting-code-review` | Dispatch reviewer after implementation |
 | `receiving-code-review` | Handle review feedback (no sycophancy) |
@@ -91,7 +92,6 @@ rm ~/.claude/skills/team-claude-workflow
 
 ## Planned
 
-- `design-doc-format` - Notion-compatible Design Doc format
 - `incremental-review` - Show small changes with reasoning
 
 ## Contributing
