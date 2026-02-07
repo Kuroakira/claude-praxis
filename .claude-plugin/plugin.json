@@ -3,10 +3,10 @@
   "description": "Team development workflow for Claude Code with self-evolving quality rules, structured phases, and subagent-driven development",
   "version": "0.1.0",
   "author": {
-    "name": "akirashirahama"
+    "name": "Kuroakira"
   },
-  "homepage": "https://github.com/akirashirahama/team-claude-workflow",
-  "repository": "https://github.com/akirashirahama/team-claude-workflow",
+  "homepage": "https://github.com/Kuroakira/team-claude-workflow",
+  "repository": "https://github.com/Kuroakira/team-claude-workflow",
   "license": "MIT",
   "keywords": [
     "skills",

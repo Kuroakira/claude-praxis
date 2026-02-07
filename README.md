@@ -19,7 +19,7 @@ Inspired by [obra/superpowers](https://github.com/obra/superpowers).
 
 ```bash
 # 1. Register the marketplace
-/plugin marketplace add akirashirahama/team-claude-workflow
+/plugin marketplace add Kuroakira/team-claude-workflow
 
 # 2. Install the plugin
 /plugin install team-claude-workflow@team-claude-workflow
@@ -40,7 +40,7 @@ Inspired by [obra/superpowers](https://github.com/obra/superpowers).
 ### Manual Installation (Alternative)
 
 ```bash
-git clone https://github.com/akirashirahama/team-claude-workflow.git
+git clone https://github.com/Kuroakira/team-claude-workflow.git
 cd team-claude-workflow
 mkdir -p ~/.claude/skills
 ln -s $(pwd) ~/.claude/skills/team-claude-workflow
