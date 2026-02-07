@@ -10,6 +10,7 @@ Inspired by [obra/superpowers](https://github.com/obra/superpowers).
 - **Team Development First** - Team review via Design Docs, Notion-compatible formatting
 - **Context Recovery** - Automatic state restoration via SessionStart hook
 - **Subagent-Driven Development** - Fresh agent per task with two-stage review (spec + quality)
+- **Agent Team Execution** - Parallel exploration for research, review, and debugging using Opus 4.6 agent teams
 - **Verification Before Completion** - No success claims without fresh evidence
 
 ## Installation
@@ -55,7 +56,8 @@ rm ~/.claude/skills/team-claude-workflow
 | `getting-started` | Workflow overview and session bootstrap |
 | `code-quality-rules` | Quality rule enforcement and self-evolution |
 | `verification-before-completion` | No claims without fresh evidence |
-| `subagent-driven-development` | Fresh agent per task + two-stage review |
+| `subagent-driven-development` | Fresh agent per task + two-stage review (implementation) |
+| `agent-team-execution` | Parallel exploration with agent teams (research, review, debugging) |
 | `writing-skills` | Meta-skill: TDD for creating new skills |
 | `requesting-code-review` | Dispatch reviewer after implementation |
 | `receiving-code-review` | Handle review feedback (no sycophancy) |

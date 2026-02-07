@@ -27,6 +27,7 @@ team-claude-workflow/
 │   ├── code-quality-rules/      # Quality rules + self-evolution protocol
 │   ├── verification-before-completion/  # No claims without evidence
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
+│   ├── agent-team-execution/    # Parallel exploration: research, review, debugging
 │   ├── writing-skills/          # Meta-skill: TDD for skill creation
 │   ├── requesting-code-review/  # Dispatch reviewer after tasks
 │   ├── receiving-code-review/   # Handle feedback (no sycophancy)

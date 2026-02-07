@@ -105,17 +105,22 @@ Code quality review for: [task description]
 - Report: PASS or FAIL with specific issues
 ```
 
-## When to Use vs. Not Use
+## Choosing the Right Execution Model
 
-| Situation | Use SDD? |
-|-----------|----------|
-| Plan with 3+ independent tasks | Yes |
-| Single complex task | No — do it directly |
-| Tasks with heavy interdependencies | No — sequential execution is better |
-| Exploratory/research work | No — use brainstorming instead |
+| Task Type | Best Approach | Why |
+|-----------|--------------|-----|
+| Implementation (3+ tasks) | **Subagent (SDD)** | Focused execution + sequential review is manageable |
+| Research (multiple angles) | **Agent Teams** | Parallel exploration + mutual challenge |
+| Code review (multi-focus) | **Agent Teams** | Independent reviewers with cross-challenge |
+| Debugging (unclear root cause) | **Agent Teams** | Competing hypotheses, adversarial testing |
+| Single task | **Direct** | No orchestration overhead needed |
+| Dependent/sequential tasks | **Direct** | Coordination overhead exceeds benefit |
+
+**Rule**: Use SDD for implementation. Use `agent-team-execution` for exploration (research, review, debugging).
 
 ## Integration
 
 - Requires `code-quality-rules` — all implementers must follow quality rules
 - Requires `verification-before-completion` — reviewers must verify independently
 - Requires `test-driven-development` from code-quality-rules — RED/GREEN/REFACTOR per task
+- See `agent-team-execution` for parallel exploration tasks (research, review, debugging)
