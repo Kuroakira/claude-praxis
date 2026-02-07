@@ -1,0 +1,17 @@
+{
+  "name": "team-claude-workflow",
+  "owner": {
+    "name": "akirashirahama"
+  },
+  "metadata": {
+    "description": "Team development workflow with self-evolving quality rules"
+  },
+  "plugins": [
+    {
+      "name": "team-claude-workflow",
+      "description": "Team development workflow for Claude Code with self-evolving quality rules, structured phases, and subagent-driven development",
+      "version": "0.1.0",
+      "source": "./"
+    }
+  ]
+}
