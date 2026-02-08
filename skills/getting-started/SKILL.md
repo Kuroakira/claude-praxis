@@ -19,6 +19,7 @@ Team development workflow for Claude Code.
 | Skill | When to Use |
 |-------|-------------|
 | `code-quality-rules` | Always during implementation. Enforces and evolves quality rules. |
+| `systematic-debugging` | When investigating bugs, errors, or unexpected behavior. 4-phase root cause analysis. |
 | `design-doc-format` | When creating Design Docs. Notion-compatible format. |
 | `incremental-review` | During implementation. Show small changes with reasoning. |
 | `context-recovery` | After compact/clear. State restoration. |

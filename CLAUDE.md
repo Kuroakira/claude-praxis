@@ -28,6 +28,7 @@ team-claude-workflow/
 │   ├── verification-before-completion/  # No claims without evidence
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
 │   ├── agent-team-execution/    # Parallel exploration: research, review, debugging
+│   ├── systematic-debugging/    # 4-phase root cause analysis
 │   ├── design-doc-format/       # Notion-compatible document rules
 │   ├── writing-skills/          # Meta-skill: TDD for skill creation
 │   ├── requesting-code-review/  # Dispatch reviewer after tasks

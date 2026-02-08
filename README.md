@@ -45,6 +45,7 @@ rm ~/.claude/skills/team-claude-workflow
 | `verification-before-completion` | No claims without fresh evidence |
 | `subagent-driven-development` | Fresh agent per task + two-stage review (implementation) |
 | `agent-team-execution` | Parallel exploration with agent teams (research, review, debugging) |
+| `systematic-debugging` | 4-phase root cause analysis (reproduce, isolate, diagnose, fix) |
 | `design-doc-format` | Notion-compatible document format rules |
 | `writing-skills` | Meta-skill: TDD for creating new skills |
 | `requesting-code-review` | Dispatch reviewer after implementation |
