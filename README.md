@@ -18,6 +18,8 @@ Use AI as a **mirror** — a tool that reflects your decisions back to you, forc
 
 ## How It Works
 
+Just describe what you want to do. Claude detects the appropriate phase and suggests it — you don't need to remember commands.
+
 | Phase | What You Do | What You Gain |
 |-------|------------|---------------|
 | `/research` | Investigate the problem space | Understanding of prior art and trade-offs |
@@ -26,6 +28,8 @@ Use AI as a **mirror** — a tool that reflects your decisions back to you, forc
 | `/implement` | Build with quality rules and TDD | Awareness of patterns and pitfalls |
 | `/review` | Get feedback from other perspectives | Discovery of your blind spots |
 | `/compound` | Extract and classify learnings | Knowledge that carries to the next project |
+
+Commands are auto-suggested based on context, and the next step is proposed after each phase completes. You can also invoke any command directly to jump to a specific phase.
 
 ## Key Mechanisms
 

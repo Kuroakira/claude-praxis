@@ -105,3 +105,4 @@ Each phase exists to deepen understanding, not just to produce output.
 - SessionStart hook auto-injects getting-started skill (no CLAUDE.md dependency for bootstrap)
 - Skill descriptions contain ONLY trigger conditions (CSO — prevents shortcut behavior)
 - Context persistence follows "Write Auto, Read Manual" — never auto-inject content into context
+- Phase progression uses "Auto-detect, Suggest, User decides" — commands exist for explicit use, but Claude proactively suggests the right phase based on context. Praxis lives in the phase content (articulating "why"), not in remembering to type commands

@@ -77,6 +77,43 @@ Issue found ──→ Discuss with human ──→ Decide direction
                                  Update SKILL.md  Move on
 ```
 
+## Phase Detection & Suggestion
+
+**You must proactively detect the appropriate phase and suggest it.** Users should not need to remember commands.
+
+### Detection Rules
+
+When the user starts a conversation or gives a new task, detect the context and suggest the matching command:
+
+| Signal | Suggest | Example |
+|--------|---------|---------|
+| New feature/project request, exploring options, "how should we...", "what's the best approach" | `/research` | "Let me investigate best practices first. Starting /research." |
+| Research is done, user is committing to an approach, "let's design...", "I think we should..." | `/design` | "We have enough research. Ready to write a Design Doc? I'll start /design." |
+| Design Doc exists and is approved, "let's break this down", "what are the steps" | `/plan` | "Design is approved. Let me break it into tasks with /plan." |
+| Plan exists, "let's build", "start coding", implementation request | `/implement` | "Plan is ready. Starting implementation with /implement." |
+| Implementation done, tests passing, ready for feedback | `/review` | "Implementation complete. Want to run /review for a code review?" |
+| Significant work completed, session winding down, context getting full | `/compound` | "Good stopping point. Want to run /compound to capture what we learned?" |
+| Bug report, error investigation, "why isn't this working", debugging | `systematic-debugging` skill | "This looks like a bug. Let me use the systematic debugging approach." |
+
+### Suggestion Behavior
+
+1. **On task start**: Detect context and suggest the appropriate command. If the user agrees (or doesn't object), invoke it.
+2. **On phase completion**: Always suggest the next logical step. Example: after /research completes, suggest /design.
+3. **Commands remain available**: Users can always invoke commands directly to jump to any phase.
+4. **Don't force the flow**: If the user's task doesn't fit the full workflow (e.g., a quick bug fix), skip phases that don't apply. Not every task needs all 6 phases.
+5. **Be concise**: Suggest in one line, don't explain the framework every time.
+
+### Phase Completion Signals
+
+| Phase | Completion Signal | Next Suggestion |
+|-------|------------------|-----------------|
+| /research | Findings summarized, recommendations clear | "Research done. Ready for /design?" |
+| /design | Design Doc written, human approved | "Design approved. Break it down with /plan?" |
+| /plan | Tasks defined with file paths and tests | "Plan ready. Start /implement?" |
+| /implement | All tasks done, checks passing | "All green. Run /review?" |
+| /review | Review feedback addressed | "Review done. Capture learnings with /compound?" |
+| /compound | Learnings promoted | Session complete or next task |
+
 ## How to Use Skills
 
 **If a skill exists for the task, you must use it.**
