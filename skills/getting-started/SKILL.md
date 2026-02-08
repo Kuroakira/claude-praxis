@@ -20,6 +20,7 @@ Team development workflow for Claude Code.
 |-------|-------------|
 | `code-quality-rules` | Always during implementation. Enforces and evolves quality rules. |
 | `systematic-debugging` | When investigating bugs, errors, or unexpected behavior. 4-phase root cause analysis. |
+| `context-persistence` | When preserving state across compact/clear. Write auto, read manual. |
 | `design-doc-format` | When creating Design Docs. Notion-compatible format. |
 | `incremental-review` | During implementation. Show small changes with reasoning. |
 | `context-recovery` | After compact/clear. State restoration. |
@@ -100,16 +101,13 @@ When starting a new session:
 
 ## Recovery from compact/clear
 
-When context is lost:
+When context is lost, check persistence files first:
 
 ```
-If told "continue from last time":
-
-1. Read the Design Doc
-2. Read the implementation plan
-3. Check completed Phases
-4. Check current Phase state
-5. Resume from there
+1. Check if .claude/context/ files exist (SessionStart notifies this)
+2. If task_plan.md exists → read it for current task state
+3. If progress.md exists → read recent entries for context
+4. If neither exists → ask the human for file paths
+5. Read the Design Doc and implementation plan
+6. Resume from the identified point
 ```
-
-Ask the human for necessary file paths.

@@ -8,6 +8,15 @@
           "command": "bash hooks/session-start.sh"
         }
       ]
+    },
+    {
+      "matcher": "PreCompact",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash hooks/pre-compact.sh"
+        }
+      ]
     }
   ]
 }

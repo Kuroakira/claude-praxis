@@ -14,8 +14,9 @@ Inspired by obra/superpowers, with these unique values:
 ```
 team-claude-workflow/
 ├── hooks/
-│   ├── hooks.json               # SessionStart hook config
-│   └── session-start.sh         # Injects getting-started skill on every session
+│   ├── hooks.json               # SessionStart + PreCompact hook config
+│   ├── session-start.sh         # Injects getting-started skill + notifies persistence files
+│   └── pre-compact.sh           # Trims Flow files before compact
 ├── commands/
 │   ├── research.md              # /research — start research phase
 │   ├── design.md                # /design — create Design Doc
@@ -29,6 +30,7 @@ team-claude-workflow/
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
 │   ├── agent-team-execution/    # Parallel exploration: research, review, debugging
 │   ├── systematic-debugging/    # 4-phase root cause analysis
+│   ├── context-persistence/     # Stock/Flow memory model for context survival
 │   ├── design-doc-format/       # Notion-compatible document rules
 │   ├── writing-skills/          # Meta-skill: TDD for skill creation
 │   ├── requesting-code-review/  # Dispatch reviewer after tasks
