@@ -199,6 +199,87 @@ When you notice "this is a bad pattern" during implementation:
 
 ---
 
+## Security Rules
+
+### No Hardcoded Secrets
+
+Secrets in source code get committed, shared, and leaked. Always use environment variables or config files excluded from version control.
+
+```typescript
+// ❌ Never do this
+const API_KEY = "sk-1234567890abcdef";
+const DB_PASSWORD = "admin123";
+const jwt = sign(payload, "my-secret-key");
+
+// ✅ Correct approach
+const API_KEY = process.env.API_KEY;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const jwt = sign(payload, process.env.JWT_SECRET);
+```
+
+"It's just for local development" → **Secrets in code get committed. Use `.env` + `.gitignore`.**
+
+### Input Validation at Boundaries
+
+External input (API requests, user input, file uploads, URL parameters) must be validated before use. Internal function calls between trusted modules do not need redundant validation.
+
+```typescript
+// ❌ Never do this — trusting external input
+app.post('/users', (req, res) => {
+  db.query(`SELECT * FROM users WHERE id = ${req.params.id}`);
+  fs.readFile(req.body.filePath);
+});
+
+// ✅ Correct approach — validate at system boundaries
+app.post('/users', (req, res) => {
+  const { id } = idSchema.parse(req.params);  // runtime validation
+  const { filePath } = filePathSchema.parse(req.body);  // sanitize paths
+  db.query('SELECT * FROM users WHERE id = ?', [id]);   // parameterized
+});
+```
+
+"It's an internal API" → **If it accepts HTTP requests, it's a boundary. Validate.**
+
+### No Dynamic Code Execution
+
+`eval()`, `Function()`, `exec()`, and equivalents execute arbitrary code. There is almost always a safer alternative.
+
+```typescript
+// ❌ Never do this
+eval(userInput);
+new Function('return ' + userExpression)();
+child_process.exec(userCommand);
+
+// ✅ Correct approach
+// Use a lookup table instead of eval
+const operations = { add: (a, b) => a + b, sub: (a, b) => a - b };
+const result = operations[operationName]?.(a, b);
+
+// Use execFile with explicit arguments instead of exec
+child_process.execFile('git', ['status'], options);
+```
+
+"It's the simplest way" → **Simple and exploitable. Use a lookup table or parser.**
+
+### Dependency Awareness
+
+Adding a dependency is adding someone else's code to your attack surface. Check before adding.
+
+```
+❌ Never do this
+npm install some-random-package  ← without checking
+
+✅ Before adding a dependency, check:
+1. Weekly downloads and maintenance status (is it abandoned?)
+2. Known vulnerabilities: npm audit / Snyk
+3. Do we actually need it, or can we write 10 lines ourselves?
+4. License compatibility
+```
+
+"It's a popular package" → **Popular packages get compromised too. Check anyway.**
+
+---
+
 ## Project-Specific Rules
 
 Customized per project. New approved rules are added here.

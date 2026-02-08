@@ -53,6 +53,10 @@ team-claude-workflow/
 - **No Lazy Assertions** - Don't settle for just `toBeDefined()`
 - **Post-Implementation Checks Required** - Run typecheck, lint, test, build every time
 - **Verification Before Completion** - No success claims without fresh evidence
+- **No Hardcoded Secrets** - Use environment variables, never commit secrets
+- **Input Validation at Boundaries** - Validate all external input
+- **No Dynamic Code Execution** - No eval(), Function(), exec()
+- **Dependency Awareness** - Check before adding dependencies
 
 ## Next Tasks
 

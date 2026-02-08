@@ -76,6 +76,10 @@ rm ~/.claude/skills/team-claude-workflow
 - **No eslint-disable** - Fix lint errors in code
 - **No Lazy Assertions** - Specific assertions only
 - **Verification Required** - Run typecheck, lint, test, build every time
+- **No Hardcoded Secrets** - Use environment variables, never commit secrets
+- **Input Validation at Boundaries** - Validate all external input
+- **No Dynamic Code Execution** - No eval(), Function(), exec()
+- **Dependency Awareness** - Check before adding dependencies
 
 ## Planned
 
