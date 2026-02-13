@@ -105,8 +105,10 @@ One paragraph: what this is and why it matters.
 - What this design explicitly WILL NOT address
 - Prevents scope creep and sets clear boundaries for reviewers
 
-## Background
-The problem in detail. Current state, pain points, and what triggered this proposal.
+## Context and Scope
+Objective background facts that orient the reader WITHOUT requiring prior knowledge of the project.
+Include: current state of the system, what triggered this proposal, relevant constraints.
+A reader unfamiliar with the project should understand the problem after reading this section alone.
 
 ## Proposal
 What we're proposing and WHY this approach was chosen.
@@ -118,9 +120,10 @@ For each significant decision in the design, explain:
 - What constraints or requirements drove this choice
 - What trade-offs were accepted
 
-### High-Level Architecture (optional)
-Only if the system structure IS the design decision.
-Use mermaid diagrams to show relationships, not implementation details.
+### System-Context Diagram (optional)
+Show where this design fits within the existing system.
+Use mermaid diagrams to illustrate how new components relate to what already exists.
+Focus on boundaries and interactions, not internal implementation.
 
 ## Alternative Concerns
 **This section is mandatory.** Its purpose is to prevent repeated discussions.
@@ -143,6 +146,13 @@ Format:
 
 **Why C**: [Clear reasoning for the choice]
 **Revisit if**: [Conditions that would change this decision]
+
+## Cross-Cutting Concerns
+Explicitly address how this design handles:
+- **Security**: Authentication, authorization, data protection implications
+- **Privacy**: User data handling, compliance requirements
+- **Observability**: Logging, monitoring, debugging in production
+Only include sections relevant to this design. Skip what doesn't apply.
 
 ## Concerns
 Known risks, uncertainties, ambiguities, and unresolved questions about this design.
@@ -176,6 +186,18 @@ Only include code when the code itself IS the design decision (e.g., a specific 
    > **Conceptual** — illustrates the approach, not the final implementation.
 2. **Keep under 10 lines**: If you need more, summarize in prose instead.
 3. **No local file links**: Notion can't resolve them. Describe inline or quote directly.
+
+## Lifecycle
+
+- Design Docs are **living documents** — update when implementation reveals significant deviations from the original design
+- Don't rewrite the doc to match implementation; add an amendment section explaining what changed and why
+- The doc remains the entry point for anyone encountering the system later
+
+## Size Guidance
+
+- **Large designs** (new system, architectural change): aim for thoroughness, not brevity. Cover all decisions and alternatives
+- **Small changes** (incremental improvement, single component): a mini design doc is fine — Overview, Proposal, Alternative Concerns may be enough
+- The right length is determined by the number of decisions that need explaining, not by page count
 
 ## Integration
 

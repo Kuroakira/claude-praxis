@@ -13,8 +13,9 @@ Invoke the skills `getting-started` and `design-doc-format`, then begin the **De
 3. Structure the doc with clear sections:
    - Overview (what and why it matters)
    - Goals / Non-Goals
-   - Background (problem in detail)
-   - Proposal (key design decisions with reasoning)
+   - Context and Scope (orient readers without prior knowledge)
+   - Proposal (key design decisions with reasoning, optional system-context diagram)
    - Alternative Concerns (mandatory — prevents newcomers from re-asking the same questions)
+   - Cross-Cutting Concerns (security, privacy, observability — only what applies)
    - Concerns (risks, uncertainties, ambiguities)
 4. Present the doc for human review before proceeding
