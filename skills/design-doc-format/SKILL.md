@@ -98,6 +98,11 @@ Every Design Doc follows this structure:
 ## Overview
 One paragraph: what this is and why it matters.
 
+## Context and Scope
+Objective background facts that orient the reader WITHOUT requiring prior knowledge of the project.
+Include: current state of the system, what triggered this proposal, relevant constraints.
+A reader unfamiliar with the project should understand the problem after reading this section alone.
+
 ## Goals / Non-Goals
 
 ### Goals
@@ -107,19 +112,13 @@ One paragraph: what this is and why it matters.
 - What this design explicitly WILL NOT address
 - Prevents scope creep and sets clear boundaries for reviewers
 
-## Context and Scope
-Objective background facts that orient the reader WITHOUT requiring prior knowledge of the project.
-Include: current state of the system, what triggered this proposal, relevant constraints.
-A reader unfamiliar with the project should understand the problem after reading this section alone.
-
 ## Proposal
-What we're proposing and WHY this approach was chosen over the alternatives found in research.
-A Proposal that presents only one approach without explaining why alternatives were rejected is incomplete.
+The chosen design and WHY this approach was selected over alternatives.
+This is the main section — describe the design at the boundary/interface level with clear reasoning.
 
 ### Key Design Decisions
 For each significant decision in the design, explain:
 - What was decided and why
-- What alternatives were considered and why they were rejected
 - What constraints or requirements drove this choice
 - What trade-offs were accepted
 
@@ -128,27 +127,21 @@ Show where this design fits within the existing system.
 Use mermaid diagrams to illustrate how new components relate to what already exists.
 Focus on boundaries and interactions, not internal implementation.
 
-## Alternative Concerns
-**This section is mandatory.** Its purpose is to prevent repeated discussions.
+## Alternatives Considered
+**This section is mandatory.** Document the approaches that were NOT chosen and why.
+The main design lives in Proposal. This section explains why other options were rejected.
 
-For each major decision, document:
-1. What options were considered
-2. Pros/cons of each
-3. Why this option was chosen
-4. Under what conditions we'd revisit this decision
+For each alternative:
 
-Format:
+### Alternative: [Approach name]
 
-### Decision: [What was decided]
+Brief description of the approach.
 
-| Option | Pros | Cons |
-|--------|------|------|
-| A: [option] | ... | ... |
-| B: [option] | ... | ... |
-| **C: [chosen]** | ... | ... |
-
-**Why C**: [Clear reasoning for the choice]
-**Revisit if**: [Conditions that would change this decision]
+| Aspect | Detail |
+|--------|--------|
+| How it works | ... |
+| Why it was rejected | ... |
+| When to reconsider | ... |
 
 ## Cross-Cutting Concerns
 Explicitly address how this design handles:
@@ -168,12 +161,12 @@ For each concern: state what is unclear or risky, and how it will be addressed (
 - [ ] Migration plan (if applicable)
 ```
 
-### Why "Alternative Concerns" Is Mandatory
+### Why "Alternatives Considered" Is Mandatory
 
 - New team members will ask "why didn't we do X?" — the answer is already in the doc
 - You will forget why you chose this approach in 3 months — the doc remembers
 - Reviewers may suggest an approach you already evaluated — point to the doc instead of re-investigating
-- If conditions change later, "Revisit if" tells you when to reconsider
+- If conditions change later, "When to reconsider" tells you when to revisit
 
 ## Code Snippets — Use Sparingly
 

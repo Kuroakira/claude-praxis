@@ -12,10 +12,10 @@ Invoke the skills `getting-started` and `design-doc-format`, then begin the **De
    - **Write HOW sparingly**: no code examples, directory structures, or implementation details unless they ARE the design decision
 3. Structure the doc with clear sections:
    - Overview (what and why it matters)
-   - Goals / Non-Goals
    - Context and Scope (orient readers without prior knowledge)
-   - Proposal (key design decisions with reasoning, optional system-context diagram)
-   - Alternative Concerns (mandatory — prevents newcomers from re-asking the same questions)
+   - Goals / Non-Goals
+   - Proposal (the chosen design with reasoning — this is the main section)
+   - Alternatives Considered (mandatory — why other approaches were rejected)
    - Cross-Cutting Concerns (security, privacy, observability — only what applies)
    - Concerns (risks, uncertainties, ambiguities)
 4. Present the doc for human review before proceeding
