@@ -7,7 +7,7 @@ description: Use when starting a new session, resuming after compact/clear, or b
 
 AI as a mirror — articulate "why" at every step, accumulate knowledge across projects.
 
-つまり## Mandatory Skill Invocation
+## Mandatory Skill Invocation
 
 **Skills are NOT optional. They are mandatory workflows.**
 

@@ -28,14 +28,16 @@ When a newcomer joins the team and reads the doc, they should NOT need to ask:
 
 If they still have these questions after reading, the doc is incomplete.
 
-### What the Doc Should NOT Contain
+### Acceptable Level of Detail
 
-- Detailed code examples (the code itself is the source of truth)
-- Directory structures (these change with refactoring)
-- Step-by-step implementation guides (this belongs in the implementation plan, not the design)
-- API response schemas (these belong in API documentation, not the design rationale)
+- **Interface contracts** (function signatures, type definitions, API endpoints): OK — these describe boundaries and are part of the design
+- **Method implementations, logic flow, error handling details**: NOT OK — these are implementation, not design
+- **Directory structures, file organization**: NOT OK — these change with refactoring
+- **Data model schemas**: Only the conceptual model (what entities exist and how they relate), not column types or indexes
 
-**Exception**: When a specific implementation detail IS the design decision (e.g., "we use CQRS pattern because..."), include just enough code to illustrate the concept, marked as **Conceptual**.
+**Rule of thumb**: If changing the code would require updating the doc, it's too detailed. Design Docs describe WHAT and WHY at the boundary level, not HOW things work internally.
+
+**Exception**: When a specific implementation detail IS the design decision (e.g., "we use CQRS pattern because..."), include just enough to illustrate the concept, marked as **Conceptual**.
 
 ## Absolute Rules
 
@@ -111,12 +113,13 @@ Include: current state of the system, what triggered this proposal, relevant con
 A reader unfamiliar with the project should understand the problem after reading this section alone.
 
 ## Proposal
-What we're proposing and WHY this approach was chosen.
-Focus on the reasoning and constraints that led to this design, not the implementation details.
+What we're proposing and WHY this approach was chosen over the alternatives found in research.
+A Proposal that presents only one approach without explaining why alternatives were rejected is incomplete.
 
 ### Key Design Decisions
 For each significant decision in the design, explain:
 - What was decided and why
+- What alternatives were considered and why they were rejected
 - What constraints or requirements drove this choice
 - What trade-offs were accepted
 
