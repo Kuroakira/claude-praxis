@@ -49,22 +49,40 @@ npm run build       # if applicable
 After each command:
 - Read the full output
 - If errors exist, fix them before claiming success
-- If all pass, quote the success output
+- If all pass, use the Completion Report template below
 
-## Next Phase Suggestion (MANDATORY)
+## Completion Report (MANDATORY FORMAT)
 
-After verification passes, MUST suggest the next workflow phase:
+Every completion MUST use this template. The structure forces inclusion of next-phase suggestion.
 
-| Completed Phase | Suggest Next |
-|----------------|-------------|
-| /research | "→ /design でDesign Doc作成しますか？" |
-| /design | "→ /plan で実装計画を作りますか？" |
-| /plan | "→ /implement で実装開始しますか？" |
-| /implement | "→ /review でコードレビューしますか？" |
-| /review | "→ /compound で学びを蓄積しますか？" |
-| Non-phase task | No next suggestion needed |
+```markdown
+## Completion Report
 
-User can accept or skip, but the suggestion is non-negotiable.
+### Verification
+- typecheck: [PASS/FAIL + key output]
+- lint: [PASS/FAIL + key output]
+- test: [PASS/FAIL + count]
+- build: [PASS/FAIL or N/A]
+
+### Summary
+[What was changed and why]
+
+### Next Phase
+→ [Next phase suggestion, e.g. "/review でコードレビューしますか？"]
+```
+
+### Next Phase Lookup
+
+| Completed Phase | Next Phase field |
+|----------------|-----------------|
+| /research | → /design でDesign Doc作成しますか？ |
+| /design | → /plan で実装計画を作りますか？ |
+| /plan | → /implement で実装開始しますか？ |
+| /implement | → /review でコードレビューしますか？ |
+| /review | → /compound で学びを蓄積しますか？ |
+| Non-phase task | → フェーズ外タスクのため不要 |
+
+User can accept or skip, but the field MUST be present in the report.
 
 ## Red Flags (stop and verify)
 
