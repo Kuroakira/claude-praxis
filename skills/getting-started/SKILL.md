@@ -46,17 +46,17 @@ If you catch yourself thinking any of these, STOP and invoke the skill:
 
 ### Available Skills
 
-| Trigger | Skill | Description |
+| Trigger | Skill | Enforcement |
 |---------|-------|-------------|
-| Bug, error, "why doesn't this work", reviewing/analyzing bug investigations | `systematic-debugging` | 4-phase root cause analysis |
-| **ANY task that writes, edits, or modifies code** — features, fixes, refactors, tests, scripts | `code-quality-rules` | TDD, quality enforcement. **Always invoke when coding.** |
-| Multi-step task, parallel exploration | `subagent-driven-development` | Fresh agent per task |
-| Research, analysis, multiple perspectives | `agent-team-execution` | Parallel hypothesis testing |
-| Task completion, claiming "done" | `verification-before-completion` | Evidence before claims |
-| Long task, context preservation | `context-persistence` | State survival across compact |
-| **After completing a coding task or batch of tasks** | `requesting-code-review` | Dispatch reviewer. Always suggest after implementation. |
-| Received feedback | `receiving-code-review` | Handle feedback properly |
-| **Creating, updating, or adding rules to skills** — "change this skill", "add a rule", "update the format" | `writing-skills` | Skill quality + structure guidance. **Always invoke when modifying skills.** |
+| Bug, error, test failure, unexpected behavior, "why doesn't this work" | `systematic-debugging` | 🟡 Contextual |
+| **ANY task that writes, edits, or modifies code** — features, fixes, refactors, tests, scripts | `code-quality-rules` | 🔴 **Gate** — no code without this |
+| Implementation plan with 3+ independent tasks, OR tasks needing isolated agent context | `subagent-driven-development` | 🟡 Contextual |
+| Research needing multiple perspectives, OR problem with 3+ possible root causes | `agent-team-execution` | 🟡 Contextual |
+| **About to claim "done", report success, or mark a task complete** | `verification-before-completion` | 🔴 **Gate** — no completion claims without this |
+| TodoWrite with 5+ items, OR task spans 3+ phases, OR user mentions context/state preservation | `context-persistence` | 🟡 Contextual |
+| **After completing a coding task or batch of tasks** | `requesting-code-review` | 🟡 Contextual — always suggest |
+| Received code review feedback, corrections, or change requests | `receiving-code-review` | 🟡 Contextual |
+| **Creating, updating, or adding rules to skills** — "change this skill", "add a rule" | `writing-skills` | 🔴 **Gate** — no skill edits without this |
 
 ### Skill Priority
 
@@ -176,9 +176,10 @@ When starting a new session:
    - Read necessary documents
    - Identify previous interruption point
 
-3. **Review quality rules**
-   - Read the `code-quality-rules` skill
-   - Check project-specific rules
+3. **Implementation gate** (if task involves writing/editing code)
+   - **MUST invoke** `claude-praxis:code-quality-rules` skill — not "read", invoke
+   - Confirm TDD approach before writing any code
+   - This is a 🔴 CRITICAL gate. No code changes until this skill is loaded
 
 ## Recovery from compact/clear
 
