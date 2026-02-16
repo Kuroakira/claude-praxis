@@ -76,13 +76,14 @@ Every completion MUST use this template. The structure forces inclusion of next-
 | Completed Phase | Next Phase field |
 |----------------|-----------------|
 | /praxis:research | → Ready for /praxis:design to create a Design Doc? |
-| /praxis:design | → Ready for /praxis:implement to start implementation? |
+| /praxis:design | → Ready for /praxis:implement? (It handles planning, TDD, and review internally.) |
 | /praxis:plan | → Ready for /praxis:implement to start coding? |
-| /praxis:implement | → Proceeding to /praxis:review (mandatory — not skippable) |
+| /praxis:implement | → Implementation and review complete. Run /praxis:compound to capture learnings? |
+| /praxis:debug | → Investigation complete. Ready for /praxis:implement to fix based on findings? |
 | /praxis:review | → Run /praxis:compound to capture learnings? |
 | Non-phase task | → No next phase needed |
 
-User can accept or skip for most phases. **Exception: /implement → /review is mandatory and not skippable.** The field MUST be present in the report.
+User can accept or skip the next phase suggestion. The field MUST be present in the report.
 
 ## Red Flags (stop and verify)
 

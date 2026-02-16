@@ -20,16 +20,24 @@ Use AI as a **mirror** — a tool that reflects your decisions back to you, forc
 
 Just describe what you want to do. Claude detects the appropriate phase and suggests it — you don't need to remember commands.
 
-| Phase | What You Do | What You Gain |
-|-------|------------|---------------|
-| `/research` | Investigate the problem space | Understanding of prior art and trade-offs |
-| `/design` | Write a Design Doc with rationale | Clarity on WHY this approach, not just WHAT |
-| `/plan` | Break design into deliberate steps | Ability to explain each decision |
-| `/implement` | Build with quality rules and TDD | Awareness of patterns and pitfalls |
-| `/review` | Get feedback from other perspectives | Discovery of your blind spots |
-| `/compound` | Extract and classify learnings | Knowledge that carries to the next project |
+### Main Workflows
 
-Commands are auto-suggested based on context, and the next step is proposed after each phase completes. You can also invoke any command directly to jump to a specific phase.
+| Workflow | What Happens | What You Do |
+|----------|-------------|-------------|
+| `/design` | Researches the space, creates an outline, reviews it internally, writes the full Design Doc, auto-checks quality | Review and approve the final Design Doc |
+| `/implement` | Plans from Design Doc, TDD per task, auto-reviews each task, runs final code review | Approve the plan, make decisions at implementation choice points |
+| `/debug` | Reproduces, isolates, diagnoses the problem, documents findings as an Investigation Report | Provide context between phases, review the diagnosis |
+
+### Supporting Commands
+
+| Command | When to Use Directly |
+|---------|---------------------|
+| `/research` | You want to explore a problem space without committing to a Design Doc |
+| `/plan` | You want just an implementation plan, not the full implementation |
+| `/review` | You want a code review on existing code outside the implementation flow |
+| `/compound` | Extract and classify learnings from completed work |
+
+Commands are auto-suggested based on context. You can also invoke any command directly.
 
 ## Key Mechanisms
 
@@ -83,11 +91,12 @@ rm ~/.claude/skills/claude-praxis
 
 | Command | Purpose |
 |---------|---------|
-| `/research` | Understand the problem space before building |
-| `/design` | Articulate your design rationale as a Design Doc |
-| `/plan` | Break Design Doc into deliberate, explainable steps |
-| `/implement` | Build with TDD, quality rules, and verification |
-| `/review` | Expose blind spots through code review |
+| `/design` | **Main workflow**: Research + outline + write Design Doc + quality check + present |
+| `/implement` | **Main workflow**: Plan + TDD per task + auto-review per task + final review |
+| `/debug` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
+| `/research` | Standalone: explore a problem space without committing to a Design Doc |
+| `/plan` | Standalone: create an implementation plan without starting implementation |
+| `/review` | Standalone: code review on existing code |
 | `/compound` | Extract learnings and carry them to the next project |
 
 ## Quality Rules (Defaults)

@@ -88,22 +88,20 @@ When the user starts a conversation or gives a new task, detect the context and 
 | Signal | Suggest | Example |
 |--------|---------|---------|
 | Exploring unknown domain, multiple possible approaches, "how should we...", "what's the best approach" | `/praxis:research` | "Let me investigate best practices first. Starting /praxis:research." |
-| **"Create a Design Doc" — but no research has been done yet** | `/praxis:research` first | "A good Design Doc needs alternatives comparison. Let me start with /praxis:research first." |
-| Architectural decision needed, trade-offs to evaluate, "let's design...", "I think we should..." | `/praxis:design` | "This needs a design decision. Ready for /praxis:design?" |
-| **"build X", "implement Y", "add feature Z"** — direct implementation request without reference doc | `/praxis:plan` | "Let me create an implementation plan first. Starting /praxis:plan." |
-| Design Doc exists and is approved, "let's break this down", "what are the steps" | `/praxis:plan` | "Design is approved. Let me break it into tasks with /praxis:plan." |
-| User already referenced a doc/plan and says "implement this", "build based on this" | `/praxis:implement` | "Doc is clear. Starting implementation with /praxis:implement." |
-| Plan exists, "let's build", "start coding", ready to execute | `/praxis:implement` | "Plan is ready. Starting implementation with /praxis:implement." |
-| Implementation done, tests passing, ready for feedback | `/praxis:review` | "Implementation complete. Running /praxis:review." |
+| Architectural decision needed, "let's design...", "create a Design Doc", "I think we should..." | `/praxis:design` | "This needs a Design Doc. Starting /praxis:design — it handles research, outline, and writing internally." |
+| **"build X", "implement Y", "add feature Z"** — direct implementation request without Design Doc | `/praxis:implement` | "Starting /praxis:implement — it will plan and implement with TDD and review." |
+| Design Doc exists and approved, "implement this", "build based on this" | `/praxis:implement` | "Design Doc is ready. Starting /praxis:implement." |
+| Explicit plan-only request, "break this down", "what are the steps" | `/praxis:plan` | "Creating an implementation plan with /praxis:plan." |
+| Explicit review request on existing code | `/praxis:review` | "Running /praxis:review for code review." |
 | Significant work completed, session winding down, context getting full | `/praxis:compound` | "Good stopping point. Want to run /praxis:compound to capture what we learned?" |
-| Bug report, error investigation, "why isn't this working", debugging | `systematic-debugging` skill | "This looks like a bug. Let me use the systematic debugging approach." |
+| Bug report, error, "why isn't this working", "investigate this problem", debugging | `/praxis:debug` | "Starting /praxis:debug — it will investigate, diagnose, and document findings." |
 
 ### Suggestion Behavior
 
 1. **On task start**: Detect context and MUST suggest the appropriate command. If the user agrees (or doesn't object), invoke it. If the user declines, proceed without it — but the suggestion itself is non-negotiable.
 2. **On phase completion**: MUST suggest the next logical step. This is enforced through `verification-before-completion`.
 3. **Commands remain available**: Users can always invoke commands directly to jump to any phase.
-4. **Scale to task size**: Quick bug fix → suggest `systematic-debugging` only. New feature → suggest `/praxis:design` first. Not every task needs all 6 phases, but every task gets a phase suggestion.
+4. **Scale to task size**: Quick bug fix → suggest `systematic-debugging` only. New feature → suggest `/praxis:design` first. Most tasks need just `/praxis:design` and `/praxis:implement`. Every task gets a phase suggestion.
 5. **Be concise**: Suggest in one line, don't explain the framework every time.
 
 ### Phase Completion Signals
@@ -113,7 +111,8 @@ When the user starts a conversation or gives a new task, detect the context and 
 | /praxis:research | Findings summarized, recommendations clear | "Research done. Ready for /praxis:design?" |
 | /praxis:design | Design Doc written, human approved | "Design approved. Ready for /praxis:implement?" |
 | /praxis:plan | Tasks defined with file paths and tests | "Plan ready. Start /praxis:implement?" |
-| /praxis:implement | All tasks done, checks passing | "All green. Running /praxis:review." |
+| /praxis:implement | All tasks done, review complete, checks passing | "All green, review done. Capture learnings with /praxis:compound?" |
+| /praxis:debug | Investigation Report written, human reviewed | "Investigation complete. Ready for /praxis:implement to fix?" |
 | /praxis:review | Review feedback addressed | "Review done. Capture learnings with /praxis:compound?" |
 | /praxis:compound | Learnings promoted | Session complete or next task |
 

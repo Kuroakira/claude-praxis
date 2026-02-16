@@ -39,6 +39,41 @@ If they still have these questions after reading, the doc is incomplete.
 
 **Exception**: When a specific implementation detail IS the design decision (e.g., "we use CQRS pattern because..."), include just enough to illustrate the concept, marked as **Conceptual**.
 
+## Abstract to Concrete Ordering
+
+Every Design Doc follows an **abstract-to-concrete** structure at two levels:
+
+### Document Level
+
+The overall document flows from abstract to concrete:
+
+1. **WHY** — Overview, Context, Goals (problem space and motivation)
+2. **WHAT** — Proposal at the conceptual level (the chosen approach and its reasoning)
+3. **HOW boundaries** — Interface contracts, key design decisions (only where the implementation IS the design decision)
+4. **Verification** — Alternatives, Concerns, Review Checklist
+
+### Section Level
+
+Within each section, follow the same pattern:
+
+1. Start with context and motivation (why this section matters)
+2. Follow with specifics (the actual content)
+3. End with implications and trade-offs (what this means for the reader)
+
+A reader should be able to stop reading at any point and still have a coherent (if incomplete) understanding. If the document starts with implementation details, a reader who stops early has specifics without context — useless for decision-making.
+
+## Outline-First Process
+
+When creating a Design Doc, always create the outline first:
+
+1. **Write the outline**: Section headers with 1-2 sentence summaries per section
+2. **Review the outline**: Does the argument flow? Are alternatives present? Is abstract-to-concrete ordering maintained?
+3. **Then write the full doc**: Expand each section following the reviewed outline
+
+This prevents two common failure modes:
+- **Burying the lede**: Important decisions hidden in the middle of the doc
+- **Missing alternatives**: Jumping to the proposal without considering options
+
 ## Absolute Rules
 
 ### No Local File Links
@@ -184,8 +219,8 @@ Only include code when the code itself IS the design decision (e.g., a specific 
 
 ## Lifecycle
 
-- Design Docs are **living documents** — update when implementation reveals significant deviations from the original design
-- Don't rewrite the doc to match implementation; add an amendment section explaining what changed and why
+- By focusing on WHY over HOW, a well-written Design Doc should NOT need editing — rationale stays valid even when implementation changes
+- If implementation reveals a significant deviation from the original design rationale, add an amendment section explaining what changed and why — don't rewrite the original
 - The doc remains the entry point for anyone encountering the system later
 
 ## Size Guidance
@@ -196,6 +231,6 @@ Only include code when the code itself IS the design decision (e.g., a specific 
 
 ## Integration
 
-- Used during the Design Phase (`/design` command)
-- Documents are reviewed by the team before implementation begins
-- After approval, `/plan` creates the implementation plan as a separate artifact — the Design Doc itself contains NO implementation plan
+- Used by the `/praxis:design` command, which orchestrates research, outline, review, writing, and quality check internally
+- Documents are presented for human approval before implementation begins
+- After approval, `/praxis:implement` creates the implementation plan as its first step — the Design Doc itself contains NO implementation plan
