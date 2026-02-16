@@ -13,7 +13,7 @@ Diagnose root causes through evidence, not guesswork. Never jump to a fix withou
 NO FIX WITHOUT A PROVEN DIAGNOSIS
 ```
 
-## 4-Phase Process
+## 3-Phase Process
 
 ### Phase 1: Reproduce
 
@@ -59,27 +59,12 @@ Form hypotheses and test them with evidence.
 
 **Exit criteria**: One hypothesis survives with supporting evidence.
 
-### Phase 4: Fix & Verify
-
-Apply the fix and prove the bug is gone.
-
-```
-1. Write a test that captures the bug (RED)
-2. Apply the minimal fix (GREEN)
-3. Run the reproduction steps — bug must be gone
-4. Run full test suite — no regressions
-5. Quote the verification output (verification-before-completion)
-```
-
-**Exit criteria**: Test passes, reproduction steps no longer trigger the bug.
-
 ## Red Flags
 
 - "I think I know what's wrong" before Phase 1 is complete
-- Jumping from Phase 1 to Phase 4 (skipping Isolate and Diagnose)
+- Jumping from Phase 1 to Phase 3 (skipping Isolate)
 - Only one hypothesis considered in Phase 3
-- Applying a fix without a failing test
-- Claiming "fixed" without re-running reproduction steps
+- Jumping to a fix without completing diagnosis
 
 ## Common Rationalizations
 
@@ -94,6 +79,5 @@ Apply the fix and prove the bug is gone.
 ## Integration
 
 - **agent-team-execution**: Phase 3 escalation for competing hypothesis debugging
-- **verification-before-completion**: Phase 4 requires fresh evidence before claiming "fixed"
-- **code-quality-rules**: Phase 4 follows TDD (failing test first, then fix)
-- **subagent-driven-development**: After diagnosis, the fix is implemented as a task with spec + review
+- **`/praxis:debug` command**: Orchestrates this skill's 3 phases and produces an Investigation Report
+- **`/praxis:implement` command**: After diagnosis, the fix is implemented via `/praxis:implement` with TDD + review

@@ -101,7 +101,7 @@ When the user starts a conversation or gives a new task, detect the context and 
 1. **On task start**: Detect context and MUST suggest the appropriate command. If the user agrees (or doesn't object), invoke it. If the user declines, proceed without it — but the suggestion itself is non-negotiable.
 2. **On phase completion**: MUST suggest the next logical step. This is enforced through `verification-before-completion`.
 3. **Commands remain available**: Users can always invoke commands directly to jump to any phase.
-4. **Scale to task size**: Quick bug fix → suggest `systematic-debugging` only. New feature → suggest `/praxis:design` first. Most tasks need just `/praxis:design` and `/praxis:implement`. Every task gets a phase suggestion.
+4. **Scale to task size**: Bug report → `/praxis:debug`. New feature → `/praxis:design` first. Most tasks use `/praxis:design`, `/praxis:implement`, or `/praxis:debug`. Every task gets a phase suggestion.
 5. **Be concise**: Suggest in one line, don't explain the framework every time.
 
 ### Phase Completion Signals

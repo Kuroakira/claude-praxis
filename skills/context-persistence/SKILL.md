@@ -109,6 +109,6 @@ Fires automatically before compact (75-95% context). Performs mechanical cleanup
 ## Integration
 
 - **getting-started**: SessionStart notifies file existence
-- **compound-learning** (`/praxis:compound`): Promotes Flow → Stock with LLM judgment
+- **`/praxis:compound` command**: Promotes Flow → Stock with LLM judgment
 - **code-quality-rules**: Universal quality learnings route to self-evolution protocol
 - **PreCompact hook**: Mechanical Flow cleanup before compact
