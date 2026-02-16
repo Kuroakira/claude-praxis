@@ -10,6 +10,14 @@ This workflow investigates and documents a problem. It does NOT fix it — the f
 
 Unlike `/praxis:design`, this workflow is **interactive throughout**. Problems often change shape during investigation — what looks like a frontend bug may turn out to be a backend issue, and the human's input between phases helps keep the investigation on track.
 
+## Phase 0: Check Past Learnings
+
+Before starting investigation, check if past knowledge is relevant to this problem.
+
+1. Read `.claude/context/learnings.md` and `~/.claude/learnings/global-learnings.md` if they exist
+2. When a past learning is relevant, carry it forward as a hypothesis or constraint:
+   > "Previously we saw [similar problem] caused by [root cause]. Could the same mechanism be at play here?"
+
 ## Phase 1: Reproduce
 
 Establish a reliable way to trigger the problem.
@@ -48,6 +56,15 @@ For complex problems with 3+ plausible hypotheses, consider using `agent-team-ex
 
 **PAUSE**: Present the diagnosis with supporting evidence. The human may have additional context that changes the diagnosis.
 
+**Record to progress.md**: Append an entry with the root cause and why it was hard to find.
+
+```markdown
+## [timestamp] — /praxis:debug: Diagnosis complete
+- Decision: [root cause identified]
+- Rationale: [why this was hard to find, what made it non-obvious]
+- Domain: [topic tag for future matching]
+```
+
 ## Phase 4: Document Findings
 
 Create an Investigation Report summarizing the investigation.
@@ -81,6 +98,8 @@ Other ways to address the problem, if applicable.
 | [approach A] | [pros/cons] |
 | [approach B] | [pros/cons] |
 ```
+
+**Save the Investigation Report to file**: Write the report to `.claude/context/investigation-[name].md` (kebab-case name derived from the problem title). This ensures the report survives context compact.
 
 ## Phase 5: Present for Human Review
 

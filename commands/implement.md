@@ -88,6 +88,15 @@ Present a brief task completion report:
 
 If issues are found during the auto-review, propose rule additions via `code-quality-rules` self-evolution protocol.
 
+**Record to progress.md**: Append an entry with decisions made during this task.
+
+```markdown
+## [timestamp] — /praxis:implement: Task [N] complete — [task name]
+- Decision: [key implementation decisions]
+- Rationale: [why — the reasoning behind the choice]
+- Domain: [topic tag for future matching]
+```
+
 Proceed to the next task. Do NOT wait for human approval between tasks unless a decision point (Step A.4) requires input.
 
 ## Phase 3: Final Review
@@ -98,3 +107,12 @@ After ALL tasks are complete:
 2. **Code review is mandatory** — invoke `/praxis:review` (dispatch a reviewer agent). This is NOT skippable
 3. Address all Critical and Important review findings before declaring implementation complete
 4. Present the final completion report using the `verification-before-completion` Completion Report template
+
+**Record to progress.md**: Append an entry summarizing review findings worth remembering.
+
+```markdown
+## [timestamp] — /praxis:implement: Final review complete
+- Decision: [review findings and actions taken]
+- Rationale: [what was learned during review]
+- Domain: [topic tag for future matching]
+```

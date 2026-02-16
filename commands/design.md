@@ -8,6 +8,14 @@ Invoke the skills `getting-started` and `design-doc-format`, then orchestrate th
 
 This is an end-to-end workflow. Execute all phases sequentially without waiting for human input between phases — UNLESS a phase explicitly says to pause for human input.
 
+## Phase 0: Check Past Learnings
+
+Before starting research, check if past knowledge is relevant to this design task.
+
+1. Read `.claude/context/learnings.md` and `~/.claude/learnings/global-learnings.md` if they exist
+2. When a past learning is relevant, carry it forward into Phase 1 as a constraint or starting point:
+   > "Previously we chose [X] because [rationale]. Does the same assumption hold here, or has the context changed?"
+
 ## Phase 1: Research
 
 Investigate the problem space to build the foundation for design decisions.
@@ -22,6 +30,15 @@ Investigate the problem space to build the foundation for design decisions.
 5. **Surface constraints**: Identify project-specific constraints that narrow the choices
 
 Do NOT present research findings to the human separately. Carry them forward into Phase 2.
+
+**Record to progress.md**: Append an entry with key findings, rejected approaches, and relevant domain tags.
+
+```markdown
+## [timestamp] — /praxis:design: Research complete
+- Decision: [key findings and approaches identified]
+- Rationale: [why certain approaches were rejected early]
+- Domain: [topic tag for future matching]
+```
 
 ## Phase 2: Create Outline
 
@@ -68,6 +85,16 @@ Expand the outline into the complete Design Doc.
    - Follow with specifics and details
    - End with implications and trade-offs
 4. Write with the assumption this doc will NOT need editing — by focusing on WHY (which stays valid even when implementation changes), the doc remains accurate over time
+5. **Save the Design Doc to file**: Write the completed doc to `design-docs/[name].md` (kebab-case name derived from the doc title). This ensures the doc survives context compact
+
+**Record to progress.md**: Append an entry with the chosen design direction and reasoning.
+
+```markdown
+## [timestamp] — /praxis:design: Design Doc written
+- Decision: [chosen design direction]
+- Rationale: [why this approach over alternatives]
+- Domain: [topic tag for future matching]
+```
 
 ## Phase 5: Auto-Review
 
