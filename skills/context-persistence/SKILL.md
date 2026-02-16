@@ -58,7 +58,7 @@ Append new entries at the top. When entries exceed 10, delete the oldest.
 - **Context**: [when/why this matters]
 ```
 
-Only promote from progress.md when knowledge is reusable. Use `/compound` for deliberate promotion.
+Only promote from progress.md when knowledge is reusable. Use `/praxis:compound` for deliberate promotion.
 
 ## Read Rules
 
@@ -88,7 +88,7 @@ Fires automatically before compact (75-95% context). Performs mechanical cleanup
 2. Update timestamp in `task_plan.md`
 3. Remove completed task details
 
-**LLM-judged promotion (Flow → Stock) is NOT done here.** That is `/compound`'s job.
+**LLM-judged promotion (Flow → Stock) is NOT done here.** That is `/praxis:compound`'s job.
 
 ## Red Flags
 
@@ -109,6 +109,6 @@ Fires automatically before compact (75-95% context). Performs mechanical cleanup
 ## Integration
 
 - **getting-started**: SessionStart notifies file existence
-- **compound-learning** (`/compound`): Promotes Flow → Stock with LLM judgment
+- **compound-learning** (`/praxis:compound`): Promotes Flow → Stock with LLM judgment
 - **code-quality-rules**: Universal quality learnings route to self-evolution protocol
 - **PreCompact hook**: Mechanical Flow cleanup before compact

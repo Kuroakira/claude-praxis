@@ -1,5 +1,5 @@
 ---
-name: research
+name: praxis:research
 description: Start the research phase — investigate best practices and similar implementations
 disable-model-invocation: true
 ---

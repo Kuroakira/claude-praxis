@@ -75,11 +75,11 @@ Every completion MUST use this template. The structure forces inclusion of next-
 
 | Completed Phase | Next Phase field |
 |----------------|-----------------|
-| /research | → Ready for /design to create a Design Doc? |
-| /design | → Ready for /plan to break into tasks? |
-| /plan | → Ready for /implement to start coding? |
-| /implement | → Proceeding to /review (mandatory — not skippable) |
-| /review | → Run /compound to capture learnings? |
+| /praxis:research | → Ready for /praxis:design to create a Design Doc? |
+| /praxis:design | → Ready for /praxis:implement to start implementation? |
+| /praxis:plan | → Ready for /praxis:implement to start coding? |
+| /praxis:implement | → Proceeding to /praxis:review (mandatory — not skippable) |
+| /praxis:review | → Run /praxis:compound to capture learnings? |
 | Non-phase task | → No next phase needed |
 
 User can accept or skip for most phases. **Exception: /implement → /review is mandatory and not skippable.** The field MUST be present in the report.

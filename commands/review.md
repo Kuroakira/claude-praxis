@@ -1,5 +1,5 @@
 ---
-name: review
+name: praxis:review
 description: Request a code review for completed work
 disable-model-invocation: true
 ---

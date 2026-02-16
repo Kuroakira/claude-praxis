@@ -1,5 +1,5 @@
 ---
-name: design
+name: praxis:design
 description: Start the design phase — create a Design Doc for team review
 disable-model-invocation: true
 ---

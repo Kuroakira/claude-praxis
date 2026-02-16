@@ -2,11 +2,10 @@
 
 ## Core Concept
 
-**Vibe codingに「理解」を取り戻す。AIが書いても、エンジニアが育つ開発フレームワーク。**
+**Bring "understanding" back to vibe coding. A development framework where engineers grow — even when AI writes the code.**
 
-AI-assisted developmentは速い。しかし速さだけでは、エンジニアの中に何も残らない。
-このプラグインは、AIを「鏡」として使い、設計と実装の「なぜ」を言語化・蓄積することで、
-エンジニアとしての判断力を複利的に成長させるシステムである。
+AI-assisted development is fast. But speed alone leaves nothing inside the engineer.
+This plugin uses AI as a "mirror" — by articulating and accumulating the "why" behind design and implementation decisions, it compounds engineering judgment over time.
 
 ## Why This Exists
 
@@ -52,12 +51,12 @@ claude-praxis/
 Each phase exists to deepen understanding, not just to produce output.
 
 ```
-/research  → Understand the problem space and prior art
-/design    → Articulate WHY this design, not just WHAT
-/plan      → Break into steps you can explain
-/implement → Build with quality rules, learn from issues
-/review    → Expose blind spots through other perspectives
-/compound  → Extract what you learned, carry it forward
+/praxis:research  → Understand the problem space and prior art
+/praxis:design    → Articulate WHY this design, not just WHAT
+/praxis:plan      → Break into steps you can explain
+/praxis:implement → Build with quality rules, learn from issues
+/praxis:review    → Expose blind spots through other perspectives
+/praxis:compound  → Extract what you learned, carry it forward
 ```
 
 ## Quality Rules (defined in code-quality-rules)

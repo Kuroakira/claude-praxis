@@ -1,5 +1,5 @@
 ---
-name: compound
+name: praxis:compound
 description: Promote valuable knowledge from Flow to Stock — curate learnings from recent work
 disable-model-invocation: true
 ---

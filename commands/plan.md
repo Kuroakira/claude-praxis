@@ -1,5 +1,5 @@
 ---
-name: plan
+name: praxis:plan
 description: Create a detailed implementation plan — break a task into small, TDD-driven steps
 disable-model-invocation: true
 ---
