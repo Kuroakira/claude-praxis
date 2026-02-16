@@ -87,11 +87,13 @@ When the user starts a conversation or gives a new task, detect the context and 
 
 | Signal | Suggest | Example |
 |--------|---------|---------|
-| New feature/project request, exploring options, "how should we...", "what's the best approach" | `/research` | "Let me investigate best practices first. Starting /research." |
+| Exploring unknown domain, multiple possible approaches, "how should we...", "what's the best approach" | `/research` | "Let me investigate best practices first. Starting /research." |
 | **"Create a Design Doc" — but no research has been done yet** | `/research` first | "A good Design Doc needs alternatives comparison. Let me start with /research first." |
-| Research is done, user is committing to an approach, "let's design...", "I think we should..." | `/design` | "We have enough research. Ready to write a Design Doc? I'll start /design." |
+| Architectural decision needed, trade-offs to evaluate, "let's design...", "I think we should..." | `/design` | "This needs a design decision. Ready for /design?" |
+| **"build X", "implement Y", "add feature Z"** — direct implementation request without reference doc | `/plan` | "Let me create an implementation plan first. Starting /plan." |
 | Design Doc exists and is approved, "let's break this down", "what are the steps" | `/plan` | "Design is approved. Let me break it into tasks with /plan." |
-| Plan exists, "let's build", "start coding", implementation request | `/implement` | "Plan is ready. Starting implementation with /implement." |
+| User already referenced a doc/plan and says "implement this", "build based on this" | `/implement` | "Doc is clear. Starting implementation with /implement." |
+| Plan exists, "let's build", "start coding", ready to execute | `/implement` | "Plan is ready. Starting implementation with /implement." |
 | Implementation done, tests passing, ready for feedback | `/review` | "Implementation complete. Want to run /review for a code review?" |
 | Significant work completed, session winding down, context getting full | `/compound` | "Good stopping point. Want to run /compound to capture what we learned?" |
 | Bug report, error investigation, "why isn't this working", debugging | `systematic-debugging` skill | "This looks like a bug. Let me use the systematic debugging approach." |

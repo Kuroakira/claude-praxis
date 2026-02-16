@@ -68,21 +68,21 @@ Every completion MUST use this template. The structure forces inclusion of next-
 [What was changed and why]
 
 ### Next Phase
-→ [Next phase suggestion, e.g. "/review でコードレビューしますか？"]
+→ [Next phase suggestion, e.g. "Ready for /review?"]
 ```
 
 ### Next Phase Lookup
 
 | Completed Phase | Next Phase field |
 |----------------|-----------------|
-| /research | → /design でDesign Doc作成しますか？ |
-| /design | → /plan で実装計画を作りますか？ |
-| /plan | → /implement で実装開始しますか？ |
-| /implement | → /review でコードレビューしますか？ |
-| /review | → /compound で学びを蓄積しますか？ |
-| Non-phase task | → フェーズ外タスクのため不要 |
+| /research | → Ready for /design to create a Design Doc? |
+| /design | → Ready for /plan to break into tasks? |
+| /plan | → Ready for /implement to start coding? |
+| /implement | → Proceeding to /review (mandatory — not skippable) |
+| /review | → Run /compound to capture learnings? |
+| Non-phase task | → No next phase needed |
 
-User can accept or skip, but the field MUST be present in the report.
+User can accept or skip for most phases. **Exception: /implement → /review is mandatory and not skippable.** The field MUST be present in the report.
 
 ## Red Flags (stop and verify)
 

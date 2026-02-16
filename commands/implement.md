@@ -17,4 +17,4 @@ Invoke skills `code-quality-rules` and `verification-before-completion`, then be
    - Run verification after each change (typecheck, lint, test, build)
    - Get human approval before proceeding to next task
 5. If issues are found, propose rule additions via `code-quality-rules` self-evolution protocol
-6. Request code review after completing each phase
+6. **Code review is mandatory** — after all tasks are complete and verification passes, invoke `/review`. Implementation is NOT done until review is complete. This is not a suggestion to the user — execute it as part of the implementation flow
