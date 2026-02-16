@@ -126,6 +126,37 @@ expect(users[0].email).toBe('test@example.com');
 
 "Just make it pass for now" → **Delete and redo. Tests are specifications.**
 
+### No Obvious Comments
+
+Comments should explain WHY, not WHAT. If the code already clearly shows what it does, a comment restating it is noise that hurts readability and drifts out of sync over time.
+
+```typescript
+// ❌ Never do this — restating what code already shows
+// Loop through users
+for (const user of users) {
+// Check if user is active
+if (user.isActive) {
+// Add user to result
+result.push(user);
+
+// ✅ Correct approach — explain WHY when the reason isn't obvious
+// Exclude suspended users: they retain data access but can't perform actions
+if (user.isActive) {
+  result.push(user);
+```
+
+**When to comment:**
+- Non-obvious business logic or domain rules
+- Workarounds with context (e.g., "Retry 3x due to upstream API instability")
+- Intentional deviations from the expected pattern
+
+**When NOT to comment:**
+- Function/variable names already describe the operation
+- Standard language constructs (loops, conditionals, assignments)
+- Type signatures that are self-explanatory
+
+"But comments help readability" → **Self-documenting code helps more. Rename the variable or extract the function instead.**
+
 ## Post-Implementation Checklist
 
 Run after every file change:

@@ -1,19 +1,37 @@
 ---
 name: writing-skills
-description: Use when creating a new skill, improving an existing skill, or adding a rule to code-quality-rules.
+description: Use when creating, updating, or modifying any skill — adding rules, changing triggers, editing format, improving descriptions, or creating new skills.
 ---
 
 # Writing Skills
 
-Apply TDD to skill creation. Test how the agent fails first, then write the minimal skill to prevent it.
+Two paths: **Quick Update** for targeted changes, **Full TDD** for new skills.
 
-## The Iron Law
+## Quick Update Path
+
+Use this for: adding a rule, broadening a trigger, fixing a description, updating format, adjusting wording.
 
 ```
-NO SKILL WITHOUT A BASELINE FAILURE TEST
+1. Read the target skill file
+2. Make the edit (follow existing patterns in the file)
+3. Verify consistency:
+   - Does the frontmatter description still match?
+   - If adding a rule, does it follow the ❌/✅ example format?
+   - No contradictions with existing rules?
+4. Done
 ```
 
-## TDD for Skills
+Quick updates don't need TDD — the change is driven by an observed need (user request, feedback-driven improvement, or /compound routing).
+
+## Full TDD Path
+
+Use this for: creating a brand-new skill, major restructuring of an existing skill.
+
+### The Iron Law
+
+```
+NO NEW SKILL WITHOUT A BASELINE FAILURE TEST
+```
 
 ### RED — Establish the Baseline
 

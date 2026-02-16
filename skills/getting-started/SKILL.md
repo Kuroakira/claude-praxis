@@ -56,6 +56,7 @@ If you catch yourself thinking any of these, STOP and invoke the skill:
 | Long task, context preservation | `context-persistence` | State survival across compact |
 | **After completing a coding task or batch of tasks** | `requesting-code-review` | Dispatch reviewer. Always suggest after implementation. |
 | Received feedback | `receiving-code-review` | Handle feedback properly |
+| **Creating, updating, or adding rules to skills** — "change this skill", "add a rule", "update the format" | `writing-skills` | Skill quality + structure guidance. **Always invoke when modifying skills.** |
 
 ### Skill Priority
 
