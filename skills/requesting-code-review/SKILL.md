@@ -1,6 +1,6 @@
 ---
 name: requesting-code-review
-description: Use when a task or batch of tasks is complete and needs review before proceeding.
+description: Use after completing any coding task — implementation, bug fix, refactor. Always suggest a code review before moving on.
 ---
 
 # Requesting Code Review

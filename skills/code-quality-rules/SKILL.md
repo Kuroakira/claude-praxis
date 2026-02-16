@@ -1,6 +1,6 @@
 ---
 name: code-quality-rules
-description: Use when writing code, reviewing code, writing tests, or when a potential quality issue is detected.
+description: Use ALWAYS when writing, editing, or modifying any code — features, bug fixes, refactors, tests, scripts, configuration. Also use when reviewing code or when a potential quality issue is detected.
 ---
 
 # Code Quality Rules

@@ -49,12 +49,12 @@ If you catch yourself thinking any of these, STOP and invoke the skill:
 | Trigger | Skill | Description |
 |---------|-------|-------------|
 | Bug, error, "why doesn't this work", reviewing/analyzing bug investigations | `systematic-debugging` | 4-phase root cause analysis |
-| Implementation task | `code-quality-rules` | TDD, quality enforcement |
+| **ANY task that writes, edits, or modifies code** — features, fixes, refactors, tests, scripts | `code-quality-rules` | TDD, quality enforcement. **Always invoke when coding.** |
 | Multi-step task, parallel exploration | `subagent-driven-development` | Fresh agent per task |
 | Research, analysis, multiple perspectives | `agent-team-execution` | Parallel hypothesis testing |
 | Task completion, claiming "done" | `verification-before-completion` | Evidence before claims |
 | Long task, context preservation | `context-persistence` | State survival across compact |
-| Code review needed | `requesting-code-review` | Dispatch reviewer |
+| **After completing a coding task or batch of tasks** | `requesting-code-review` | Dispatch reviewer. Always suggest after implementation. |
 | Received feedback | `receiving-code-review` | Handle feedback properly |
 
 ### Skill Priority
