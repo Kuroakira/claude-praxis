@@ -51,14 +51,31 @@ After each command:
 - If errors exist, fix them before claiming success
 - If all pass, quote the success output
 
+## Next Phase Suggestion (MANDATORY)
+
+After verification passes, MUST suggest the next workflow phase:
+
+| Completed Phase | Suggest Next |
+|----------------|-------------|
+| /research | "→ /design でDesign Doc作成しますか？" |
+| /design | "→ /plan で実装計画を作りますか？" |
+| /plan | "→ /implement で実装開始しますか？" |
+| /implement | "→ /review でコードレビューしますか？" |
+| /review | "→ /compound で学びを蓄積しますか？" |
+| Non-phase task | No next suggestion needed |
+
+User can accept or skip, but the suggestion is non-negotiable.
+
 ## Red Flags (stop and verify)
 
 - You're about to say "done" without running anything
 - You're using past tense ("tests passed") without fresh evidence
 - You're about to move to the next task without verifying the current one
 - You feel confident without having checked — confidence is not evidence
+- You're about to claim completion without suggesting the next phase
 
 ## Integration
 
 - Works with `code-quality-rules` — the post-implementation checklist requires this skill
 - Works with `subagent-driven-development` — reviewers must independently verify, not trust implementer claims
+- Works with `getting-started` — Phase Detection triggers entry, this skill triggers exit suggestions

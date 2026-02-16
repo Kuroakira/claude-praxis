@@ -70,13 +70,20 @@ When multiple skills apply:
 
 Treating skills as "optional guidance" is fundamentally wrong. They are structured workflows that prevent inefficient improvisation. **Invoke them.**
 
-## Phase Detection & Suggestion
+## Phase Detection & Suggestion (🔴 MANDATORY)
 
-**You must proactively detect the appropriate phase and suggest it.** Users should not need to remember commands.
+**Phase detection is enforced as a 🔴 CRITICAL rule in RULES.md.** Users write natural language, not commands. Detecting the phase and suggesting the command is YOUR job, every time.
+
+### The Rule
+
+```
+EVERY task gets a phase suggestion BEFORE you proceed. User decides to accept or skip.
+Skipping the suggestion itself is NOT allowed — this is a gate, not a courtesy.
+```
 
 ### Detection Rules
 
-When the user starts a conversation or gives a new task, detect the context and suggest the matching command:
+When the user starts a conversation or gives a new task, detect the context and MUST suggest the matching command:
 
 | Signal | Suggest | Example |
 |--------|---------|---------|
@@ -91,10 +98,10 @@ When the user starts a conversation or gives a new task, detect the context and 
 
 ### Suggestion Behavior
 
-1. **On task start**: Detect context and suggest the appropriate command. If the user agrees (or doesn't object), invoke it.
-2. **On phase completion**: Always suggest the next logical step. Example: after /research completes, suggest /design.
+1. **On task start**: Detect context and MUST suggest the appropriate command. If the user agrees (or doesn't object), invoke it. If the user declines, proceed without it — but the suggestion itself is non-negotiable.
+2. **On phase completion**: MUST suggest the next logical step. This is enforced through `verification-before-completion`.
 3. **Commands remain available**: Users can always invoke commands directly to jump to any phase.
-4. **Don't force the flow**: If the user's task doesn't fit the full workflow (e.g., a quick bug fix), skip phases that don't apply. Not every task needs all 6 phases.
+4. **Scale to task size**: Quick bug fix → suggest `systematic-debugging` only. New feature → suggest `/research` first. Not every task needs all 6 phases, but every task gets a phase suggestion.
 5. **Be concise**: Suggest in one line, don't explain the framework every time.
 
 ### Phase Completion Signals
