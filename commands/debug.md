@@ -1,5 +1,5 @@
 ---
-name: praxis:debug
+name: debug
 description: Investigate a problem systematically — reproduce, isolate, diagnose, document findings
 disable-model-invocation: false
 ---

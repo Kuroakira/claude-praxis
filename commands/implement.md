@@ -1,5 +1,5 @@
 ---
-name: praxis:implement
+name: implement
 description: Implement from Design Doc — plan, TDD per task, auto-review per task, final review
 disable-model-invocation: false
 ---

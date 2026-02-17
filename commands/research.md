@@ -1,5 +1,5 @@
 ---
-name: praxis:research
+name: research
 description: Standalone research — investigate problem space without committing to a Design Doc (research is built into /praxis:design)
 disable-model-invocation: false
 ---

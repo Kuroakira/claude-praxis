@@ -1,5 +1,5 @@
 ---
-name: praxis:design
+name: design
 description: Create a complete Design Doc — research, outline, review, write, quality check, present
 disable-model-invocation: false
 ---
