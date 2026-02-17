@@ -1,7 +1,7 @@
 ---
 name: praxis:research
 description: Standalone research — investigate problem space without committing to a Design Doc (research is built into /praxis:design)
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Invoke the skill `getting-started` and begin the **Research Phase**:

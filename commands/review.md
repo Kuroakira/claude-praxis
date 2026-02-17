@@ -1,7 +1,7 @@
 ---
 name: praxis:review
 description: Request a code review for completed work
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Invoke the skill `requesting-code-review`:

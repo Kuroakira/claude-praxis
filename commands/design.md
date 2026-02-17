@@ -1,7 +1,7 @@
 ---
 name: praxis:design
 description: Create a complete Design Doc — research, outline, review, write, quality check, present
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Invoke the skills `getting-started` and `design-doc-format`, then orchestrate the **Design Doc Creation Workflow**.

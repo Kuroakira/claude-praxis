@@ -1,7 +1,7 @@
 ---
 name: praxis:plan
 description: Create a detailed implementation plan — break a task into small, TDD-driven steps
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Invoke the skill `getting-started` and begin the **Planning Phase**:

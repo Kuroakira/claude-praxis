@@ -1,7 +1,7 @@
 ---
 name: praxis:compound
 description: Promote valuable knowledge from Flow to Stock — curate learnings from recent work
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Invoke skill `context-persistence`, then execute **Flow → Stock Promotion**:
