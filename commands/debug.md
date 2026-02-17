@@ -1,7 +1,7 @@
 ---
 name: praxis:debug
 description: Investigate a problem systematically — reproduce, isolate, diagnose, document findings
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Invoke the skill `systematic-debugging`, then orchestrate the **Investigation Workflow**.

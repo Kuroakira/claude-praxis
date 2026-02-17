@@ -1,7 +1,7 @@
 ---
 name: praxis:implement
 description: Implement from Design Doc — plan, TDD per task, auto-review per task, final review
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Invoke skills `code-quality-rules` and `verification-before-completion`, then orchestrate the **Implementation Workflow**.

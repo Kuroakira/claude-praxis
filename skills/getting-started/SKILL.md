@@ -7,6 +7,20 @@ description: Use when starting a new session, resuming after compact/clear, or b
 
 AI as a mirror — articulate "why" at every step, accumulate knowledge across projects.
 
+## First Response Gate
+
+**Before your first tool call or response, complete this checklist:**
+
+```
+1. [ ] PHASE DETECTION — What phase is this task?
+       State which /praxis: command applies (implement, debug, design, research, plan, review, compound)
+2. [ ] SKILL CHECK — Which skills match this task?
+       Check the Available Skills table below and invoke ALL matching skills
+3. [ ] If the task involves code: confirm code-quality-rules is invoked (🔴 GATE)
+```
+
+The PreToolUse hook will block Edit/Write/MultiEdit calls until code-quality-rules is invoked. Complete this gate before writing any code.
+
 ## Mandatory Skill Invocation
 
 **Skills are NOT optional. They are mandatory workflows.**
