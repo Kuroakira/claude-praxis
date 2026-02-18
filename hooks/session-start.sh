@@ -16,6 +16,7 @@ print(data.get("session_id", ""))
 if [ -n "$SESSION_ID" ]; then
   rm -f "/tmp/claude-praxis-markers/$SESSION_ID" 2>/dev/null
   rm -f "/tmp/claude-praxis-markers/$SESSION_ID-stop-blocks" 2>/dev/null
+  rm -f "/tmp/claude-praxis-markers/$SESSION_ID-code-session" 2>/dev/null
   rm -f "/tmp/claude-praxis-markers/$SESSION_ID-task-"* 2>/dev/null
 fi
 

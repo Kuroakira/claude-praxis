@@ -38,6 +38,7 @@ assert_contains() {
 setup_markers() {
   mkdir -p "$MARKER_DIR"
   rm -f "$MARKER_DIR/$TEST_SESSION" 2>/dev/null
+  rm -f "$MARKER_DIR/$TEST_SESSION-code-session" 2>/dev/null
 }
 
 add_skill_marker() {
@@ -68,6 +69,7 @@ EOF
 # Cleanup
 cleanup() {
   rm -f "$MARKER_DIR/$TEST_SESSION" 2>/dev/null
+  rm -f "$MARKER_DIR/$TEST_SESSION-code-session" 2>/dev/null
 }
 trap cleanup EXIT
 
@@ -91,15 +93,16 @@ EXIT_CODE=$?
 assert_eq "exit code is 0" "0" "$EXIT_CODE"
 assert_eq "output is empty (allow)" "" "$OUTPUT"
 
-# --- Test 3: Allow when session_id is empty (permissive fallback) ---
-echo "Test 3: Allow when session_id is empty"
+# --- Test 3: Block when session_id is empty (deny-by-default) ---
+echo "Test 3: Block when session_id is empty (deny-by-default)"
 setup_markers
 
-OUTPUT=$(make_hook_input "/tmp/test/file.ts" "" | bash "$HOOK_SCRIPT" 2>/dev/null)
-EXIT_CODE=$?
+STDERR_OUTPUT=$(make_hook_input "/tmp/test/file.ts" "" | bash "$HOOK_SCRIPT" 2>&1 >/dev/null || true)
+EXIT_CODE=0
+make_hook_input "/tmp/test/file.ts" "" | bash "$HOOK_SCRIPT" >/dev/null 2>&1 || EXIT_CODE=$?
 
-assert_eq "exit code is 0" "0" "$EXIT_CODE"
-assert_eq "output is empty (allow)" "" "$OUTPUT"
+assert_eq "exit code is 2" "2" "$EXIT_CODE"
+assert_contains "stderr mentions session_id" 'session_id' "$STDERR_OUTPUT"
 
 # --- Test 4: Unrelated skill marker does not satisfy code-quality-rules gate ---
 echo "Test 4: Unrelated skill does not satisfy gate"
@@ -164,6 +167,56 @@ OUTPUT_MD=$(make_hook_input "/tmp/test/README.md" | bash "$HOOK_SCRIPT" 2>/dev/n
 
 assert_eq ".ts allowed" "" "$OUTPUT_TS"
 assert_eq ".md allowed" "" "$OUTPUT_MD"
+
+# --- Test 10: Block when JSON parse fails (deny-by-default) ---
+echo "Test 10: Block when JSON parse fails (deny-by-default)"
+setup_markers
+
+STDERR_OUTPUT=$(echo "not valid json {{{" | bash "$HOOK_SCRIPT" 2>&1 >/dev/null || true)
+EXIT_CODE=0
+echo "not valid json {{{" | bash "$HOOK_SCRIPT" >/dev/null 2>&1 || EXIT_CODE=$?
+
+assert_eq "exit code is 2" "2" "$EXIT_CODE"
+assert_contains "stderr mentions parse or error" 'parse\|error\|failed' "$STDERR_OUTPUT"
+
+# --- Test 11: code-session marker is written when code file edit is allowed ---
+echo "Test 11: code-session marker written on allowed code file edit"
+setup_markers
+add_skill_marker "claude-praxis:code-quality-rules"
+
+make_hook_input "/tmp/test/file.ts" | bash "$HOOK_SCRIPT" 2>/dev/null
+CODE_SESSION_MARKER="$MARKER_DIR/$TEST_SESSION-code-session"
+
+assert_eq "code-session marker exists" "true" "$([ -f "$CODE_SESSION_MARKER" ] && echo true || echo false)"
+
+# --- Test 12: code-session marker is NOT written for document file edits ---
+echo "Test 12: code-session marker NOT written for document file edit"
+setup_markers
+add_skill_marker "claude-praxis:document-quality-rules"
+
+make_hook_input "/tmp/test/README.md" | bash "$HOOK_SCRIPT" 2>/dev/null
+CODE_SESSION_MARKER="$MARKER_DIR/$TEST_SESSION-code-session"
+
+assert_eq "code-session marker does not exist" "false" "$([ -f "$CODE_SESSION_MARKER" ] && echo true || echo false)"
+
+# --- Test 13: code-session marker is NOT written for config file edits ---
+echo "Test 13: code-session marker NOT written for config file edit"
+setup_markers
+
+make_hook_input "/tmp/test/config.json" | bash "$HOOK_SCRIPT" 2>/dev/null
+CODE_SESSION_MARKER="$MARKER_DIR/$TEST_SESSION-code-session"
+
+assert_eq "code-session marker does not exist" "false" "$([ -f "$CODE_SESSION_MARKER" ] && echo true || echo false)"
+
+# --- Test 14: Block when file_path extraction fails (deny-by-default) ---
+echo "Test 14: Block when tool_input has no file_path"
+setup_markers
+
+EXIT_CODE=0
+echo '{"session_id":"'"$TEST_SESSION"'","tool_input":{}}' | bash "$HOOK_SCRIPT" >/dev/null 2>&1 || EXIT_CODE=$?
+
+# Empty file_path → unknown extension → no gate → exit 0
+assert_eq "exit code is 0 (unknown extension, no gate)" "0" "$EXIT_CODE"
 
 # --- Summary ---
 echo ""

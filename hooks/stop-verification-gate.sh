@@ -1,58 +1,53 @@
 #!/usr/bin/env bash
-# Stop hook: blocks Claude from stopping without running verification.
-# Uses a counter-based approach to prevent infinite loops.
-# - 1st stop: block with "run verification" message
-# - 2nd stop: block with "still no evidence" message
-# - 3rd+ stop: allow (safety valve)
-# Counter is stored in /tmp/claude-praxis-markers/$SESSION_ID-stop-blocks
-# and cleaned on session start by session-start.sh.
+# Stop hook: context-aware verification gate.
+# - No code-session marker → allow (brainstorm/research session, no verification needed)
+# - stop_hook_active=true → allow (loop prevention)
+# - verification-before-completion skill invoked → allow (verified)
+# - Otherwise → block with guidance
+#
+# Depends on: check-skill-gate.sh writing code-session marker on code file edits.
+# Counter-based approach is removed; replaced by marker-based context awareness.
 
-MAX_BLOCKS=2
 MARKER_DIR="/tmp/claude-praxis-markers"
 
 INPUT=$(cat)
 
-# Extract session_id from hook input
-SESSION_ID="$(echo "$INPUT" | python3 -c '
+# Extract session_id and stop_hook_active from hook input
+PARSED="$(echo "$INPUT" | python3 -c '
 import sys, json
 data = json.loads(sys.stdin.read())
 print(data.get("session_id", ""))
+print(str(data.get("stop_hook_active", False)).lower())
 ' 2>/dev/null)"
 
-# If session_id is unavailable, allow stop (permissive fallback)
+SESSION_ID="$(echo "$PARSED" | sed -n '1p')"
+STOP_HOOK_ACTIVE="$(echo "$PARSED" | sed -n '2p')"
+
+# If session_id is unavailable, allow stop
 if [ -z "$SESSION_ID" ]; then
   exit 0
 fi
 
-COUNTER_FILE="$MARKER_DIR/$SESSION_ID-stop-blocks"
-
-# Read current counter (0 if file doesn't exist)
-if [ -f "$COUNTER_FILE" ]; then
-  COUNTER=$(cat "$COUNTER_FILE")
-else
-  COUNTER=0
-fi
-
-# If counter >= MAX_BLOCKS, allow stop (safety valve)
-if [ "$COUNTER" -ge "$MAX_BLOCKS" ]; then
+# Loop prevention: if already in a stop hook cycle, allow
+if [ "$STOP_HOOK_ACTIVE" = "true" ]; then
   exit 0
 fi
 
-# Increment counter
-COUNTER=$((COUNTER + 1))
-mkdir -p "$MARKER_DIR" 2>/dev/null
-echo "$COUNTER" > "$COUNTER_FILE"
-
-# Block with appropriate message
-if [ "$COUNTER" -eq 1 ]; then
-  REASON="verification-before-completion has not been satisfied. Run typecheck, lint, and tests, then present evidence before completing."
-else
-  REASON="Still no verification evidence. Run the checks (typecheck, lint, test) and include their output in your response before completing."
+# No code-session marker → no code changes in this session → no verification needed
+if [ ! -f "$MARKER_DIR/$SESSION_ID-code-session" ]; then
+  exit 0
 fi
 
+# Code changes exist — check if verification-before-completion was invoked
+SKILL_MARKER="$MARKER_DIR/$SESSION_ID"
+if [ -f "$SKILL_MARKER" ] && grep -q "verification-before-completion" "$SKILL_MARKER"; then
+  exit 0
+fi
+
+# Block: code changes exist but verification not done
 cat <<EOF
 {
   "decision": "block",
-  "reason": "$REASON"
+  "reason": "Code changes detected but verification-before-completion has not been invoked. Run typecheck, lint, and tests, then invoke the verification-before-completion skill before completing."
 }
 EOF
