@@ -6,9 +6,9 @@ disable-model-invocation: false
 
 Invoke the skill `systematic-debugging`, then orchestrate the **Investigation Workflow**.
 
-This workflow investigates and documents a problem. It does NOT fix it — the fix is handled by `/praxis:implement` based on the investigation findings.
+This workflow investigates and documents a problem. It does NOT fix it — the fix is handled by `/claude-praxis:implement` based on the investigation findings.
 
-Unlike `/praxis:design`, this workflow is **interactive throughout**. Problems often change shape during investigation — what looks like a frontend bug may turn out to be a backend issue, and the human's input between phases helps keep the investigation on track.
+Unlike `/claude-praxis:design`, this workflow is **interactive throughout**. Problems often change shape during investigation — what looks like a frontend bug may turn out to be a backend issue, and the human's input between phases helps keep the investigation on track.
 
 ## Phase 0: Check Past Learnings
 
@@ -59,7 +59,7 @@ For complex problems with 3+ plausible hypotheses, consider using `agent-team-ex
 **Record to progress.md**: Append an entry with the root cause and why it was hard to find.
 
 ```markdown
-## [timestamp] — /praxis:debug: Diagnosis complete
+## [timestamp] — /claude-praxis:debug: Diagnosis complete
 - Decision: [root cause identified]
 - Rationale: [why this was hard to find, what made it non-obvious]
 - Domain: [topic tag for future matching]
@@ -86,7 +86,7 @@ What else might be impacted by this root cause.
 - Potential side effects: [other areas that share the same root cause]
 
 ## Recommended Fix
-The approach to fix the problem (not the code itself — that is `/praxis:implement`'s job).
+The approach to fix the problem (not the code itself — that is `/claude-praxis:implement`'s job).
 - What needs to change and why
 - What tests should verify the fix
 - What to watch out for during implementation
@@ -106,6 +106,6 @@ Other ways to address the problem, if applicable.
 Present the Investigation Report to the human with:
 
 1. The full Investigation Report
-2. Explicit next step: "Investigation complete. Ready for /praxis:implement to fix based on these findings?"
+2. Explicit next step: "Investigation complete. Ready for /claude-praxis:implement to fix based on these findings?"
 
 If the human has questions or disagrees with the diagnosis, return to Phase 3 with the new information.

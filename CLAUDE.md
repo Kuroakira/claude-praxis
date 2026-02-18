@@ -56,26 +56,26 @@ Each phase exists to deepen understanding, not just to produce output.
 Most tasks use these orchestrating commands:
 
 ```
-/praxis:design    → Research + Outline + Review + Write Design Doc + Quality Check + Present
-/praxis:implement → Plan + TDD per task + Auto-Review per task + Final Review
-/praxis:debug     → Reproduce + Isolate + Diagnose + Document Findings + Present
+/claude-praxis:design    → Research + Outline + Review + Write Design Doc + Quality Check + Present
+/claude-praxis:implement → Plan + TDD per task + Auto-Review per task + Final Review
+/claude-praxis:debug     → Reproduce + Isolate + Diagnose + Document Findings + Present
 ```
 
-`/praxis:design` handles everything from research to a finished, reviewed Design Doc. The human's only input is final approval.
+`/claude-praxis:design` handles everything from research to a finished, reviewed Design Doc. The human's only input is final approval.
 
-`/praxis:implement` handles everything from planning to verified, reviewed code. The human approves the plan and makes decisions at implementation decision points.
+`/claude-praxis:implement` handles everything from planning to verified, reviewed code. The human approves the plan and makes decisions at implementation decision points.
 
-`/praxis:debug` investigates problems systematically and produces an Investigation Report. Interactive throughout — the human provides context between phases. The fix itself is done via `/praxis:implement`.
+`/claude-praxis:debug` investigates problems systematically and produces an Investigation Report. Interactive throughout — the human provides context between phases. The fix itself is done via `/claude-praxis:implement`.
 
 ### Supporting Commands
 
 Available for direct invocation when the full workflow is not needed:
 
 ```
-/praxis:research  → Standalone research (when you just want to explore options)
-/praxis:plan      → Standalone planning (when you already have a plan in mind)
-/praxis:review    → Standalone code review (when you want feedback on existing code)
-/praxis:compound  → Extract what you learned, carry it forward
+/claude-praxis:research  → Standalone research (when you just want to explore options)
+/claude-praxis:plan      → Standalone planning (when you already have a plan in mind)
+/claude-praxis:review    → Standalone code review (when you want feedback on existing code)
+/claude-praxis:compound  → Extract what you learned, carry it forward
 ```
 
 ## Quality Rules (defined in code-quality-rules)
@@ -127,4 +127,4 @@ Available for direct invocation when the full workflow is not needed:
 - Implementation decision points are surfaced to the user — when multiple valid approaches exist, Claude presents options instead of choosing silently
 - Learnings are stored with context/rationale — enables "does the same assumption hold?" recall instead of blind repetition
 - Contextual recall uses judgment prompts, not quizzes — "same rationale applies here?" not "do you remember?"
-- Three orchestrating workflows (`/praxis:design`, `/praxis:implement`, and `/praxis:debug`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. Supporting commands remain for direct invocation when the full workflow is not needed
+- Three orchestrating workflows (`/claude-praxis:design`, `/claude-praxis:implement`, and `/claude-praxis:debug`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. Supporting commands remain for direct invocation when the full workflow is not needed

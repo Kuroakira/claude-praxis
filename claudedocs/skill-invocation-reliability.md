@@ -10,7 +10,7 @@ claude-praxisのスキル呼び出し（Phase Detection、code-quality-rules gat
 
 darius/frontendプロジェクトで「PR5を実装しましょう」と依頼した際、以下のCRITICALルールがすべてスキップされた：
 
-1. **Phase Detection** — `/praxis:implement` の提案なし
+1. **Phase Detection** — `/claude-praxis:implement` の提案なし
 2. **Skill Check** — `code-quality-rules` の呼び出しなし
 3. **TDD** — テストを書く前にプロダクションコードを編集
 
@@ -78,12 +78,12 @@ transcript JSONLをgrepし、code-quality-rulesのSkill呼び出しを検索
 
 `disable-model-invocation: true` を `false` に変更する。
 
-**現状の問題**: Phase Detectionでモデルが `/praxis:implement` を提案しても、ユーザーが手動でコマンドを打つまでスキルチェーンが走らない。モデルが提案自体をスキップすると、スキルチェーン全体が走らない。
+**現状の問題**: Phase Detectionでモデルが `/claude-praxis:implement` を提案しても、ユーザーが手動でコマンドを打つまでスキルチェーンが走らない。モデルが提案自体をスキップすると、スキルチェーン全体が走らない。
 
 **変更後の流れ**:
 
 ```
-モデルがPhase Detection → /praxis:implement を自ら呼び出し可能
+モデルがPhase Detection → /claude-praxis:implement を自ら呼び出し可能
     ↓
 implement.md内部でcode-quality-rules + verification-before-completionを呼ぶ
     ↓
@@ -92,10 +92,10 @@ Phase 1でプランを提示し、人間の承認を待つ（既存の承認ゲ�
 
 **設計判断: 全commandを auto-invocable にするか**
 
-- `/praxis:implement` と `/praxis:debug` のみを auto-invocable にする（最頻出で、スキップされた場合のダメージが大きい）
-- `/praxis:design` はDesign Doc作成という重い判断を含むため、ユーザー主導を維持
-- `/praxis:compound` はセッション終了時のreflectionなので、ユーザー主導を維持
-- `/praxis:research`, `/praxis:plan`, `/praxis:review` は supporting commands として現状維持
+- `/claude-praxis:implement` と `/claude-praxis:debug` のみを auto-invocable にする（最頻出で、スキップされた場合のダメージが大きい）
+- `/claude-praxis:design` はDesign Doc作成という重い判断を含むため、ユーザー主導を維持
+- `/claude-praxis:compound` はセッション終了時のreflectionなので、ユーザー主導を維持
+- `/claude-praxis:research`, `/claude-praxis:plan`, `/claude-praxis:review` は supporting commands として現状維持
 
 ### 施策3: First Response Gate の追加
 
@@ -188,14 +188,14 @@ MODE/MCPファイルはそのまま維持し、CRITICALルールだけ特別な�
 | 懸念 | 対応方針 |
 |------|---------|
 | PreToolUse hookがtranscript grepで遅くならないか | `grep -m 1` で最初のマッチで停止。長いセッションでも実用的な速度を維持する見込み。実測で問題があれば `tail -c 50000` で末尾のみ検索に変更 |
-| auto-invocable化でモデルが不要な場面で `/praxis:implement` を呼ぶリスク | implement.md Phase 1で人間承認ゲートがあるため、不要なら却下可能。実運用で頻度を観察 |
+| auto-invocable化でモデルが不要な場面で `/claude-praxis:implement` を呼ぶリスク | implement.md Phase 1で人間承認ゲートがあるため、不要なら却下可能。実運用で頻度を観察 |
 | 指示統合で情報が失われるリスク | 統合後も各MODE/MCPの核心（トリガー条件、主要ユースケース）は残す。詳細はContext7や公式ドキュメントで補完 |
 | transcript内のSkill呼び出しパターンが変わるリスク | Claude Codeのバージョンアップでtranscript形式が変わる可能性。hookのgrep patternを定期的に検証する運用ルールを追加 |
 
 ## Review Checklist
 
 - [ ] 施策1: PreToolUse hookスクリプトが正しくtranscriptを読めるか実機検証
-- [ ] 施策2: auto-invocable化後、モデルがPhase Detectionで自然に `/praxis:implement` を呼ぶか検証
+- [ ] 施策2: auto-invocable化後、モデルがPhase Detectionで自然に `/claude-praxis:implement` を呼ぶか検証
 - [ ] 施策3: First Response Gateの文面がセッション開始時に実際に参照されるか検証
 - [ ] 施策4: 統合後の指示で、MCPサーバーの適切な使い分けが維持されるか検証
 - [ ] 施策5: 重複排除後、getting-startedが注入されないセッションでルール認知が下がらないか検証

@@ -1,6 +1,6 @@
 ---
 name: research
-description: Standalone research — investigate problem space without committing to a Design Doc (research is built into /praxis:design)
+description: Standalone research — investigate problem space without committing to a Design Doc (research is built into /claude-praxis:design)
 disable-model-invocation: false
 ---
 

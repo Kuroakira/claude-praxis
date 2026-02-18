@@ -79,5 +79,5 @@ Form hypotheses and test them with evidence.
 ## Integration
 
 - **agent-team-execution**: Phase 3 escalation for competing hypothesis debugging
-- **`/praxis:debug` command**: Orchestrates this skill's 3 phases and produces an Investigation Report
-- **`/praxis:implement` command**: After diagnosis, the fix is implemented via `/praxis:implement` with TDD + review
+- **`/claude-praxis:debug` command**: Orchestrates this skill's 3 phases and produces an Investigation Report
+- **`/claude-praxis:implement` command**: After diagnosis, the fix is implemented via `/claude-praxis:implement` with TDD + review

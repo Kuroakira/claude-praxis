@@ -34,7 +34,7 @@ Do NOT present research findings to the human separately. Carry them forward int
 **Record to progress.md**: Append an entry with key findings, rejected approaches, and relevant domain tags.
 
 ```markdown
-## [timestamp] — /praxis:design: Research complete
+## [timestamp] — /claude-praxis:design: Research complete
 - Decision: [key findings and approaches identified]
 - Rationale: [why certain approaches were rejected early]
 - Domain: [topic tag for future matching]
@@ -90,7 +90,7 @@ Expand the outline into the complete Design Doc.
 **Record to progress.md**: Append an entry with the chosen design direction and reasoning.
 
 ```markdown
-## [timestamp] — /praxis:design: Design Doc written
+## [timestamp] — /claude-praxis:design: Design Doc written
 - Decision: [chosen design direction]
 - Rationale: [why this approach over alternatives]
 - Domain: [topic tag for future matching]

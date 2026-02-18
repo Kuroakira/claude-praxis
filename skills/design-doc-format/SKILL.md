@@ -231,6 +231,6 @@ Only include code when the code itself IS the design decision (e.g., a specific 
 
 ## Integration
 
-- Used by the `/praxis:design` command, which orchestrates research, outline, review, writing, and quality check internally
+- Used by the `/claude-praxis:design` command, which orchestrates research, outline, review, writing, and quality check internally
 - Documents are presented for human approval before implementation begins
-- After approval, `/praxis:implement` creates the implementation plan as its first step — the Design Doc itself contains NO implementation plan
+- After approval, `/claude-praxis:implement` creates the implementation plan as its first step — the Design Doc itself contains NO implementation plan

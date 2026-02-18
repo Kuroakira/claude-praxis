@@ -13,7 +13,7 @@ AI as a mirror — articulate "why" at every step, accumulate knowledge across p
 
 ```
 1. [ ] PHASE DETECTION — What phase is this task?
-       State which /praxis: command applies (implement, debug, design, research, plan, review, compound)
+       State which /claude-praxis: command applies (implement, debug, design, research, plan, review, compound)
 2. [ ] SKILL CHECK — Which skills match this task?
        Check the Available Skills table below and invoke ALL matching skills
 3. [ ] If the task involves code: confirm code-quality-rules is invoked (🔴 GATE)
@@ -101,34 +101,34 @@ When the user starts a conversation or gives a new task, detect the context and 
 
 | Signal | Suggest | Example |
 |--------|---------|---------|
-| Exploring unknown domain, multiple possible approaches, "how should we...", "what's the best approach" | `/praxis:research` | "Let me investigate best practices first. Starting /praxis:research." |
-| Architectural decision needed, "let's design...", "create a Design Doc", "I think we should..." | `/praxis:design` | "This needs a Design Doc. Starting /praxis:design — it handles research, outline, and writing internally." |
-| **"build X", "implement Y", "add feature Z"** — direct implementation request without Design Doc | `/praxis:implement` | "Starting /praxis:implement — it will plan and implement with TDD and review." |
-| Design Doc exists and approved, "implement this", "build based on this" | `/praxis:implement` | "Design Doc is ready. Starting /praxis:implement." |
-| Explicit plan-only request, "break this down", "what are the steps" | `/praxis:plan` | "Creating an implementation plan with /praxis:plan." |
-| Explicit review request on existing code | `/praxis:review` | "Running /praxis:review for code review." |
-| Significant work completed, session winding down, context getting full | `/praxis:compound` | "Good stopping point. Want to run /praxis:compound to capture what we learned?" |
-| Bug report, error, "why isn't this working", "investigate this problem", debugging | `/praxis:debug` | "Starting /praxis:debug — it will investigate, diagnose, and document findings." |
+| Exploring unknown domain, multiple possible approaches, "how should we...", "what's the best approach" | `/claude-praxis:research` | "Let me investigate best practices first. Starting /claude-praxis:research." |
+| Architectural decision needed, "let's design...", "create a Design Doc", "I think we should..." | `/claude-praxis:design` | "This needs a Design Doc. Starting /claude-praxis:design — it handles research, outline, and writing internally." |
+| **"build X", "implement Y", "add feature Z"** — direct implementation request without Design Doc | `/claude-praxis:implement` | "Starting /claude-praxis:implement — it will plan and implement with TDD and review." |
+| Design Doc exists and approved, "implement this", "build based on this" | `/claude-praxis:implement` | "Design Doc is ready. Starting /claude-praxis:implement." |
+| Explicit plan-only request, "break this down", "what are the steps" | `/claude-praxis:plan` | "Creating an implementation plan with /claude-praxis:plan." |
+| Explicit review request on existing code | `/claude-praxis:review` | "Running /claude-praxis:review for code review." |
+| Significant work completed, session winding down, context getting full | `/claude-praxis:compound` | "Good stopping point. Want to run /claude-praxis:compound to capture what we learned?" |
+| Bug report, error, "why isn't this working", "investigate this problem", debugging | `/claude-praxis:debug` | "Starting /claude-praxis:debug — it will investigate, diagnose, and document findings." |
 
 ### Suggestion Behavior
 
 1. **On task start**: Detect context and MUST suggest the appropriate command. If the user agrees (or doesn't object), invoke it. If the user declines, proceed without it — but the suggestion itself is non-negotiable.
 2. **On phase completion**: MUST suggest the next logical step. This is enforced through `verification-before-completion`.
 3. **Commands remain available**: Users can always invoke commands directly to jump to any phase.
-4. **Scale to task size**: Bug report → `/praxis:debug`. New feature → `/praxis:design` first. Most tasks use `/praxis:design`, `/praxis:implement`, or `/praxis:debug`. Every task gets a phase suggestion.
+4. **Scale to task size**: Bug report → `/claude-praxis:debug`. New feature → `/claude-praxis:design` first. Most tasks use `/claude-praxis:design`, `/claude-praxis:implement`, or `/claude-praxis:debug`. Every task gets a phase suggestion.
 5. **Be concise**: Suggest in one line, don't explain the framework every time.
 
 ### Phase Completion Signals
 
 | Phase | Completion Signal | Next Suggestion |
 |-------|------------------|-----------------|
-| /praxis:research | Findings summarized, recommendations clear | "Research done. Ready for /praxis:design?" |
-| /praxis:design | Design Doc written, human approved | "Design approved. Ready for /praxis:implement?" |
-| /praxis:plan | Tasks defined with file paths and tests | "Plan ready. Start /praxis:implement?" |
-| /praxis:implement | All tasks done, review complete, checks passing | "All green, review done. Capture learnings with /praxis:compound?" |
-| /praxis:debug | Investigation Report written, human reviewed | "Investigation complete. Ready for /praxis:implement to fix?" |
-| /praxis:review | Review feedback addressed | "Review done. Capture learnings with /praxis:compound?" |
-| /praxis:compound | Learnings promoted | Session complete or next task |
+| /claude-praxis:research | Findings summarized, recommendations clear | "Research done. Ready for /claude-praxis:design?" |
+| /claude-praxis:design | Design Doc written, human approved | "Design approved. Ready for /claude-praxis:implement?" |
+| /claude-praxis:plan | Tasks defined with file paths and tests | "Plan ready. Start /claude-praxis:implement?" |
+| /claude-praxis:implement | All tasks done, review complete, checks passing | "All green, review done. Capture learnings with /claude-praxis:compound?" |
+| /claude-praxis:debug | Investigation Report written, human reviewed | "Investigation complete. Ready for /claude-praxis:implement to fix?" |
+| /claude-praxis:review | Review feedback addressed | "Review done. Capture learnings with /claude-praxis:compound?" |
+| /claude-praxis:compound | Learnings promoted | Session complete or next task |
 
 ## Contextual Recall of Past Learnings
 

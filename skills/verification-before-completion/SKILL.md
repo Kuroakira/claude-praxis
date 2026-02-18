@@ -75,12 +75,12 @@ Every completion MUST use this template. The structure forces inclusion of next-
 
 | Completed Phase | Next Phase field |
 |----------------|-----------------|
-| /praxis:research | → Ready for /praxis:design to create a Design Doc? |
-| /praxis:design | → Ready for /praxis:implement? (It handles planning, TDD, and review internally.) |
-| /praxis:plan | → Ready for /praxis:implement to start coding? |
-| /praxis:implement | → Implementation and review complete. Run /praxis:compound to capture learnings? |
-| /praxis:debug | → Investigation complete. Ready for /praxis:implement to fix based on findings? |
-| /praxis:review | → Run /praxis:compound to capture learnings? |
+| /claude-praxis:research | → Ready for /claude-praxis:design to create a Design Doc? |
+| /claude-praxis:design | → Ready for /claude-praxis:implement? (It handles planning, TDD, and review internally.) |
+| /claude-praxis:plan | → Ready for /claude-praxis:implement to start coding? |
+| /claude-praxis:implement | → Implementation and review complete. Run /claude-praxis:compound to capture learnings? |
+| /claude-praxis:debug | → Investigation complete. Ready for /claude-praxis:implement to fix based on findings? |
+| /claude-praxis:review | → Run /claude-praxis:compound to capture learnings? |
 | Non-phase task | → No next phase needed |
 
 User can accept or skip the next phase suggestion. The field MUST be present in the report.
