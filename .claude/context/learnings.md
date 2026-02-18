@@ -2,11 +2,29 @@
 
 Project-specific knowledge accumulated through /claude-praxis:compound.
 
-## PreToolUse hook can enforce skill invocation mechanically
+## PreToolUse hook enforces skill invocation with deny-by-default
 
-- **Learning**: `PreToolUse` hook matching `Edit|Write` can grep the session transcript (via `transcript_path` in hook input) for evidence of Skill tool invocations. If `code-quality-rules` was not invoked, the hook returns `permissionDecision: "deny"` to block the file edit.
-- **Context**: This is the chosen approach for 施策1 in the skill-invocation-reliability design doc. Transcript grep with `grep -m 1` is sufficient for performance. The hook is plugin-scoped (only fires when claude-praxis is enabled).
-- **Implication**: This pattern can be extended to other gate skills (e.g., `verification-before-completion` could be checked before Stop events).
+- **Learning**: `PreToolUse` hook matching `Edit|Write|MultiEdit` checks session marker files (written by PostToolUse on Skill invocations) to verify required skills were invoked. If the marker is missing, it returns `permissionDecision: "deny"`. Error paths (JSON parse failure, empty session_id) return `exit 2` with stderr guidance — deny-by-default, not silent allow.
+- **Context**: Originally used transcript grep, then migrated to marker files for reliability. Deny-by-default (exit 2) was added in gate-system-v2 because exit 0 on errors meant "the gate breaks, edits pass through unchecked." Stderr includes "Disable the claude-praxis plugin temporarily" as recovery guidance.
+- **Implication**: Any new gate hook should follow deny-by-default: if the check mechanism itself fails, block and make the failure visible.
+
+## code-session marker bridges PreToolUse and Stop hooks
+
+- **Learning**: check-skill-gate.sh writes a `$SESSION_ID-code-session` marker when a code file edit is allowed. The Stop hook checks this marker: present = code session (require verification), absent = non-code session (skip verification).
+- **Context**: Added in gate-system-v2 to solve "brainstorm sessions blocked by Stop hook." The marker is a side effect of the PreToolUse gate, not a separate mechanism.
+- **Implication**: If the definition of "code change" needs to expand (e.g., Notebook edits, config changes), update the file extension list in check-skill-gate.sh's code file case branch.
+
+## Stop hook: marker-based gating > counter-based gating
+
+- **Learning**: Stop hook uses `code-session` marker + `verification-before-completion` skill marker to decide whether to block. This replaced a counter-based approach (block N times, then allow).
+- **Context**: Counter approach had two flaws: (1) blocked non-code sessions, (2) eventually allowed without verification (just counting blocks, not checking if verification was done). Marker approach is deterministic — checks facts (code edited? verification invoked?) not counts.
+- **Implication**: `stop_hook_active` flag in stdin provides loop prevention. Marker-based gating is the pattern for all future gate hooks.
+
+## UserPromptSubmit `type: "prompt"` enables semantic phase detection
+
+- **Learning**: UserPromptSubmit hook with `type: "prompt"` calls a fast LLM to classify each user message into a development phase (implement, design, debug, research, plan, review, compound, none). Returns `additionalContext` (advisory), not `decision: "block"`.
+- **Context**: Phase Detection was previously text instructions in getting-started, which Claude skipped under execution pressure. `type: "command"` (keyword matching) can't handle ambiguity ("investigate the implementation of undo" = research, not implement). `type: "prompt"` provides semantic understanding.
+- **Implication**: Every prompt incurs 1-3s LLM latency. If this becomes problematic, consider fallback to `type: "command"` or making the hook optional.
 
 ## Framework improvements tracked in design doc
 
@@ -17,16 +35,8 @@ Project-specific knowledge accumulated through /claude-praxis:compound.
 ## agents/*.md で skills プリロード → スキル呼び忘れが構造的に不可能
 
 - **Learning**: `agents/*.md` のフロントマターで `skills` を指定すると、エージェント起動時にスキル全文が事前注入される。レビューエージェントに `code-quality-rules` をプリロードすれば、スキル呼び忘れが**構造的に不可能**になる。
-- **Context**: 現在の PreToolUse hook による transcript grep は「呼び忘れ検出 → ブロック」。agents/ の skills プリロードは「呼び忘れ自体が発生しない」。防御の深さが異なる。
-- **Implication**: 優先度2の施策。`agents/reviewer.md` を新設し、`skills: [code-quality-rules]` を指定する。既存の agent-team-execution スキルとの統合が必要。
-- **Next Action**: `/claude-praxis:design` で agents/ ディレクトリ設計 → `/claude-praxis:implement` で実装
-
-## Stop hook (prompt/agent型) で完了宣言前に verification gate を強制可能
-
-- **Learning**: Stop イベントの hook で `type: "prompt"` または `type: "agent"` を使うと、Claude が完了宣言する前に「verification-before-completion が呼ばれたか？」をLLM/エージェントが判定し、呼ばれていなければブロックできる。
-- **Context**: 現在 verification-before-completion はテキスト指示のみで強制力がない。Stop hook で機械的に強制すれば、PreToolUse hook と同様の確実性が得られる。最優先施策。
-- **Implication**: prompt 型は単一LLM呼び出しで軽量。agent 型は transcript を Read/Grep して検証可能。transcript grep の実績があるため agent 型が適切。
-- **Next Action**: `/claude-praxis:design` で Stop hook 設計 → `/claude-praxis:implement` で実装
+- **Context**: PreToolUse hook によるマーカーチェックは「呼び忘れ検出 → ブロック」。agents/ の skills プリロードは「呼び忘れ自体が発生しない」。防御の深さが異なる。
+- **Implication**: `agents/reviewer.md` を新設し、`skills: [code-quality-rules]` を指定する。既存の agent-team-execution スキルとの統合が必要。
 
 ## TaskCompleted hook でタスク完了マーク前にテスト通過を強制
 
@@ -48,6 +58,6 @@ Project-specific knowledge accumulated through /claude-praxis:compound.
 
 ## UX改善ロードマップ（優先度順）
 
-- **Learning**: 7つの施策を優先度順に整理: (1) Stop hook で verification gate (2) カスタムエージェント定義 (3) TaskCompleted hook (4) user-invocable: false (5) PostToolUse async lint (6) rules/ ディレクトリ (7) Agent Memory
+- **Learning**: 7つの施策を優先度順に整理: (1) ~~Stop hook で verification gate~~ **実装済み (v2)** (2) ~~カスタムエージェント定義~~ **実装済み** (3) TaskCompleted hook (4) user-invocable: false (5) PostToolUse async lint (6) rules/ ディレクトリ (7) Agent Memory
 - **Context**: 全て Claude Code の既存メカニズムで実現可能。優先度は「品質ゲートの機械化」→「構造的なスキル注入」→「自動化の拡大」の順。
-- **Implication**: 各施策は独立して実装可能。`/claude-praxis:design` → `/claude-praxis:implement` の通常ワークフローで順次実施。
+- **Implication**: 各施策は独立して実装可能。次の優先は (3) TaskCompleted hook または (4) user-invocable: false。
