@@ -57,7 +57,9 @@ for line in open(sys.argv[1]):
         obj = json.loads(line)
     except:
         continue
-    content = obj.get("content", [])
+    # Transcript format: tool_use lives under obj["message"]["content"]
+    msg = obj.get("message", {})
+    content = msg.get("content", []) if isinstance(msg, dict) else []
     if isinstance(content, list):
         for item in content:
             if (isinstance(item, dict)
