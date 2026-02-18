@@ -4,22 +4,23 @@
 # - Document files → document-quality-rules must be invoked
 # - Config/data files → no gate (allowed)
 # Matcher in hooks.json: "Edit|Write|MultiEdit"
-# Requires: python3
+# Checks session marker files written by mark-skill-invoked.sh (PostToolUse hook).
 
 INPUT=$(cat)
 
-# Extract transcript path and file path from tool input
-read -r TRANSCRIPT FILE_PATH <<< "$(echo "$INPUT" | python3 -c '
+# Extract session_id and file_path from tool input
+IFS=$'\t' read -r SESSION_ID FILE_PATH <<< "$(echo "$INPUT" | python3 -c '
 import sys, json
 data = json.loads(sys.stdin.read())
-transcript = data.get("transcript_path", "")
+session_id = data.get("session_id", "")
 tool_input = data.get("tool_input", {})
 file_path = tool_input.get("file_path", "")
-print(transcript, file_path)
+print(session_id + "\t" + file_path)
 ' 2>/dev/null)"
 
-if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
-  echo "check-skill-gate: transcript not available, allowing edit" >&2
+# If session_id is unavailable, allow edit (permissive fallback)
+if [ -z "$SESSION_ID" ]; then
+  echo "check-skill-gate: session_id not available, allowing edit" >&2
   exit 0
 fi
 
@@ -48,27 +49,10 @@ case "$FILE_EXT" in
     ;;
 esac
 
-# Check if the required skill has been invoked in this session
-if python3 -c '
-import sys, json
-skill_name = sys.argv[2]
-for line in open(sys.argv[1]):
-    try:
-        obj = json.loads(line)
-    except:
-        continue
-    # Transcript format: tool_use lives under obj["message"]["content"]
-    msg = obj.get("message", {})
-    content = msg.get("content", []) if isinstance(msg, dict) else []
-    if isinstance(content, list):
-        for item in content:
-            if (isinstance(item, dict)
-                and item.get("type") == "tool_use"
-                and item.get("name") == "Skill"
-                and skill_name in json.dumps(item.get("input", {}))):
-                sys.exit(0)
-sys.exit(1)
-' "$TRANSCRIPT" "$REQUIRED_SKILL" 2>/dev/null; then
+# Check if the required skill has been invoked via marker file
+MARKER_FILE="/tmp/claude-praxis-markers/$SESSION_ID"
+
+if [ -f "$MARKER_FILE" ] && grep -q "$REQUIRED_SKILL" "$MARKER_FILE"; then
   exit 0
 fi
 

@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
 # Session start hook: injects the getting-started skill at every session start,
-# and notifies about context persistence files (existence only, NOT content).
+# cleans skill invocation markers, and notifies about context persistence files
+# (existence only, NOT content).
 # Triggered on: startup, resume, clear, compact
+
+# Read hook input (stdin) to extract session_id for marker cleanup
+HOOK_INPUT=$(cat)
+SESSION_ID="$(echo "$HOOK_INPUT" | python3 -c '
+import sys, json
+data = json.loads(sys.stdin.read())
+print(data.get("session_id", ""))
+' 2>/dev/null)"
+
+# Clean marker file for this session (ensures clean slate on new/resumed session)
+if [ -n "$SESSION_ID" ]; then
+  rm -f "/tmp/claude-praxis-markers/$SESSION_ID" 2>/dev/null
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILL_FILE="$SCRIPT_DIR/../skills/getting-started/SKILL.md"

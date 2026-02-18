@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Tests for hooks/check-skill-gate.sh
+# Tests for hooks/check-skill-gate.sh (marker-file-based skill gate)
 # Run: bash tests/check-skill-gate.test.sh
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOOK_SCRIPT="$SCRIPT_DIR/../hooks/check-skill-gate.sh"
-TMPDIR_TEST=$(mktemp -d)
-trap 'rm -rf "$TMPDIR_TEST"' EXIT
+MARKER_DIR="/tmp/claude-praxis-markers"
+TEST_SESSION="test-skill-gate"
 
 PASS=0
 FAIL=0
@@ -34,18 +34,30 @@ assert_contains() {
   fi
 }
 
+# Helpers
+setup_markers() {
+  mkdir -p "$MARKER_DIR"
+  rm -f "$MARKER_DIR/$TEST_SESSION" 2>/dev/null
+}
+
+add_skill_marker() {
+  local skill_name="$1"
+  echo "$skill_name" >> "$MARKER_DIR/$TEST_SESSION"
+}
+
 make_hook_input() {
-  local transcript_path="$1"
+  local file_path="${1:-/tmp/test/file.ts}"
+  local session_id="${2-$TEST_SESSION}"
   cat <<EOF
 {
-  "session_id": "test-session",
-  "transcript_path": "$transcript_path",
+  "session_id": "$session_id",
+  "transcript_path": "",
   "cwd": "/tmp/test",
   "permission_mode": "default",
   "hook_event_name": "PreToolUse",
   "tool_name": "Edit",
   "tool_input": {
-    "file_path": "/tmp/test/file.ts",
+    "file_path": "$file_path",
     "old_string": "old",
     "new_string": "new"
   }
@@ -53,97 +65,105 @@ make_hook_input() {
 EOF
 }
 
+# Cleanup
+cleanup() {
+  rm -f "$MARKER_DIR/$TEST_SESSION" 2>/dev/null
+}
+trap cleanup EXIT
+
 # --- Test 1: Deny when code-quality-rules NOT invoked ---
 echo "Test 1: Deny when code-quality-rules not invoked"
+setup_markers
 
-cat > "$TMPDIR_TEST/transcript_no_skill.jsonl" <<'JSONL'
-{"type":"system","content":"You are Claude Code..."}
-{"type":"human","content":[{"type":"text","text":"Implement the feature"}]}
-{"type":"assistant","content":[{"type":"text","text":"I'll start implementing."}]}
-{"type":"assistant","content":[{"type":"tool_use","id":"toolu_1","name":"Read","input":{"file_path":"/tmp/test/file.ts"}}]}
-JSONL
+OUTPUT=$(make_hook_input "/tmp/test/file.ts" | bash "$HOOK_SCRIPT" 2>/dev/null || true)
 
-OUTPUT=$(make_hook_input "$TMPDIR_TEST/transcript_no_skill.jsonl" | bash "$HOOK_SCRIPT" 2>/dev/null || true)
-EXIT_CODE=${PIPESTATUS[1]:-0}
-
-assert_eq "exit code is 0" "0" "$EXIT_CODE"
 assert_contains "output contains deny" '"deny"' "$OUTPUT"
 assert_contains "output mentions code-quality-rules" 'code-quality-rules' "$OUTPUT"
 
 # --- Test 2: Allow when code-quality-rules IS invoked ---
 echo "Test 2: Allow when code-quality-rules is invoked"
+setup_markers
+add_skill_marker "claude-praxis:code-quality-rules"
 
-cat > "$TMPDIR_TEST/transcript_with_skill.jsonl" <<'JSONL'
-{"type":"system","content":"You are Claude Code..."}
-{"type":"human","content":[{"type":"text","text":"Implement the feature"}]}
-{"type":"assistant","content":[{"type":"tool_use","id":"toolu_1","name":"Skill","input":{"skill":"claude-praxis:code-quality-rules"}}]}
-{"type":"tool_result","tool_use_id":"toolu_1","content":"Skill loaded successfully"}
-{"type":"assistant","content":[{"type":"text","text":"Quality rules loaded. Writing tests first."}]}
-JSONL
-
-OUTPUT=$(make_hook_input "$TMPDIR_TEST/transcript_with_skill.jsonl" | bash "$HOOK_SCRIPT" 2>/dev/null)
+OUTPUT=$(make_hook_input "/tmp/test/file.ts" | bash "$HOOK_SCRIPT" 2>/dev/null)
 EXIT_CODE=$?
 
 assert_eq "exit code is 0" "0" "$EXIT_CODE"
 assert_eq "output is empty (allow)" "" "$OUTPUT"
 
-# --- Test 3: Allow when transcript_path is missing ---
-echo "Test 3: Allow when transcript_path is missing or invalid"
+# --- Test 3: Allow when session_id is empty (permissive fallback) ---
+echo "Test 3: Allow when session_id is empty"
+setup_markers
 
-OUTPUT=$(cat <<'EOF' | bash "$HOOK_SCRIPT" 2>/dev/null
-{
-  "session_id": "test-session",
-  "transcript_path": "/nonexistent/path/transcript.jsonl",
-  "hook_event_name": "PreToolUse",
-  "tool_name": "Edit"
-}
-EOF
-)
+OUTPUT=$(make_hook_input "/tmp/test/file.ts" "" | bash "$HOOK_SCRIPT" 2>/dev/null)
 EXIT_CODE=$?
 
 assert_eq "exit code is 0" "0" "$EXIT_CODE"
 assert_eq "output is empty (allow)" "" "$OUTPUT"
 
-# --- Test 4: No false positive from getting-started injection ---
-echo "Test 4: No false positive from getting-started content in transcript"
+# --- Test 4: Unrelated skill marker does not satisfy code-quality-rules gate ---
+echo "Test 4: Unrelated skill does not satisfy gate"
+setup_markers
+add_skill_marker "claude-praxis:document-quality-rules"
 
-cat > "$TMPDIR_TEST/transcript_false_positive.jsonl" <<'JSONL'
-{"type":"system","content":"You are Claude Code..."}
-{"type":"hook_result","hookSpecificOutput":{"additionalContext":"## Available Skills\n| Trigger | Skill |\n| ANY task that writes code | code-quality-rules | Gate |\nMUST invoke code-quality-rules skill"}}
-{"type":"human","content":[{"type":"text","text":"Edit the file"}]}
-{"type":"assistant","content":[{"type":"text","text":"Let me edit that file."}]}
-JSONL
+OUTPUT=$(make_hook_input "/tmp/test/file.ts" | bash "$HOOK_SCRIPT" 2>/dev/null || true)
 
-OUTPUT=$(make_hook_input "$TMPDIR_TEST/transcript_false_positive.jsonl" | bash "$HOOK_SCRIPT" 2>/dev/null || true)
+assert_contains "output contains deny" '"deny"' "$OUTPUT"
+assert_contains "output mentions code-quality-rules" 'code-quality-rules' "$OUTPUT"
 
-assert_contains "output contains deny (no actual Skill invocation)" '"deny"' "$OUTPUT"
+# --- Test 5: Document-quality-rules gate for .md files ---
+echo "Test 5: document-quality-rules gate for .md files"
+setup_markers
+add_skill_marker "claude-praxis:document-quality-rules"
 
-# --- Test 5: No false positive from text mentioning Skill tool and code-quality-rules ---
-echo "Test 5: No false positive from assistant text mentioning both Skill and code-quality-rules"
-
-cat > "$TMPDIR_TEST/transcript_text_mention.jsonl" <<'JSONL'
-{"type":"system","content":"You are Claude Code..."}
-{"type":"assistant","content":[{"type":"text","text":"I should invoke the Skill tool for code-quality-rules before editing."},{"type":"tool_use","id":"toolu_1","name":"Read","input":{"file_path":"/tmp/file.ts"}}]}
-JSONL
-
-OUTPUT=$(make_hook_input "$TMPDIR_TEST/transcript_text_mention.jsonl" | bash "$HOOK_SCRIPT" 2>/dev/null || true)
-
-assert_contains "output contains deny (text mention is not invocation)" '"deny"' "$OUTPUT"
-
-# --- Test 6: Skill invoked with short name (without prefix) ---
-echo "Test 6: Allow when skill invoked with short name"
-
-cat > "$TMPDIR_TEST/transcript_short_name.jsonl" <<'JSONL'
-{"type":"system","content":"You are Claude Code..."}
-{"type":"assistant","content":[{"type":"tool_use","id":"toolu_1","name":"Skill","input":{"skill":"code-quality-rules"}}]}
-{"type":"tool_result","tool_use_id":"toolu_1","content":"Skill loaded"}
-JSONL
-
-OUTPUT=$(make_hook_input "$TMPDIR_TEST/transcript_short_name.jsonl" | bash "$HOOK_SCRIPT" 2>/dev/null)
+OUTPUT=$(make_hook_input "/tmp/test/README.md" | bash "$HOOK_SCRIPT" 2>/dev/null)
 EXIT_CODE=$?
 
 assert_eq "exit code is 0" "0" "$EXIT_CODE"
 assert_eq "output is empty (allow)" "" "$OUTPUT"
+
+# --- Test 6: Deny .md when only code-quality-rules is invoked ---
+echo "Test 6: Deny .md when only code-quality-rules invoked"
+setup_markers
+add_skill_marker "claude-praxis:code-quality-rules"
+
+OUTPUT=$(make_hook_input "/tmp/test/README.md" | bash "$HOOK_SCRIPT" 2>/dev/null || true)
+
+assert_contains "output contains deny" '"deny"' "$OUTPUT"
+assert_contains "output mentions document-quality-rules" 'document-quality-rules' "$OUTPUT"
+
+# --- Test 7: Allow when skill invoked with short name (no prefix) ---
+echo "Test 7: Allow with short name (no prefix)"
+setup_markers
+add_skill_marker "code-quality-rules"
+
+OUTPUT=$(make_hook_input "/tmp/test/file.ts" | bash "$HOOK_SCRIPT" 2>/dev/null)
+EXIT_CODE=$?
+
+assert_eq "exit code is 0" "0" "$EXIT_CODE"
+assert_eq "output is empty (allow)" "" "$OUTPUT"
+
+# --- Test 8: Config files pass without any skill ---
+echo "Test 8: Config files pass without any skill"
+setup_markers
+
+OUTPUT=$(make_hook_input "/tmp/test/config.json" | bash "$HOOK_SCRIPT" 2>/dev/null)
+EXIT_CODE=$?
+
+assert_eq "exit code is 0" "0" "$EXIT_CODE"
+assert_eq "output is empty (allow)" "" "$OUTPUT"
+
+# --- Test 9: Both skills invoked, both file types allowed ---
+echo "Test 9: Both skills invoked, both file types allowed"
+setup_markers
+add_skill_marker "claude-praxis:code-quality-rules"
+add_skill_marker "claude-praxis:document-quality-rules"
+
+OUTPUT_TS=$(make_hook_input "/tmp/test/file.ts" | bash "$HOOK_SCRIPT" 2>/dev/null)
+OUTPUT_MD=$(make_hook_input "/tmp/test/README.md" | bash "$HOOK_SCRIPT" 2>/dev/null)
+
+assert_eq ".ts allowed" "" "$OUTPUT_TS"
+assert_eq ".md allowed" "" "$OUTPUT_MD"
 
 # --- Summary ---
 echo ""
