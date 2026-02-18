@@ -1,6 +1,6 @@
 ---
 name: design-doc-format
-description: Use when creating a Design Doc, technical document, or any document intended for Notion or team review.
+description: Use when creating a Design Doc or any document intended for Notion or team review. Applies Design Doc specific rules (WHY over HOW, Notion format constraints, outline-first process) on top of general document-quality-rules. For general documents not following Design Doc format, use document-quality-rules instead.
 ---
 
 # Design Doc Format

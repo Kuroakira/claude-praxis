@@ -19,9 +19,10 @@ This plugin uses AI as a "mirror" — by articulating and accumulating the "why"
 ```
 claude-praxis/
 ├── hooks/
-│   ├── hooks.json               # SessionStart + PreCompact hook config
+│   ├── hooks.json               # SessionStart + PreCompact + PreToolUse hook config
 │   ├── session-start.sh         # Injects getting-started skill + notifies persistence files
-│   └── pre-compact.sh           # Trims Flow files before compact
+│   ├── pre-compact.sh           # Trims Flow files before compact
+│   └── check-skill-gate.sh     # File-type skill gate (code/document/config branching)
 ├── commands/
 │   ├── design.md                # /design — research + outline + write Design Doc
 │   ├── implement.md             # /implement — plan + TDD + review
@@ -32,13 +33,14 @@ claude-praxis/
 │   └── compound.md              # /compound — extract and accumulate learnings
 ├── skills/
 │   ├── getting-started/         # Bootstrap: philosophy + workflow overview
-│   ├── code-quality-rules/      # Quality rules + self-evolution protocol
+│   ├── code-quality-rules/      # Code quality rules + self-evolution protocol
+│   ├── document-quality-rules/  # Document quality rules (structure, terminology, flow)
 │   ├── verification-before-completion/  # No claims without evidence
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
 │   ├── agent-team-execution/    # Parallel exploration: research, review, debugging
 │   ├── systematic-debugging/    # 4-phase root cause analysis
 │   ├── context-persistence/     # Stock/Flow memory model for context survival
-│   ├── design-doc-format/       # Notion-compatible document rules
+│   ├── design-doc-format/       # Design Doc specific format (Notion-compatible, WHY over HOW)
 │   ├── writing-skills/          # Meta-skill: TDD for skill creation
 │   ├── requesting-code-review/  # Dispatch reviewer after tasks
 │   ├── receiving-code-review/   # Handle feedback (no sycophancy)
@@ -90,6 +92,16 @@ Available for direct invocation when the full workflow is not needed:
 - **Input Validation at Boundaries** - Validate all external input
 - **No Dynamic Code Execution** - No eval(), Function(), exec()
 - **Dependency Awareness** - Check before adding dependencies
+
+## Document Quality Rules (defined in document-quality-rules)
+
+- **Abstract-to-Concrete Structure** - Document level and section level both flow from context to specifics
+- **Terminology Consistency** - One term per concept, no silent synonyms
+- **Progressive Detailing** - Build on previously defined terms, never reference before defining
+- **No Terminology Drift** - Scope changes must be explicitly bridged
+- **Self-Contained Sections** - Cross-references include inline context, minimal backtracking
+
+Note: Design Doc specific rules (WHY over HOW, Notion format, outline-first process) are in `design-doc-format`, which builds on top of these general rules.
 
 ## Next Tasks
 
