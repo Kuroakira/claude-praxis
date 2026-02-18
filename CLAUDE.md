@@ -18,11 +18,17 @@ This plugin uses AI as a "mirror" — by articulating and accumulating the "why"
 
 ```
 claude-praxis/
+├── agents/
+│   ├── implementer.md           # Implementation agent (code-quality-rules preloaded)
+│   ├── reviewer.md              # Code review agent (read-only, code-quality-rules preloaded)
+│   └── researcher.md            # Research agent (haiku, lightweight)
 ├── hooks/
-│   ├── hooks.json               # SessionStart + PreCompact + PreToolUse hook config
-│   ├── session-start.sh         # Injects getting-started skill + notifies persistence files
+│   ├── hooks.json               # SessionStart + PreCompact + PreToolUse + PostToolUse + Stop hook config
+│   ├── session-start.sh         # Injects getting-started skill + cleans markers
 │   ├── pre-compact.sh           # Trims Flow files before compact
-│   └── check-skill-gate.sh     # File-type skill gate (code/document/config branching)
+│   ├── check-skill-gate.sh     # File-type skill gate (code/document/config branching)
+│   ├── mark-skill-invoked.sh   # Records Skill invocations to session markers
+│   └── stop-verification-gate.sh  # Counter-based completion verification gate
 ├── commands/
 │   ├── design.md                # /design — research + outline + write Design Doc
 │   ├── implement.md             # /implement — plan + TDD + review

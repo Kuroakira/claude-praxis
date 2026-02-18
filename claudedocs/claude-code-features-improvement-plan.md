@@ -123,33 +123,40 @@ SessionStartフックで環境変数を`CLAUDE_ENV_FILE`に書き出すと、後
 
 ## 改善方針
 
-### 方針1: Stop Hookによる完了検証ゲートの強制 — 最優先
+### ~~方針1: Stop Hookによる完了検証ゲートの強制~~ — 実装済み
 
 **解決する課題**: 証拠なしの完了宣言がブロックされない
 
-**方針**: Stop Hookに`type: "prompt"`を設定し、Claudeのレスポンスが「タスク完了」を主張しているのに検証証拠（テスト出力、lint結果、ビルド出力）を含まない場合にブロックする。
+**採用した方式**: `type: "prompt"`ではなく、`type: "command"`のカウンター方式を採用。
 
-**検討事項**:
-- Prompt Hookのタイムアウトはデフォルト60秒 — 十分か検証が必要
-- 全レスポンスに対して発火するため、完了宣言でないレスポンスを素早くスルーするプロンプト設計が重要
-- コスト（LLM呼び出し1回/レスポンス）とのトレードオフ
+当初はPrompt Hook（LLMによるセマンティック判断）を検討したが、Stop hookのstdinにはレスポンス本文が含まれないため、LLMが証拠の有無を判定できない。`type: "agent"`ならトランスクリプトをReadで読めるが、毎回60秒のサブエージェント起動はコストが重い。
 
-**代替案**: `type: "command"`でレスポンスのJSONをパースしキーワード検出する方法。LLMコストは不要だが、今回発見したトランスクリプト検出と同じ脆弱性を持つ。
+そこでカウンター方式を採用した。セッションマーカーファイル（`$SESSION_ID-stop-blocks`）でブロック回数を管理し、最大2回ブロック後に安全弁として許可する。
 
-### 方針2: Custom Subagentsによる構造的スキル遵守 — 最優先
+**実装内容**:
+- `hooks/stop-verification-gate.sh`: カウンター方式のStop hook（1回目: 「検証を実行してください」、2回目: 「まだ証拠がありません」、3回目以降: 許可）
+- `hooks/hooks.json`: Stopイベントの定義追加
+- `hooks/session-start.sh`: セッション開始時にカウンターをクリーンアップ
+- `tests/stop-verification-gate.test.sh`: 7テスト16アサーション、全パス
+
+### ~~方針2: Custom Subagentsによる構造的スキル遵守~~ — 実装済み
 
 **解決する課題**: サブエージェントがスキルを読まずに動作する
 
-**方針**: プラグインの`agents/`ディレクトリに専用エージェントを定義し、`skills`フィールドでcode-quality-rulesなどをプリロードする。
+**採用した方式**: `agents/`ディレクトリに3つの専用エージェントを定義。`skills`フィールドでスキル全文をコンテキストにプリロードする。
 
-想定するエージェント:
-- **implementer** — `skills: [code-quality-rules, verification-before-completion]`をプリロード
-- **reviewer** — `skills: [code-quality-rules]`をプリロード
-- **researcher** — `model: haiku`で軽量リサーチ。品質スキル不要
+**実装したエージェント**:
 
-**検討事項**:
-- 既存の`subagent-driven-development`と`requesting-code-review`のスキル内容をエージェント定義と整合させる必要がある
-- Task toolの`subagent_type`パラメータでカスタムエージェントを指定できるか確認が必要
+| エージェント | skills | model | 特徴 |
+|---|---|---|---|
+| **implementer** | code-quality-rules, verification-before-completion | inherit | TDD必須、Write/Edit可、Task不可（ネスト防止） |
+| **reviewer** | code-quality-rules | inherit | 読み取り専用（Write/Edit/MultiEdit禁止） |
+| **researcher** | なし | haiku | 軽量リサーチ、読み取り専用 |
+
+**設計判断**:
+- `skills`フィールドはスキル全文をコンテキストに注入する（参照ではなく完全注入）。これにより「スキルを読み飛ばす」リスクがゼロになる
+- サブエージェントはサブエージェントを起動できない（Claude Code制約）ため、全エージェントで`Task`を`disallowedTools`に指定
+- `subagent-driven-development`スキルの「コントローラーがTask toolでサブエージェントを起動する」フローはそのまま維持。エージェント定義がそのサブエージェントの品質を構造的に保証する
 
 ### ~~方針3: PreToolUseフックのPrompt Hook化~~ — 解決済み
 
@@ -215,11 +222,9 @@ SessionStartフックで環境変数を`CLAUDE_ENV_FILE`に書き出すと、後
 ├── 方針3: PreToolUseスキルゲート → セッションマーカー方式で解決
 ├── PostToolUse hook追加（mark-skill-invoked.sh）
 ├── ファイルタイプ別ゲート（コード/ドキュメント/設定の分岐）
-└── document-quality-rulesスキル新規作成
-
-Phase 1（最優先 — 構造的ゲート強化）
-├── 方針1: Stop Hook（完了検証ゲート）
-└── 方針2: Custom Subagents（スキルプリロード）
+├── document-quality-rulesスキル新規作成
+├── 方針1: Stop Hook → カウンター方式で実装（stop-verification-gate.sh）
+└── 方針2: Custom Subagents → agents/に3エージェント定義（implementer, reviewer, researcher）
 
 Phase 2（高優先 — タスク完了検証）
 └── 方針4: TaskCompleted Hook（タスク完了検証）
@@ -235,6 +240,7 @@ Phase 3（中優先 — 補完的改善）
 
 ## 次のアクション
 
-1. Stop HookとCustom Subagentsの公式ドキュメントを精読し、プラグインでの制約を確認する
-2. 方針1・2のプロトタイプを実装し、動作検証する
-3. 検証結果を踏まえてPhase 2の方針を確定する
+1. ~~Stop HookとCustom Subagentsの公式ドキュメントを精読し、プラグインでの制約を確認する~~ → 完了（両方プラグインで利用可能）
+2. ~~方針1のプロトタイプを実装し、動作検証する~~ → 完了（カウンター方式で実装、テスト全パス）
+3. ~~方針2（Custom Subagents）のエージェント定義を実装する~~ → 完了（3エージェント定義）
+4. 実プロジェクトで動作検証し、Phase 2の方針を確定する
