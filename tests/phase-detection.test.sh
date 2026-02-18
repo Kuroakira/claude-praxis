@@ -102,6 +102,12 @@ assert_contains "mentions implement" "implement" "$PROMPT_CONTENT"
 assert_contains "mentions design" "design" "$PROMPT_CONTENT"
 assert_contains "mentions debug" "debug" "$PROMPT_CONTENT"
 assert_contains "mentions research" "research" "$PROMPT_CONTENT"
+assert_contains "mentions feature-spec" "feature-spec" "$PROMPT_CONTENT"
+
+# --- Test 5b: Prompt includes multilingual classification instruction ---
+echo "Test 5b: Prompt supports non-English input"
+
+assert_contains "mentions language-agnostic classification" "language" "$PROMPT_CONTENT"
 
 # --- Test 6: All existing hook sections are preserved ---
 echo "Test 6: Existing hook sections preserved"

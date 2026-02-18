@@ -75,6 +75,7 @@ Every completion MUST use this template. The structure forces inclusion of next-
 
 | Completed Phase | Next Phase field |
 |----------------|-----------------|
+| /claude-praxis:feature-spec | → FeatureSpec approved. Ready for /claude-praxis:research or /claude-praxis:design? |
 | /claude-praxis:research | → Ready for /claude-praxis:design to create a Design Doc? |
 | /claude-praxis:design | → Ready for /claude-praxis:implement? (It handles planning, TDD, and review internally.) |
 | /claude-praxis:plan | → Ready for /claude-praxis:implement to start coding? |

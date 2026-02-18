@@ -31,6 +31,7 @@ claude-praxis/
 │   ├── stop-verification-gate.sh  # Counter-based completion verification gate
 │   └── task-completed-gate.sh   # Per-task marker gate for TaskCompleted event
 ├── commands/
+│   ├── feature-spec.md          # /feature-spec — AI-driven interview to capture requirements
 │   ├── design.md                # /design — research + outline + write Design Doc
 │   ├── implement.md             # /implement — plan + TDD + review
 │   ├── debug.md                 # /debug — investigate + diagnose + document
@@ -60,15 +61,18 @@ claude-praxis/
 
 Each phase exists to deepen understanding, not just to produce output.
 
-### Three Main Workflows
+### Four Main Workflows
 
 Most tasks use these orchestrating commands:
 
 ```
-/claude-praxis:design    → Research + Outline + Review + Write Design Doc + Quality Check + Present
-/claude-praxis:implement → Plan + TDD per task + Auto-Review per task + Final Review
-/claude-praxis:debug     → Reproduce + Isolate + Diagnose + Document Findings + Present
+/claude-praxis:feature-spec → AI-driven interview to capture requirements before design
+/claude-praxis:design       → Research + Outline + Review + Write Design Doc + Quality Check + Present
+/claude-praxis:implement    → Plan + TDD per task + Auto-Review per task + Final Review
+/claude-praxis:debug        → Reproduce + Isolate + Diagnose + Document Findings + Present
 ```
+
+`/claude-praxis:feature-spec` captures "what to build and why" through an AI-driven interview. It produces a FeatureSpec document defining problem, scope, and success criteria — before any design or implementation begins. Interactive throughout — the AI asks questions to draw out requirements the user hasn't articulated yet.
 
 `/claude-praxis:design` handles everything from research to a finished, reviewed Design Doc. The human's only input is final approval.
 
@@ -146,4 +150,5 @@ Note: Design Doc specific rules (WHY over HOW, Notion format, outline-first proc
 - Implementation decision points are surfaced to the user — when multiple valid approaches exist, Claude presents options instead of choosing silently
 - Learnings are stored with context/rationale — enables "does the same assumption hold?" recall instead of blind repetition
 - Contextual recall uses judgment prompts, not quizzes — "same rationale applies here?" not "do you remember?"
-- Three orchestrating workflows (`/claude-praxis:design`, `/claude-praxis:implement`, and `/claude-praxis:debug`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. Supporting commands remain for direct invocation when the full workflow is not needed
+- Four orchestrating workflows (`/claude-praxis:feature-spec`, `/claude-praxis:design`, `/claude-praxis:implement`, and `/claude-praxis:debug`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. Supporting commands remain for direct invocation when the full workflow is not needed
+- FeatureSpec owns "What and Why," Design Doc owns "How" — this boundary prevents requirements ambiguity from propagating into design. Phase detection automatically suggests FeatureSpec when requirements are vague

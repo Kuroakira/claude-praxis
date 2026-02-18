@@ -13,7 +13,7 @@ AI as a mirror — articulate "why" at every step, accumulate knowledge across p
 
 ```
 1. [ ] PHASE DETECTION — What phase is this task?
-       State which /claude-praxis: command applies (implement, debug, design, research, plan, review, compound)
+       State which /claude-praxis: command applies (feature-spec, implement, debug, design, research, plan, review, compound)
 2. [ ] SKILL CHECK — Which skills match this task?
        Check the Available Skills table below and invoke ALL matching skills
 3. [ ] If the task involves code: confirm code-quality-rules is invoked (🔴 GATE)
@@ -101,8 +101,9 @@ When the user starts a conversation or gives a new task, detect the context and 
 
 | Signal | Suggest | Example |
 |--------|---------|---------|
+| Vague requirements, unclear scope, "I want to add X" without clear who/what/why, multiple interpretations possible | `/claude-praxis:feature-spec` | "Requirements seem unclear. Starting /claude-praxis:feature-spec to define what to build first." |
 | Exploring unknown domain, multiple possible approaches, "how should we...", "what's the best approach" | `/claude-praxis:research` | "Let me investigate best practices first. Starting /claude-praxis:research." |
-| Architectural decision needed, "let's design...", "create a Design Doc", "I think we should..." | `/claude-praxis:design` | "This needs a Design Doc. Starting /claude-praxis:design — it handles research, outline, and writing internally." |
+| Architectural decision needed, "let's design...", "create a Design Doc", clear requirements already articulated | `/claude-praxis:design` | "This needs a Design Doc. Starting /claude-praxis:design — it handles research, outline, and writing internally." |
 | **"build X", "implement Y", "add feature Z"** — direct implementation request without Design Doc | `/claude-praxis:implement` | "Starting /claude-praxis:implement — it will plan and implement with TDD and review." |
 | Design Doc exists and approved, "implement this", "build based on this" | `/claude-praxis:implement` | "Design Doc is ready. Starting /claude-praxis:implement." |
 | Explicit plan-only request, "break this down", "what are the steps" | `/claude-praxis:plan` | "Creating an implementation plan with /claude-praxis:plan." |
@@ -115,13 +116,14 @@ When the user starts a conversation or gives a new task, detect the context and 
 1. **On task start**: Detect context and MUST suggest the appropriate command. If the user agrees (or doesn't object), invoke it. If the user declines, proceed without it — but the suggestion itself is non-negotiable.
 2. **On phase completion**: MUST suggest the next logical step. This is enforced through `verification-before-completion`.
 3. **Commands remain available**: Users can always invoke commands directly to jump to any phase.
-4. **Scale to task size**: Bug report → `/claude-praxis:debug`. New feature → `/claude-praxis:design` first. Most tasks use `/claude-praxis:design`, `/claude-praxis:implement`, or `/claude-praxis:debug`. Every task gets a phase suggestion.
+4. **Scale to task size**: Bug report → `/claude-praxis:debug`. Vague idea → `/claude-praxis:feature-spec` first. Clear requirements → `/claude-praxis:design`. Most tasks use `/claude-praxis:feature-spec`, `/claude-praxis:design`, `/claude-praxis:implement`, or `/claude-praxis:debug`. Every task gets a phase suggestion.
 5. **Be concise**: Suggest in one line, don't explain the framework every time.
 
 ### Phase Completion Signals
 
 | Phase | Completion Signal | Next Suggestion |
 |-------|------------------|-----------------|
+| /claude-praxis:feature-spec | FeatureSpec approved by human | "FeatureSpec approved. Ready for /claude-praxis:research or /claude-praxis:design?" |
 | /claude-praxis:research | Findings summarized, recommendations clear | "Research done. Ready for /claude-praxis:design?" |
 | /claude-praxis:design | Design Doc written, human approved | "Design approved. Ready for /claude-praxis:implement?" |
 | /claude-praxis:plan | Tasks defined with file paths and tests | "Plan ready. Start /claude-praxis:implement?" |
