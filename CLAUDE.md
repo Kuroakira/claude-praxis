@@ -23,12 +23,13 @@ claude-praxis/
 │   ├── reviewer.md              # Code review agent (read-only, code-quality-rules preloaded)
 │   └── researcher.md            # Research agent (haiku, lightweight)
 ├── hooks/
-│   ├── hooks.json               # SessionStart + PreCompact + PreToolUse + PostToolUse + Stop hook config
+│   ├── hooks.json               # SessionStart + PreCompact + PreToolUse + PostToolUse + Stop + TaskCompleted hook config
 │   ├── session-start.sh         # Injects getting-started skill + cleans markers
 │   ├── pre-compact.sh           # Trims Flow files before compact
 │   ├── check-skill-gate.sh     # File-type skill gate (code/document/config branching)
 │   ├── mark-skill-invoked.sh   # Records Skill invocations to session markers
-│   └── stop-verification-gate.sh  # Counter-based completion verification gate
+│   ├── stop-verification-gate.sh  # Counter-based completion verification gate
+│   └── task-completed-gate.sh   # Per-task marker gate for TaskCompleted event
 ├── commands/
 │   ├── design.md                # /design — research + outline + write Design Doc
 │   ├── implement.md             # /implement — plan + TDD + review

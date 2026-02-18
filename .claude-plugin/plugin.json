@@ -1,7 +1,7 @@
 {
   "name": "claude-praxis",
   "description": "Bring understanding back to vibe coding — a development framework where AI builds, but the engineer grows through deliberate phases and self-evolving quality rules",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "author": {
     "name": "Kuroakira"
   },

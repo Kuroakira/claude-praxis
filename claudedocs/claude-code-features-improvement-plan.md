@@ -169,16 +169,23 @@ SessionStartフックで環境変数を`CLAUDE_ENV_FILE`に書き出すと、後
 - トランスクリプト形式への依存がゼロ
 - ファイルタイプ別ゲート（コード/ドキュメント/設定）も同時に実現
 
-### 方針4: TaskCompleted Hookによるタスク完了時の自動検証 — 高優先
+### ~~方針4: TaskCompleted Hookによるタスク完了時の自動検証~~ — 実装済み
 
 **解決する課題**: TodoWriteでタスク完了マーク後に検証が抜ける
 
-**方針**: TaskCompletedフックで`type: "command"`のスクリプトを実行し、直近のtypecheck/lint/test結果が存在するか確認する。
+**採用した方式**: `type: "command"`のタスク単位マーカー方式を採用。
 
-**検討事項**:
-- TaskCompletedフックのstdinに何が渡されるか確認が必要（タスク名、タスク内容など）
-- 「テスト」タスクと「リサーチ」タスクで検証基準が異なる — タスク名に応じた分岐が必要か
-- `type: "agent"`にしてサブエージェントに検証を委任する案もある
+TaskCompletedフックはexit codeで制御する（0=許可、2=ブロック）。JSON出力ではなくstderrがモデルへのフィードバックになる。`type: "prompt"`は非対応。これらはStop hookとの重要な仕様差。
+
+タスク名のmd5ハッシュ（先頭12文字）でタスクを一意識別し、タスクごとに最大1回ブロックする。ブロック時にマーカーファイルを作成するため、再試行時はマーカーの存在で許可される。無限ループの経路はない。
+
+タスク種別（コード/リサーチ）によるフィルタリングは見送った。誤判定の非対称性（コードタスクをスキップ=品質リスク vs リサーチタスクをブロック=軽微な不便）から、一律ブロックが安全。
+
+**実装内容**:
+- `hooks/task-completed-gate.sh`: タスク単位マーカー方式のTaskCompleted hook
+- `hooks/hooks.json`: TaskCompletedイベントの定義追加
+- `hooks/session-start.sh`: セッション開始時にタスクマーカーをクリーンアップ
+- `tests/task-completed-gate.test.sh`: 9テスト10アサーション、全パス
 
 ### 方針5: SubagentStart Hookによるルール注入 — 中優先
 
@@ -224,10 +231,8 @@ SessionStartフックで環境変数を`CLAUDE_ENV_FILE`に書き出すと、後
 ├── ファイルタイプ別ゲート（コード/ドキュメント/設定の分岐）
 ├── document-quality-rulesスキル新規作成
 ├── 方針1: Stop Hook → カウンター方式で実装（stop-verification-gate.sh）
-└── 方針2: Custom Subagents → agents/に3エージェント定義（implementer, reviewer, researcher）
-
-Phase 2（高優先 — タスク完了検証）
-└── 方針4: TaskCompleted Hook（タスク完了検証）
+├── 方針2: Custom Subagents → agents/に3エージェント定義（implementer, reviewer, researcher）
+└── 方針4: TaskCompleted Hook → タスク単位マーカー方式で実装（task-completed-gate.sh）
 
 Phase 3（中優先 — 補完的改善）
 ├── 方針5: SubagentStart Hook（方針2の結果次第）
@@ -242,5 +247,6 @@ Phase 3（中優先 — 補完的改善）
 
 1. ~~Stop HookとCustom Subagentsの公式ドキュメントを精読し、プラグインでの制約を確認する~~ → 完了（両方プラグインで利用可能）
 2. ~~方針1のプロトタイプを実装し、動作検証する~~ → 完了（カウンター方式で実装、テスト全パス）
-3. ~~方針2（Custom Subagents）のエージェント定義を実装する~~ → 完了（3エージェント定義）
-4. 実プロジェクトで動作検証し、Phase 2の方針を確定する
+3. ~~方針2（Custom Subagents）のエージェント定義を実装する~~ → 完了（3エージェント定義、ライブテストでskills注入確認済み）
+4. ~~方針4（TaskCompleted Hook）を実装する~~ → 完了（タスク単位マーカー方式、テスト全パス）
+5. 実プロジェクトでv0.5.0の全体動作検証を行い、Phase 3の方針を確定する
