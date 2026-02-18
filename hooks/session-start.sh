@@ -12,9 +12,10 @@ data = json.loads(sys.stdin.read())
 print(data.get("session_id", ""))
 ' 2>/dev/null)"
 
-# Clean marker file for this session (ensures clean slate on new/resumed session)
+# Clean marker files for this session (ensures clean slate on new/resumed session)
 if [ -n "$SESSION_ID" ]; then
   rm -f "/tmp/claude-praxis-markers/$SESSION_ID" 2>/dev/null
+  rm -f "/tmp/claude-praxis-markers/$SESSION_ID-stop-blocks" 2>/dev/null
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

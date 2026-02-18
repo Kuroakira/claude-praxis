@@ -8,11 +8,11 @@ claude-praxisの既知の課題（スキル遵守の信頼性、完了検証の�
 
 ## 調査の背景
 
-claude-praxis v0.4.0は、hooks・skills・commandsを組み合わせてAI支援開発のワークフローを構造化している。しかし、以下の課題が残っている。
+claude-praxis v0.4.0は、hooks・skills・commandsを組み合わせてAI支援開発のワークフローを構造化している。本ドキュメント作成時点では以下の課題があった。
 
 1. **完了検証ゲートに強制力がない** — `verification-before-completion`はテキスト指示のみで、証拠なしの完了宣言をブロックできない
 2. **サブエージェントがスキルを読まない** — Task toolで起動されるサブエージェントに品質ルールが届かない
-3. **PreToolUseフックのgrep検出が脆弱** — トランスクリプトJSONLのフォーマット前提が実際の構造と不一致（本調査中に実証。後述）
+3. ~~**PreToolUseフックのgrep検出が脆弱** — トランスクリプトJSONLのフォーマット前提が実際の構造と不一致~~ → **解決済み**（セッションマーカー方式に全面移行。後述）
 4. **コンテキスト消費量が大きい** — 大量の指示がCRITICALルールを希釈している
 
 ## 制約条件
@@ -30,19 +30,19 @@ claude-praxisはプラグインとして独立配布される。プラグイン�
 
 ## 調査結果: 未活用のClaude Code公式機能
 
-### Hook System（現在3種 → 最大14種利用可能）
+### Hook System（現在4種 → 最大14種利用可能）
 
-claude-praxisが現在使用しているフックは3つ（SessionStart、PreCompact、PreToolUse）。公式には14種類のイベントが存在する。
+claude-praxisが現在使用しているフックは4つ（SessionStart、PreCompact、PreToolUse、PostToolUse）。公式には14種類のイベントが存在する。
 
 | フックイベント | 現状 | 活用可能性 |
 |---|---|---|
-| SessionStart | 使用中 | — |
+| SessionStart | 使用中（getting-started注入 + マーカークリーンアップ） | — |
 | PreCompact | 使用中 | — |
-| PreToolUse | 使用中 | Prompt Hook化で信頼性向上 |
+| PreToolUse | 使用中（ファイルタイプ別スキルゲート） | Prompt Hook化でさらに信頼性向上の余地あり |
+| PostToolUse | **使用中（Skill呼び出し記録）** | バックグラウンド品質チェック追加も可能 |
 | **Stop** | 未使用 | 完了検証ゲートの強制 |
 | **TaskCompleted** | 未使用 | タスク完了時の自動検証 |
 | **SubagentStart** | 未使用 | サブエージェントへのルール注入 |
-| **PostToolUse** | 未使用 | 変更後のバックグラウンド品質チェック |
 | **PostToolUseFailure** | 未使用 | テスト失敗時のデバッグ提案 |
 | **UserPromptSubmit** | 未使用 | Phase Detection自動化 |
 | SubagentStop | 未使用 | 低優先度（結果検証） |
@@ -96,20 +96,28 @@ SessionStartフックで環境変数を`CLAUDE_ENV_FILE`に書き出すと、後
 
 ---
 
-## 調査中に発見した問題: トランスクリプト検出の不具合
+## 調査中に発見した問題とその解決: トランスクリプト検出の不具合
 
-本調査の過程で、`check-skill-gate.sh`のSkill呼び出し検出が**常に失敗する**不具合を実証・修正した。
+本調査の過程で、`check-skill-gate.sh`のSkill呼び出し検出が**常に失敗する**不具合を実証した。
 
 **原因**: スクリプトはトランスクリプトJSONLのトップレベルに`content`フィールドがあると仮定していたが、実際の構造は`message.content`にネストされていた。
 
-```
-想定: obj["content"][*]["type"] == "tool_use"
-実際: obj["message"]["content"][*]["type"] == "tool_use"
-```
+**教訓**: Claude Codeのトランスクリプト形式は内部仕様であり、バージョンアップで変更される可能性がある。外部フォーマットに依存する検出は本質的に脆弱。
 
-**修正内容**: `obj.get("content", [])` を `obj.get("message", {}).get("content", [])` に変更。
+### 解決策: セッションマーカー方式への全面移行（実装済み）
 
-**教訓**: Claude Codeのトランスクリプト形式は内部仕様であり、バージョンアップで変更される可能性がある。外部フォーマットに依存する検出は本質的に脆弱であり、Prompt Hook（LLMベースのセマンティック判断）への移行が根本対策となる。
+トランスクリプトJSONLへの依存を完全に排除し、以下の方式に移行した。
+
+1. **PostToolUse hook（`mark-skill-invoked.sh`）**: Skill tool呼び出し後に`/tmp/claude-praxis-markers/$SESSION_ID`にスキル名を記録
+2. **PreToolUse hook（`check-skill-gate.sh`）**: Edit/Write/MultiEdit前にマーカーファイルを確認し、必要なスキルが呼び出し済みか検証
+3. **SessionStart hook（`session-start.sh`）**: セッション開始時にマーカーファイルをクリーンアップ
+
+さらに、スキルゲートを**ファイルタイプ別**に拡張した:
+- **コードファイル**（.ts, .py, .shなど） → `code-quality-rules`が必須
+- **ドキュメントファイル**（.md, .txtなど） → `document-quality-rules`が必須
+- **設定/データファイル**（.json, .yaml, .tomlなど） → ゲートなし（許可）
+
+この方式により、トランスクリプト形式への依存がゼロになり、Claude Codeのバージョンアップによる破壊リスクが解消された。
 
 ---
 
@@ -143,16 +151,16 @@ SessionStartフックで環境変数を`CLAUDE_ENV_FILE`に書き出すと、後
 - 既存の`subagent-driven-development`と`requesting-code-review`のスキル内容をエージェント定義と整合させる必要がある
 - Task toolの`subagent_type`パラメータでカスタムエージェントを指定できるか確認が必要
 
-### 方針3: PreToolUseフックのPrompt Hook化 — 高優先
+### ~~方針3: PreToolUseフックのPrompt Hook化~~ — 解決済み
 
 **解決する課題**: grepベースのスキル検出が脆弱（本調査で実証済み）
 
-**方針**: `check-skill-gate.sh`（`type: "command"`）を`type: "prompt"`に置き換える。LLMが「このファイル編集前に適切な品質スキルが読み込まれているか」をセマンティックに判断する。
+**解決方法**: Prompt Hook化ではなく、**セッションマーカー方式**で解決した。PostToolUseフック（`mark-skill-invoked.sh`）でスキル呼び出しをマーカーファイルに記録し、PreToolUseフック（`check-skill-gate.sh`）でマーカーを確認する方式に移行。
 
-**検討事項**:
-- 全Edit/Write/MultiEditに対してLLM呼び出しが発生する — コスト増
-- 現在のcommand hookはコストゼロで高速 — Prompt Hookのレイテンシとコストが許容範囲か検証が必要
-- ハイブリッド案: command hookでの粗いチェックを残し、通過した場合のみprompt hookで精密チェック（ただしcommand hook自体がフォーマット依存なので根本解決にならない）
+この方式のメリット:
+- LLM呼び出しコストがゼロ（`type: "command"`のまま）
+- トランスクリプト形式への依存がゼロ
+- ファイルタイプ別ゲート（コード/ドキュメント/設定）も同時に実現
 
 ### 方針4: TaskCompleted Hookによるタスク完了時の自動検証 — 高優先
 
@@ -181,6 +189,8 @@ SessionStartフックで環境変数を`CLAUDE_ENV_FILE`に書き出すと、後
 
 **方針**: PostToolUseに`async: true`のフックを追加し、コード変更後にバックグラウンドでlint/typecheckを実行する。結果は`CLAUDE_ENV_FILE`経由で後続フックに渡す。
 
+**注記**: PostToolUseフックは既に`mark-skill-invoked.sh`で使用開始している。同イベントに非同期の品質チェックフックを追加する形になる。
+
 **検討事項**:
 - 非同期結果をいつ・どうフィードバックするかの設計が必要
 - プロジェクトごとにlint/typecheckコマンドが異なる — 汎用性の確保
@@ -198,15 +208,20 @@ SessionStartフックで環境変数を`CLAUDE_ENV_FILE`に書き出すと、後
 
 ---
 
-## 着手順序
+## 着手順序（更新版）
 
 ```
+✅ 完了
+├── 方針3: PreToolUseスキルゲート → セッションマーカー方式で解決
+├── PostToolUse hook追加（mark-skill-invoked.sh）
+├── ファイルタイプ別ゲート（コード/ドキュメント/設定の分岐）
+└── document-quality-rulesスキル新規作成
+
 Phase 1（最優先 — 構造的ゲート強化）
 ├── 方針1: Stop Hook（完了検証ゲート）
 └── 方針2: Custom Subagents（スキルプリロード）
 
-Phase 2（高優先 — 検出精度向上）
-├── 方針3: PreToolUse Prompt Hook化（or ハイブリッド）
+Phase 2（高優先 — タスク完了検証）
 └── 方針4: TaskCompleted Hook（タスク完了検証）
 
 Phase 3（中優先 — 補完的改善）
