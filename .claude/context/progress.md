@@ -1,5 +1,15 @@
 # Progress
 
+## 2026-02-19 — /claude-praxis:design: Design Doc written — 01-nodejs-hook-migration
+- Decision: Bash→Node.js(.mjs)移行。モジュラー構造（エントリポイント + lib/）で関数単位テスト可能に。vitest（ユニット + 統合）2層テスト。ESM採用（package.json不要で.mjsだけでESM認識）。移行順序: 単純→複雑（mark-skill-invoked → session-start）
+- Rationale: TypeScript却下（ビルドステップがプラグイン体験を劣化）。Bash維持+bats-core却下（可読性・クロスプラットフォーム未解決）。デュアルランタイム却下（二言語保守コスト継続）。Node.jsはClaude Code自体のランタイムなので前提として合理的
+- Domain: hooks, testing, infrastructure, cross-platform
+
+## 2026-02-19 — /claude-praxis:feature-spec: FeatureSpec complete — ECC-Inspired Session Experience Enhancement
+- Decision: 6つのECC概念（Contexts, 信頼度スコア付き学習, スキル自動生成, Node.js移行, Strategic Compact + Proactive Compound, Iterative Retrieval）を統合的なセッション体験向上として定義。個別機能ではなく、セッションライフサイクル全体の体験設計として捉える
+- Rationale: ECCの「幅広い道具箱」から、CPの「理解の深化」哲学と整合する概念のみ選択。ドメイン特化スキルやマルチエージェントオーケストレーションは除外。信頼度スコアはinstincts全体ではなく概念のみ採用。/compact前の/compound連動は提案レベルから開始
+- Domain: framework-evolution, session-lifecycle, context-management, learning-system
+
 ## 2026-02-18 — /claude-praxis:design: FeatureSpec Research complete
 - Decision: FeatureSpec = AI-driven interview producing persistent "What/Why" document before Design Doc. 6-section template (Problem, User Stories, Scope, Purpose, Risks, References). Output saved to feature-specs/[name].md. A+C hybrid interview (free talk → gap-fill → draft → iterate)
 - Rationale: Embedding in /design rejected (conflates What with How). Freeform rejected (no structure = no quality gate). User-writes-manually rejected (misses AI interview value). Prior art: Peroli mini spec, Shape Up pitch, Amazon PR/FAQ all validate lightweight pre-design spec
