@@ -1,5 +1,10 @@
 # Progress
 
+## 2026-02-19 — /claude-praxis:implement: Final review complete — Node.js hook migration
+- Decision: Migrated all 6 Bash hooks to TypeScript with compiled JS in hooks/dist/. Zero `as` type assertions — used runtime type extraction helpers (getString, getBoolean, getRecord) instead. ESM via "type": "module" in package.json (outputs .js not .mjs as originally designed, but functionally equivalent). Shared test helper with proper type guard eliminates `as` in integration tests too
+- Rationale: Review initially failed on `as` assertions — the generic `readStdin<T>()` was a disguised `as`, and integration test error handlers used `as` casts. Fixing required architectural change: readStdin returns `unknown`, callers use type-safe extractors. This is more robust than the original generic approach since it validates at runtime
+- Domain: hooks, typescript, testing, type-safety, code-review
+
 ## 2026-02-19 — /claude-praxis:design: Design Doc written — 01-nodejs-hook-migration
 - Decision: Bash→Node.js(.mjs)移行。モジュラー構造（エントリポイント + lib/）で関数単位テスト可能に。vitest（ユニット + 統合）2層テスト。ESM採用（package.json不要で.mjsだけでESM認識）。移行順序: 単純→複雑（mark-skill-invoked → session-start）
 - Rationale: TypeScript却下（ビルドステップがプラグイン体験を劣化）。Bash維持+bats-core却下（可読性・クロスプラットフォーム未解決）。デュアルランタイム却下（二言語保守コスト継続）。Node.jsはClaude Code自体のランタイムなので前提として合理的

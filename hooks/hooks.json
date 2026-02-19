@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/session-start.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/dist/session-start.js\""
           }
         ]
       }
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/pre-compact.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/dist/pre-compact.js\""
           }
         ]
       }
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/mark-skill-invoked.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/dist/mark-skill-invoked.js\""
           }
         ]
       }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/stop-verification-gate.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/dist/stop-verification-gate.js\""
           }
         ]
       }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/task-completed-gate.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/dist/task-completed-gate.js\""
           }
         ]
       }
@@ -57,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash hooks/check-skill-gate.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/dist/check-skill-gate.js\""
           }
         ]
       }
