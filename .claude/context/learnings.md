@@ -2,6 +2,24 @@
 
 Project-specific knowledge accumulated through /claude-praxis:compound.
 
+## `unknown` + runtime extractors for parsing untyped input (hooks pattern)
+
+- **Learning**: When parsing stdin JSON in hooks, `readStdin()` returns `unknown` and callers use `getString()`, `getBoolean()`, `getRecord()` helpers from `hooks/src/lib/types.ts` for type-safe field extraction. This is safer than generics (`readStdin<T>()`) which disguise `as` assertions.
+- **Context**: Code review caught `readStdin<T>()` as a disguised `as T`. The fix required architectural change: return `unknown`, force validation at each use-site. Same pattern applies to integration test helpers — `isExecError()` type guard instead of `catch (e) { (e as ExecError) }`.
+- **Implication**: Any new hook entry point should follow this pattern. Never introduce generics that bypass runtime validation.
+
+## Test isolation via env var overrides (HOME, CLAUDE_PRAXIS_MARKER_DIR)
+
+- **Learning**: Integration tests use `CLAUDE_PRAXIS_MARKER_DIR` env var to isolate marker file operations to a temp directory. session-start tests additionally override `HOME` to prevent real `~/.claude/learnings/global-learnings.md` from affecting test output.
+- **Context**: session-start tests failed on machines where `global-learnings.md` existed — the persistence section appeared unexpectedly. `getMarkerDir()` checks `process.env.CLAUDE_PRAXIS_MARKER_DIR` with fallback to `/tmp/claude-praxis-markers`.
+- **Implication**: Any hook that reads files relative to `$HOME` or fixed paths needs env var override support for testability.
+
+## Inline phase lists must stay in sync with Detection Rules table
+
+- **Learning**: The First Response Gate and Suggestion Behavior sections contain inline phase lists that duplicate information from the Detection Rules table. When a new phase is added to Detection Rules, all inline lists must be updated too.
+- **Context**: FeatureSpec review found First Response Gate missing the `feature-spec` phase. The inline list and Detection Rules serve different audiences (quick checklist vs. detailed rules) but must contain the same phases.
+- **Implication**: When adding a new phase/command, search for all inline phase enumerations (not just Detection Rules) and update them.
+
 ## PreToolUse hook enforces skill invocation with deny-by-default
 
 - **Learning**: `PreToolUse` hook matching `Edit|Write|MultiEdit` checks session marker files (written by PostToolUse on Skill invocations) to verify required skills were invoked. If the marker is missing, it returns `permissionDecision: "deny"`. Error paths (JSON parse failure, empty session_id) return `exit 2` with stderr guidance — deny-by-default, not silent allow.
@@ -12,7 +30,7 @@ Project-specific knowledge accumulated through /claude-praxis:compound.
 
 - **Learning**: check-skill-gate.sh writes a `$SESSION_ID-code-session` marker when a code file edit is allowed. The Stop hook checks this marker: present = code session (require verification), absent = non-code session (skip verification).
 - **Context**: Added in gate-system-v2 to solve "brainstorm sessions blocked by Stop hook." The marker is a side effect of the PreToolUse gate, not a separate mechanism.
-- **Implication**: If the definition of "code change" needs to expand (e.g., Notebook edits, config changes), update the file extension list in check-skill-gate.sh's code file case branch.
+- **Implication**: If the definition of "code change" needs to expand (e.g., Notebook edits, config changes), update the extension map in `hooks/src/lib/file-type.ts` (migrated from check-skill-gate.sh in the Node.js hook migration).
 
 ## Stop hook: marker-based gating > counter-based gating
 

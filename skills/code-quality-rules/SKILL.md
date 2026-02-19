@@ -51,6 +51,27 @@ const userData = userSchema.parse(response);
 
 "Types don't match but it works, so `as`" → **Delete and redo. Investigate why types don't match.**
 
+### No Generic Return Types for Untyped Data
+
+Generic return types like `<T>` on JSON.parse wrappers are disguised `as` assertions — they bypass runtime validation while appearing type-safe.
+
+```typescript
+// ❌ Never do this — disguised `as` assertion
+function readInput<T>(): Promise<T> {
+  return JSON.parse(data);  // implicitly `as T`
+}
+const input = await readInput<MyType>(); // no runtime validation
+
+// ✅ Correct approach — return unknown, validate at use-site
+function readInput(): Promise<unknown> {
+  return JSON.parse(data);
+}
+const input = await readInput();
+const name = getString(input, "name");  // runtime type extraction
+```
+
+"But generics look type-safe" → **They're not. `JSON.parse` returns `any`, and TypeScript silently narrows it without checking.**
+
 ### ESLint/Linter Rules
 
 ```typescript
