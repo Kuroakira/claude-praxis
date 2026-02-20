@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { readStdin, writeJson } from "./lib/io.js";
 import { getMarkerDir, cleanSessionMarkers } from "./lib/markers.js";
 import { detectPersistenceFiles } from "./lib/context-files.js";
+import { loadPraxisConfig } from "./lib/praxis-config.js";
 import { getString } from "./lib/types.js";
 
 try {
@@ -33,12 +34,8 @@ try {
 
   // Detect persistence files
   const contextDir = path.join(process.cwd(), ".claude", "context");
-  const globalLearningsPath = path.join(
-    process.env.HOME ?? "",
-    ".claude",
-    "learnings",
-    "global-learnings.md",
-  );
+  const config = loadPraxisConfig(process.cwd());
+  const globalLearningsPath = config.globalLearningsPath;
   const persistenceFiles = detectPersistenceFiles(
     contextDir,
     globalLearningsPath,

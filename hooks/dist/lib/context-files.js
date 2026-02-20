@@ -1,6 +1,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-const TRACKED_FILES = ["task_plan.md", "progress.md", "learnings.md"];
+const TRACKED_FILES = [
+    "task_plan.md",
+    "progress.md",
+    "learnings.md",
+    "learnings-feature-spec.md",
+    "learnings-design.md",
+    "learnings-coding.md",
+];
 export function detectPersistenceFiles(contextDir, globalLearningsPath) {
     const results = [];
     if (fs.existsSync(contextDir)) {
@@ -9,7 +16,7 @@ export function detectPersistenceFiles(contextDir, globalLearningsPath) {
             if (fs.existsSync(filePath)) {
                 const stat = fs.statSync(filePath);
                 const info = { name, mtime: stat.mtime };
-                if (name === "progress.md") {
+                if (name === "progress.md" || name.startsWith("learnings-")) {
                     const content = fs.readFileSync(filePath, "utf-8");
                     info.entryCount = (content.match(/^## /gm) ?? []).length;
                 }

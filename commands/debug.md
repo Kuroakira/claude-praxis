@@ -14,7 +14,7 @@ Unlike `/claude-praxis:design`, this workflow is **interactive throughout**. Pro
 
 Before starting investigation, check if past knowledge is relevant to this problem.
 
-1. Read `.claude/context/learnings.md` and `~/.claude/learnings/global-learnings.md` if they exist
+1. Read `.claude/context/learnings-coding.md` and `~/.claude/learnings/global-learnings.md` if they exist
 2. When a past learning is relevant, carry it forward as a hypothesis or constraint:
    > "Previously we saw [similar problem] caused by [root cause]. Could the same mechanism be at play here?"
 

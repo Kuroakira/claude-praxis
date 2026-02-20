@@ -12,7 +12,7 @@ This is an end-to-end workflow. Execute all phases sequentially without waiting 
 
 Before starting research, check if past knowledge is relevant to this design task.
 
-1. Read `.claude/context/learnings.md` and `~/.claude/learnings/global-learnings.md` if they exist
+1. Read `.claude/context/learnings-feature-spec.md`, `.claude/context/learnings-design.md`, and `~/.claude/learnings/global-learnings.md` if they exist
 2. When a past learning is relevant, carry it forward into Phase 1 as a constraint or starting point:
    > "Previously we chose [X] because [rationale]. Does the same assumption hold here, or has the context changed?"
 

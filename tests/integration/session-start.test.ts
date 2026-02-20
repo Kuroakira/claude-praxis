@@ -186,4 +186,59 @@ describe("session-start integration", () => {
     ).toBe(false);
     expect(fs.existsSync(path.join(markerDir, "other-session"))).toBe(true);
   });
+
+  it("shows entry count for each learnings-* file", () => {
+    writeSkillFile("# Getting Started");
+    const contextDir = path.join(tmpDir, ".claude", "context");
+    fs.mkdirSync(contextDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(contextDir, "learnings-feature-spec.md"),
+      "# L\n## E1\n## E2\n## E3\n",
+    );
+    fs.writeFileSync(
+      path.join(contextDir, "learnings-design.md"),
+      "# L\n## E1\n## E2\n",
+    );
+    fs.writeFileSync(
+      path.join(contextDir, "learnings-coding.md"),
+      "# L\n## E1\n",
+    );
+
+    const result = runHook({ session_id: "test-session" });
+    const output = JSON.parse(result.stdout);
+    const ctx = output.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("learnings-feature-spec.md (3 entries");
+    expect(ctx).toContain("learnings-design.md (2 entries");
+    expect(ctx).toContain("learnings-coding.md (1 entries");
+  });
+
+  it("shows both old and new learnings files during migration", () => {
+    writeSkillFile("# Getting Started");
+    const contextDir = path.join(tmpDir, ".claude", "context");
+    fs.mkdirSync(contextDir, { recursive: true });
+    fs.writeFileSync(path.join(contextDir, "learnings.md"), "old content");
+    fs.writeFileSync(
+      path.join(contextDir, "learnings-coding.md"),
+      "# L\n## E1\n",
+    );
+
+    const result = runHook({ session_id: "test-session" });
+    const output = JSON.parse(result.stdout);
+    const ctx = output.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("learnings.md (updated:");
+    expect(ctx).toContain("learnings-coding.md (1 entries");
+  });
+
+  it("shows old learnings.md without entry count", () => {
+    writeSkillFile("# Getting Started");
+    const contextDir = path.join(tmpDir, ".claude", "context");
+    fs.mkdirSync(contextDir, { recursive: true });
+    fs.writeFileSync(path.join(contextDir, "learnings.md"), "# Learnings\n## E1\n## E2");
+
+    const result = runHook({ session_id: "test-session" });
+    const output = JSON.parse(result.stdout);
+    const ctx = output.hookSpecificOutput.additionalContext;
+    expect(ctx).toMatch(/learnings\.md \(updated:/);
+    expect(ctx).not.toMatch(/learnings\.md \(\d+ entries/);
+  });
 });

@@ -4,7 +4,9 @@ description: Promote valuable knowledge from Flow to Stock — curate learnings 
 disable-model-invocation: false
 ---
 
-Invoke skill `context-persistence`, then execute **Flow → Stock Promotion**:
+Invoke skill `context-persistence`, then execute both phases sequentially.
+
+## Phase 1: Flow → Stock Promotion
 
 1. Read `.claude/context/progress.md` (recent work log)
 2. For each entry, evaluate: does this contain reusable knowledge?
@@ -15,16 +17,22 @@ Invoke skill `context-persistence`, then execute **Flow → Stock Promotion**:
 
 From progress.md, I found the following promotable learnings:
 
-| # | Learning | Context / Rationale | Proposed Destination |
-|---|----------|--------------------|--------------------|
-| 1 | "JWT chosen over session-based auth" | "Stateless requirement, multiple API consumers" | project learnings |
-| 2 | "CORS middleware must come before auth" | "Auth middleware rejects preflight requests otherwise" | global learnings |
-| 3 | "Never use eval()" | "Arbitrary code execution risk" | code-quality-rules |
-| 4 | "Design Docs should focus on WHY, not HOW" | "HOW becomes outdated when implementation changes" | framework improvement → design-doc-format |
-| 5 | "Fixed typo in line 42" | — | discard |
+| # | Learning | Context / Rationale | Proposed Destination | Level |
+|---|----------|--------------------|--------------------|-------|
+| 1 | "JWT chosen over session-based auth" | "Stateless requirement, multiple API consumers" | project learnings | design |
+| 2 | "Scope creep on auth feature" | "Started login, ended up adding 2FA" | project learnings | feature-spec |
+| 3 | "deny-by-default for error paths" | "Silent allow on parse failure = gate bypass" | project learnings | coding |
+| 4 | "CORS middleware must come before auth" | "Auth middleware rejects preflight requests otherwise" | global learnings | — |
+| 5 | "Never use eval()" | "Arbitrary code execution risk" | code-quality-rules | — |
+| 6 | "Design Docs should focus on WHY, not HOW" | "HOW becomes outdated when implementation changes" | framework improvement → design-doc-format | — |
+| 7 | "Fixed typo in line 42" | — | discard | — |
 
 Adjust any routing? (or "OK" to proceed)
 ```
+
+**Level column**: Only for `project learnings` destination. Determines which file the learning is written to.
+
+**Level判定基準**: この学びが再利用される場面を考える。「要件を決めるとき」に役立つなら feature-spec、「設計を決めるとき」なら design、「コードを書くとき」なら coding。複数に該当する場合は、最も影響の大きいレベルに1箇所だけ配置する。
 
 **Important**: Every learning MUST include its context/rationale — the WHY behind the decision or discovery. This context is what makes the learning reusable: when a similar situation arises later, we can ask "does the same rationale still apply?" instead of blindly repeating the same choice.
 
@@ -35,13 +43,15 @@ Adjust any routing? (or "OK" to proceed)
 6. After confirmation, write to destinations and clean up promoted entries from `progress.md`
 7. Report final results
 
-| Destination | Criteria | Example |
-|-------------|----------|---------|
-| `.claude/context/learnings.md` | Project-specific knowledge | "This API rate-limits at 100req/min" |
-| `~/.claude/learnings/global-learnings.md` | Cross-project knowledge | "CORS middleware must come before auth" |
-| `code-quality-rules` (self-evolution) | Universal quality rule | "Never use eval()" |
-| framework improvement → `[skill or command]` | Better way to research, design, implement, debug, etc. | "Design Docs should focus on WHY" → update design-doc-format |
-| discard | Not reusable, ephemeral detail | "Fixed typo in line 42" |
+| Destination | Level | Target File | Criteria |
+|-------------|-------|-------------|----------|
+| project learnings | feature-spec | `.claude/context/learnings-feature-spec.md` | Requirements, scope decisions |
+| project learnings | design | `.claude/context/learnings-design.md` | Architecture, design patterns |
+| project learnings | coding | `.claude/context/learnings-coding.md` | Implementation patterns, quality |
+| global learnings | — | `~/.claude/learnings/global-learnings.md` | Cross-project knowledge |
+| code-quality-rules | — | self-evolution | Universal quality rule |
+| framework improvement | — | `[skill or command]` | Better way to work |
+| discard | — | — | Not reusable |
 
 ### Framework Improvement Process
 
@@ -51,3 +61,38 @@ When a learning is about **how to work** (not what to build), route it to the re
 2. Propose a specific edit to the human: what to add/change and why
 3. If approved, apply the edit directly to the skill or command file
 4. This is how the framework evolves from experience — not just code quality rules, but research methods, design practices, implementation workflows, and debugging approaches
+
+## Phase 2: Stock Compression
+
+After promotion is complete, review existing learnings for compression opportunities. This keeps learnings files growing in **density**, not just size.
+
+1. Read all 3 learnings files: `learnings-feature-spec.md`, `learnings-design.md`, `learnings-coding.md`
+2. Identify compression candidates in 3 categories:
+
+| Category | What to look for | Example |
+|----------|-----------------|---------|
+| 重複排除 (Dedup) | Same insight recorded in different contexts | "deny-by-default" + "error paths should exit 2" → merge |
+| 陳腐化削除 (Obsolete) | Learning invalidated by project evolution | Bash hook patterns after Node.js migration |
+| 類似統合 (Synthesize) | Multiple learnings sharing a common principle | 3 hook patterns → "hooks should be mechanical state checks" |
+
+3. **Present compression proposal to the human** — do NOT execute directly:
+
+```
+🗜️ Stock Compression Proposal
+
+| # | Category | Target Entries | Proposed Action | Rationale |
+|---|----------|---------------|-----------------|-----------|
+| 1 | Dedup | "deny-by-default" + "exit 2 on errors" | Merge into single entry | Same pattern, different expressions |
+| 2 | Obsolete | "Bash heredoc escaping" | Delete | Node.js migration complete |
+| 3 | Synthesize | 3 hook state patterns | Unify: "hooks = mechanical state checks" | Common principle discovered |
+
+Approve compressions? (adjust or "OK" to proceed)
+```
+
+4. Wait for human confirmation
+5. Execute approved compressions
+6. Report: entries before → entries after per file
+
+**Rationale is required** for every compression candidate. Without a clear reason, the proposal is noise.
+
+**No candidates?** Report "No compression candidates found." and finish. Do not force compression.

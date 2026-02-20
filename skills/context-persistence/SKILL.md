@@ -19,7 +19,9 @@ WRITE AUTO, READ MANUAL — NEVER AUTO-INJECT CONTENT INTO CONTEXT
 |------|------|----------|-----------|
 | **Flow** | `task_plan.md` | `{repo}/.claude/context/` | Delete on task completion |
 | **Flow** | `progress.md` | `{repo}/.claude/context/` | Keep last 10 entries, purge older |
-| **Stock** | `learnings.md` | `{repo}/.claude/context/` | Permanent. Project-specific knowledge |
+| **Stock** | `learnings-feature-spec.md` | `{repo}/.claude/context/` | Permanent. Scope/requirements knowledge |
+| **Stock** | `learnings-design.md` | `{repo}/.claude/context/` | Permanent. Design/architecture knowledge |
+| **Stock** | `learnings-coding.md` | `{repo}/.claude/context/` | Permanent. Implementation patterns knowledge |
 | **Stock** | `global-learnings.md` | `~/.claude/learnings/` | Permanent. Cross-project knowledge |
 
 - **Flow** = volatile progress. Old entries lose value. Prune aggressively.
@@ -51,14 +53,14 @@ Record automatically during work:
 
 Append new entries at the top. When entries exceed 10, delete the oldest.
 
-### learnings.md (Stock)
+### learnings-*.md (Stock — 3 level-based files)
 ```markdown
 ## [topic]
 - **Learning**: [what was discovered]
 - **Context**: [when/why this matters]
 ```
 
-Only promote from progress.md when knowledge is reusable. Use `/claude-praxis:compound` for deliberate promotion.
+Three files by knowledge level: `learnings-feature-spec.md` (requirements/scope), `learnings-design.md` (architecture/design), `learnings-coding.md` (implementation patterns). Only promote from progress.md when knowledge is reusable. Use `/claude-praxis:compound` for deliberate promotion with level classification.
 
 ## Read Rules
 
@@ -74,7 +76,9 @@ Only promote from progress.md when knowledge is reusable. Use `/claude-praxis:co
 {repo}/.claude/context/         ← Add to .gitignore (recommended)
 ├── task_plan.md                ← Flow: current task
 ├── progress.md                 ← Flow: recent work log
-└── learnings.md                ← Stock: project-specific knowledge
+├── learnings-feature-spec.md   ← Stock: requirements/scope knowledge
+├── learnings-design.md         ← Stock: design/architecture knowledge
+└── learnings-coding.md         ← Stock: implementation patterns
 
 ~/.claude/learnings/            ← Global, cross-project
 └── global-learnings.md         ← Stock: universal knowledge

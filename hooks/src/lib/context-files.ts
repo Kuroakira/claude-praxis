@@ -7,7 +7,14 @@ export interface PersistenceFileInfo {
   entryCount?: number;
 }
 
-const TRACKED_FILES = ["task_plan.md", "progress.md", "learnings.md"];
+const TRACKED_FILES = [
+  "task_plan.md",
+  "progress.md",
+  "learnings.md",
+  "learnings-feature-spec.md",
+  "learnings-design.md",
+  "learnings-coding.md",
+];
 
 export function detectPersistenceFiles(
   contextDir: string,
@@ -21,7 +28,7 @@ export function detectPersistenceFiles(
       if (fs.existsSync(filePath)) {
         const stat = fs.statSync(filePath);
         const info: PersistenceFileInfo = { name, mtime: stat.mtime };
-        if (name === "progress.md") {
+        if (name === "progress.md" || name.startsWith("learnings-")) {
           const content = fs.readFileSync(filePath, "utf-8");
           info.entryCount = (content.match(/^## /gm) ?? []).length;
         }

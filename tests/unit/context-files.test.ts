@@ -74,6 +74,67 @@ describe("context-files", () => {
       expect(globalFile?.name).toBe("global-learnings.md");
       expect(globalFile?.mtime).toBeInstanceOf(Date);
     });
+
+    it("detects learnings-feature-spec.md with entry count", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "learnings-feature-spec.md"),
+        "# Learnings\n## Entry 1\nDetails\n## Entry 2\nMore",
+      );
+      const result = detectPersistenceFiles(contextDir);
+      expect(result).toContainEqual(
+        expect.objectContaining({ name: "learnings-feature-spec.md", entryCount: 2 }),
+      );
+    });
+
+    it("detects learnings-design.md with entry count", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "learnings-design.md"),
+        "# Learnings\n## Entry 1\nDetails\n## Entry 2\nMore\n## Entry 3\n",
+      );
+      const result = detectPersistenceFiles(contextDir);
+      expect(result).toContainEqual(
+        expect.objectContaining({ name: "learnings-design.md", entryCount: 3 }),
+      );
+    });
+
+    it("detects learnings-coding.md with entry count", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "learnings-coding.md"),
+        "# Learnings\n## Entry 1\n",
+      );
+      const result = detectPersistenceFiles(contextDir);
+      expect(result).toContainEqual(
+        expect.objectContaining({ name: "learnings-coding.md", entryCount: 1 }),
+      );
+    });
+
+    it("returns all 4 files when old and new learnings coexist", () => {
+      fs.writeFileSync(path.join(contextDir, "learnings.md"), "old");
+      fs.writeFileSync(path.join(contextDir, "learnings-feature-spec.md"), "# L\n## E1");
+      fs.writeFileSync(path.join(contextDir, "learnings-design.md"), "# L\n## E1");
+      fs.writeFileSync(path.join(contextDir, "learnings-coding.md"), "# L\n## E1");
+      const result = detectPersistenceFiles(contextDir);
+      const names = result.map((f) => f.name);
+      expect(names).toContain("learnings.md");
+      expect(names).toContain("learnings-feature-spec.md");
+      expect(names).toContain("learnings-design.md");
+      expect(names).toContain("learnings-coding.md");
+    });
+
+    it("returns only old learnings.md when new files don't exist", () => {
+      fs.writeFileSync(path.join(contextDir, "learnings.md"), "old");
+      const result = detectPersistenceFiles(contextDir);
+      const names = result.map((f) => f.name);
+      expect(names).toContain("learnings.md");
+      expect(names).not.toContain("learnings-feature-spec.md");
+    });
+
+    it("returns entry count 0 for empty learnings file", () => {
+      fs.writeFileSync(path.join(contextDir, "learnings-coding.md"), "# Learnings\n");
+      const result = detectPersistenceFiles(contextDir);
+      const file = result.find((f) => f.name === "learnings-coding.md");
+      expect(file?.entryCount).toBe(0);
+    });
   });
 
   describe("trimProgressFile", () => {

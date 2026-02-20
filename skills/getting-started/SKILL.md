@@ -134,7 +134,7 @@ When the user starts a conversation or gives a new task, detect the context and 
 
 ## Contextual Recall of Past Learnings
 
-When learnings files exist (`learnings.md`, `global-learnings.md`), and a current task touches a similar domain or decision, do NOT silently apply the past learning. Instead, present it with its original context and ask the human to judge:
+When learnings files exist (`learnings-feature-spec.md`, `learnings-design.md`, `learnings-coding.md`, `global-learnings.md`), and a current task touches a similar domain or decision, do NOT silently apply the past learning. Instead, present it with its original context and ask the human to judge:
 
 **Pattern**: Present the past decision with its rationale, then ask if the same assumptions hold.
 

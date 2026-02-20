@@ -13,7 +13,7 @@ This is an end-to-end workflow. Execute all phases sequentially. Human input is 
 Break the Design Doc into an implementation plan.
 
 1. **Read the Design Doc**: Understand the full scope and design decisions. If no Design Doc exists (direct implementation request), read the codebase to understand scope and create the plan from the user's intent
-2. **Check learnings before starting**: Read `learnings.md` and `global-learnings.md` if they exist. When a past learning is relevant, present it with its original context:
+2. **Check learnings before starting**: Read `.claude/context/learnings-design.md`, `.claude/context/learnings-coding.md`, and `~/.claude/learnings/global-learnings.md` if they exist. When a past learning is relevant, present it with its original context:
    > "Previously we chose [X] because [rationale]. Does the same assumption hold here, or has the context changed?"
 3. **Break into steps sized for ~500-line PRs**: Each step produces a reviewable, self-contained change. If a step would exceed ~500 lines, split further
 4. For each step, specify:
