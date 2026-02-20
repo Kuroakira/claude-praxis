@@ -116,4 +116,128 @@ describe("pre-compact integration", () => {
     const result = runHook({ session_id: "test" });
     expect(result.exitCode).toBe(0);
   });
+
+  describe("last-compact.json", () => {
+    it("writes last-compact.json with timestamp", () => {
+      runHook({ session_id: "test" });
+      const filePath = path.join(contextDir, "last-compact.json");
+      expect(fs.existsSync(filePath)).toBe(true);
+      const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      expect(data.timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/,
+      );
+    });
+
+    it("sets compoundRun false when compound-last-run.json does not exist", () => {
+      runHook({ session_id: "test" });
+      const data = JSON.parse(
+        fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
+      );
+      expect(data.compoundRun).toBe(false);
+    });
+
+    it("sets compoundRun true when compound-last-run.json is newer than last-compact.json", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "compound-last-run.json"),
+        JSON.stringify({
+          timestamp: new Date().toISOString(),
+          promotedCount: 2,
+        }),
+      );
+      runHook({ session_id: "test" });
+      const data = JSON.parse(
+        fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
+      );
+      expect(data.compoundRun).toBe(true);
+    });
+
+    it("sets compoundRun false when compound-last-run.json is older than last compact", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        JSON.stringify({
+          timestamp: "2026-02-20T12:00:00Z",
+          compoundRun: true,
+          progressSummary: { entryCount: 0, recentHeadings: [] },
+          confidenceSummary: { totalEntries: 0, avgConfirmed: 0, unverifiedCount: 0 },
+        }),
+      );
+      fs.writeFileSync(
+        path.join(contextDir, "compound-last-run.json"),
+        JSON.stringify({
+          timestamp: "2026-02-19T00:00:00Z",
+          promotedCount: 1,
+        }),
+      );
+      runHook({ session_id: "test" });
+      const data = JSON.parse(
+        fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
+      );
+      expect(data.compoundRun).toBe(false);
+    });
+
+    it("includes progressSummary with entry count and recent headings", () => {
+      const entries = [
+        "## 2026-02-20 — Task 3",
+        "- Details",
+        "## 2026-02-19 — Task 2",
+        "- Details",
+        "## 2026-02-18 — Task 1",
+        "- Details",
+      ].join("\n");
+      fs.writeFileSync(path.join(contextDir, "progress.md"), entries);
+
+      runHook({ session_id: "test" });
+
+      const data = JSON.parse(
+        fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
+      );
+      expect(data.progressSummary.entryCount).toBe(3);
+      expect(data.progressSummary.recentHeadings).toHaveLength(3);
+      expect(data.progressSummary.recentHeadings[0]).toBe(
+        "2026-02-20 — Task 3",
+      );
+    });
+
+    it("includes confidenceSummary from learnings files", () => {
+      const learningsContent = [
+        "# Learnings",
+        "## Entry 1",
+        "- **Learning**: something",
+        "- **Confirmed**: 3回 | 2026-02-18 | implement",
+        "## Entry 2",
+        "- **Learning**: unverified",
+      ].join("\n");
+      fs.writeFileSync(
+        path.join(contextDir, "learnings-coding.md"),
+        learningsContent,
+      );
+
+      runHook({ session_id: "test" });
+
+      const data = JSON.parse(
+        fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
+      );
+      expect(data.confidenceSummary.totalEntries).toBe(2);
+      expect(data.confidenceSummary.unverifiedCount).toBe(1);
+    });
+
+    it("handles missing progress.md gracefully in last-compact.json", () => {
+      runHook({ session_id: "test" });
+      const data = JSON.parse(
+        fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
+      );
+      expect(data.progressSummary.entryCount).toBe(0);
+      expect(data.progressSummary.recentHeadings).toEqual([]);
+    });
+
+    it("handles missing learnings files gracefully in last-compact.json", () => {
+      runHook({ session_id: "test" });
+      const data = JSON.parse(
+        fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
+      );
+      expect(data.confidenceSummary.totalEntries).toBe(0);
+      expect(data.confidenceSummary.avgConfirmed).toBe(0);
+      expect(data.confidenceSummary.unverifiedCount).toBe(0);
+    });
+  });
 });

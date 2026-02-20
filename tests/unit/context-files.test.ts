@@ -6,6 +6,18 @@ import {
   detectPersistenceFiles,
   trimProgressFile,
   updateCompactTimestamp,
+  readCompoundLastRun,
+  writeCompoundLastRun,
+  readLastCompact,
+  writeLastCompact,
+  readContextPressure,
+  writeContextPressure,
+  getProgressSummary,
+} from "../../hooks/src/lib/context-files.js";
+import type {
+  CompoundLastRun,
+  LastCompact,
+  ContextPressure,
 } from "../../hooks/src/lib/context-files.js";
 
 describe("context-files", () => {
@@ -135,6 +147,65 @@ describe("context-files", () => {
       const file = result.find((f) => f.name === "learnings-coding.md");
       expect(file?.entryCount).toBe(0);
     });
+
+    it("returns avgConfirmed for learnings file with Confirmed fields", () => {
+      const content = [
+        "# Learnings",
+        "## Entry 1",
+        "- **Learning**: something",
+        "- **Confirmed**: 4回 | 2026-02-18 | implement, design",
+        "## Entry 2",
+        "- **Learning**: another",
+        "- **Confirmed**: 2回 | 2026-02-15 | review",
+      ].join("\n");
+      fs.writeFileSync(path.join(contextDir, "learnings-coding.md"), content);
+      const result = detectPersistenceFiles(contextDir);
+      const file = result.find((f) => f.name === "learnings-coding.md");
+      expect(file?.avgConfirmed).toBe(3.0);
+      expect(file?.unverifiedCount).toBe(0);
+    });
+
+    it("returns unverifiedCount for entries without Confirmed field", () => {
+      const content = [
+        "# Learnings",
+        "## Entry 1",
+        "- **Learning**: has confidence",
+        "- **Confirmed**: 2回 | 2026-02-18 | implement",
+        "## Entry 2",
+        "- **Learning**: no confidence",
+      ].join("\n");
+      fs.writeFileSync(path.join(contextDir, "learnings-design.md"), content);
+      const result = detectPersistenceFiles(contextDir);
+      const file = result.find((f) => f.name === "learnings-design.md");
+      expect(file?.avgConfirmed).toBe(2.0);
+      expect(file?.unverifiedCount).toBe(1);
+    });
+
+    it("omits avgConfirmed for non-learnings files", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "progress.md"),
+        "## Entry 1\n## Entry 2\n",
+      );
+      const result = detectPersistenceFiles(contextDir);
+      const file = result.find((f) => f.name === "progress.md");
+      expect(file?.avgConfirmed).toBeUndefined();
+      expect(file?.unverifiedCount).toBeUndefined();
+    });
+
+    it("returns avgConfirmed 0 when all entries are unverified", () => {
+      const content = [
+        "# Learnings",
+        "## Entry 1",
+        "- **Learning**: no confidence",
+        "## Entry 2",
+        "- **Learning**: also no confidence",
+      ].join("\n");
+      fs.writeFileSync(path.join(contextDir, "learnings-feature-spec.md"), content);
+      const result = detectPersistenceFiles(contextDir);
+      const file = result.find((f) => f.name === "learnings-feature-spec.md");
+      expect(file?.avgConfirmed).toBe(0);
+      expect(file?.unverifiedCount).toBe(2);
+    });
   });
 
   describe("trimProgressFile", () => {
@@ -168,6 +239,297 @@ describe("context-files", () => {
       expect(() =>
         trimProgressFile(path.join(contextDir, "nonexistent.md"), 10),
       ).not.toThrow();
+    });
+  });
+
+  describe("readCompoundLastRun", () => {
+    it("returns data from valid compound-last-run.json", () => {
+      const data: CompoundLastRun = {
+        timestamp: "2026-02-20T12:00:00Z",
+        promotedCount: 3,
+      };
+      fs.writeFileSync(
+        path.join(contextDir, "compound-last-run.json"),
+        JSON.stringify(data),
+      );
+      const result = readCompoundLastRun(contextDir);
+      expect(result).toEqual(data);
+    });
+
+    it("returns null when file does not exist", () => {
+      const result = readCompoundLastRun(contextDir);
+      expect(result).toBeNull();
+    });
+
+    it("returns null when file contains invalid JSON", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "compound-last-run.json"),
+        "not json",
+      );
+      const result = readCompoundLastRun(contextDir);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("writeCompoundLastRun", () => {
+    it("writes compound-last-run.json with timestamp and count", () => {
+      const data: CompoundLastRun = {
+        timestamp: "2026-02-20T12:00:00Z",
+        promotedCount: 5,
+      };
+      writeCompoundLastRun(contextDir, data);
+      const content = fs.readFileSync(
+        path.join(contextDir, "compound-last-run.json"),
+        "utf-8",
+      );
+      expect(JSON.parse(content)).toEqual(data);
+    });
+
+    it("creates context directory if it does not exist", () => {
+      const newDir = path.join(tmpDir, "new", ".claude", "context");
+      const data: CompoundLastRun = {
+        timestamp: "2026-02-20T12:00:00Z",
+        promotedCount: 0,
+      };
+      writeCompoundLastRun(newDir, data);
+      expect(fs.existsSync(path.join(newDir, "compound-last-run.json"))).toBe(
+        true,
+      );
+    });
+  });
+
+  describe("readLastCompact", () => {
+    it("returns data from valid last-compact.json", () => {
+      const data: LastCompact = {
+        timestamp: "2026-02-20T12:00:00Z",
+        compoundRun: false,
+        progressSummary: {
+          entryCount: 5,
+          recentHeadings: ["Task 3", "Task 2", "Task 1"],
+        },
+        confidenceSummary: {
+          totalEntries: 10,
+          avgConfirmed: 2.5,
+          unverifiedCount: 3,
+        },
+      };
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        JSON.stringify(data),
+      );
+      const result = readLastCompact(contextDir);
+      expect(result).toEqual(data);
+    });
+
+    it("returns null when file does not exist", () => {
+      const result = readLastCompact(contextDir);
+      expect(result).toBeNull();
+    });
+
+    it("returns null when file contains invalid JSON", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        "corrupt",
+      );
+      const result = readLastCompact(contextDir);
+      expect(result).toBeNull();
+    });
+
+    it("returns null when progressSummary is missing", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        JSON.stringify({ timestamp: "2026-02-20T12:00:00Z", compoundRun: false }),
+      );
+      const result = readLastCompact(contextDir);
+      expect(result).toBeNull();
+    });
+
+    it("returns null when confidenceSummary is missing", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        JSON.stringify({
+          timestamp: "2026-02-20T12:00:00Z",
+          compoundRun: false,
+          progressSummary: { entryCount: 0, recentHeadings: [] },
+        }),
+      );
+      const result = readLastCompact(contextDir);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("writeLastCompact", () => {
+    it("writes last-compact.json with full metadata", () => {
+      const data: LastCompact = {
+        timestamp: "2026-02-20T12:00:00Z",
+        compoundRun: true,
+        progressSummary: {
+          entryCount: 2,
+          recentHeadings: ["Done A"],
+        },
+        confidenceSummary: {
+          totalEntries: 4,
+          avgConfirmed: 1.5,
+          unverifiedCount: 1,
+        },
+      };
+      writeLastCompact(contextDir, data);
+      const content = fs.readFileSync(
+        path.join(contextDir, "last-compact.json"),
+        "utf-8",
+      );
+      expect(JSON.parse(content)).toEqual(data);
+    });
+  });
+
+  describe("readContextPressure", () => {
+    it("returns data from valid context-pressure.json", () => {
+      const data: ContextPressure = {
+        usedPercentage: 65,
+        timestamp: "2026-02-20T12:00:00Z",
+        lastNotifiedLevel: "info",
+      };
+      fs.writeFileSync(
+        path.join(contextDir, "context-pressure.json"),
+        JSON.stringify(data),
+      );
+      const result = readContextPressure(contextDir);
+      expect(result).toEqual(data);
+    });
+
+    it("returns null when file does not exist", () => {
+      const result = readContextPressure(contextDir);
+      expect(result).toBeNull();
+    });
+
+    it("returns null when file contains invalid JSON", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "context-pressure.json"),
+        "bad",
+      );
+      const result = readContextPressure(contextDir);
+      expect(result).toBeNull();
+    });
+
+    it("returns null when lastNotifiedLevel is missing", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "context-pressure.json"),
+        JSON.stringify({ usedPercentage: 65, timestamp: "2026-02-20T12:00:00Z" }),
+      );
+      const result = readContextPressure(contextDir);
+      expect(result).toBeNull();
+    });
+
+    it("returns null when lastNotifiedLevel has invalid value", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "context-pressure.json"),
+        JSON.stringify({ usedPercentage: 65, timestamp: "2026-02-20T12:00:00Z", lastNotifiedLevel: "unknown" }),
+      );
+      const result = readContextPressure(contextDir);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("writeContextPressure", () => {
+    it("writes context-pressure.json with updated level", () => {
+      const data: ContextPressure = {
+        usedPercentage: 70,
+        timestamp: "2026-02-20T12:00:00Z",
+        lastNotifiedLevel: "info",
+      };
+      writeContextPressure(contextDir, data);
+      const content = fs.readFileSync(
+        path.join(contextDir, "context-pressure.json"),
+        "utf-8",
+      );
+      expect(JSON.parse(content)).toEqual(data);
+    });
+  });
+
+  describe("getProgressSummary", () => {
+    it("returns entry count and recent headings", () => {
+      const content = [
+        "## 2026-02-20 — Task 3 complete",
+        "- Details",
+        "## 2026-02-19 — Task 2 complete",
+        "- Details",
+        "## 2026-02-18 — Task 1 complete",
+        "- Details",
+      ].join("\n");
+      fs.writeFileSync(path.join(contextDir, "progress.md"), content);
+      const result = getProgressSummary(
+        path.join(contextDir, "progress.md"),
+        3,
+      );
+      expect(result.entryCount).toBe(3);
+      expect(result.recentHeadings).toEqual([
+        "2026-02-20 — Task 3 complete",
+        "2026-02-19 — Task 2 complete",
+        "2026-02-18 — Task 1 complete",
+      ]);
+    });
+
+    it("limits headings to requested count", () => {
+      const content = Array.from(
+        { length: 10 },
+        (_, i) => `## Entry ${i + 1}\nDetails`,
+      ).join("\n");
+      fs.writeFileSync(path.join(contextDir, "progress.md"), content);
+      const result = getProgressSummary(
+        path.join(contextDir, "progress.md"),
+        3,
+      );
+      expect(result.entryCount).toBe(10);
+      expect(result.recentHeadings).toHaveLength(3);
+      expect(result.recentHeadings[0]).toBe("Entry 1");
+    });
+
+    it("returns zero count and empty headings when file does not exist", () => {
+      const result = getProgressSummary(
+        path.join(contextDir, "nonexistent.md"),
+        3,
+      );
+      expect(result.entryCount).toBe(0);
+      expect(result.recentHeadings).toEqual([]);
+    });
+
+    it("returns zero count for empty file", () => {
+      fs.writeFileSync(path.join(contextDir, "progress.md"), "# Progress\n");
+      const result = getProgressSummary(
+        path.join(contextDir, "progress.md"),
+        3,
+      );
+      expect(result.entryCount).toBe(0);
+      expect(result.recentHeadings).toEqual([]);
+    });
+  });
+
+  describe("detectPersistenceFiles with marker files", () => {
+    it("detects compound-last-run.json", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "compound-last-run.json"),
+        JSON.stringify({ timestamp: "2026-02-20T12:00:00Z", promotedCount: 1 }),
+      );
+      const result = detectPersistenceFiles(contextDir);
+      expect(result.map((f) => f.name)).toContain("compound-last-run.json");
+    });
+
+    it("detects last-compact.json", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        JSON.stringify({ timestamp: "2026-02-20T12:00:00Z" }),
+      );
+      const result = detectPersistenceFiles(contextDir);
+      expect(result.map((f) => f.name)).toContain("last-compact.json");
+    });
+
+    it("detects context-pressure.json", () => {
+      fs.writeFileSync(
+        path.join(contextDir, "context-pressure.json"),
+        JSON.stringify({ usedPercentage: 60 }),
+      );
+      const result = detectPersistenceFiles(contextDir);
+      expect(result.map((f) => f.name)).toContain("context-pressure.json");
     });
   });
 

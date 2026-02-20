@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { readStdin, writeJson } from "./lib/io.js";
 import { getMarkerDir, cleanSessionMarkers } from "./lib/markers.js";
-import { detectPersistenceFiles } from "./lib/context-files.js";
+import { detectPersistenceFiles, readLastCompact } from "./lib/context-files.js";
 import { loadPraxisConfig } from "./lib/praxis-config.js";
 import { getString } from "./lib/types.js";
 try {
@@ -29,11 +29,33 @@ try {
         const fileLines = persistenceFiles.map((f) => {
             const dateStr = f.mtime.toISOString().replace(/T/, " ").replace(/\..+/, "").slice(0, 16);
             if (f.entryCount !== undefined) {
-                return `- ${f.name} (${f.entryCount} entries, updated: ${dateStr})`;
+                const parts = [`${f.entryCount} entries`];
+                if (f.avgConfirmed !== undefined && f.avgConfirmed > 0) {
+                    parts.push(`avg confirmed: ${f.avgConfirmed.toFixed(1)}`);
+                }
+                if (f.unverifiedCount !== undefined && f.unverifiedCount > 0) {
+                    parts.push(`${f.unverifiedCount} unverified`);
+                }
+                parts.push(`updated: ${dateStr}`);
+                return `- ${f.name} (${parts.join(", ")})`;
             }
             return `- ${f.name} (updated: ${dateStr})`;
         });
         skillContent += `\n\n## Persistence Files Available\nThe following context files exist. Read them if relevant to your current task:\n${fileLines.join("\n")}`;
+    }
+    // Compact recovery guidance (Layer 3)
+    const lastCompact = readLastCompact(contextDir);
+    if (lastCompact) {
+        const { compoundRun, progressSummary } = lastCompact;
+        const headingsList = progressSummary.recentHeadings.length > 0
+            ? ` Recent work: ${progressSummary.recentHeadings.join(", ")}.`
+            : "";
+        if (compoundRun) {
+            skillContent += `\n\n## Compact Recovery\nCompact occurred. Learnings preserved via /compound. Read persistence files to resume.`;
+        }
+        else {
+            skillContent += `\n\n## Compact Recovery\nCompact occurred. ${progressSummary.entryCount} entries in progress.md were not promoted to learnings.${headingsList} Run /claude-praxis:compound to review and preserve knowledge.`;
+        }
     }
     writeJson({
         hookSpecificOutput: {

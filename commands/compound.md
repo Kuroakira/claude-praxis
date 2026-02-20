@@ -17,15 +17,15 @@ Invoke skill `context-persistence`, then execute both phases sequentially.
 
 From progress.md, I found the following promotable learnings:
 
-| # | Learning | Context / Rationale | Proposed Destination | Level |
-|---|----------|--------------------|--------------------|-------|
-| 1 | "JWT chosen over session-based auth" | "Stateless requirement, multiple API consumers" | project learnings | design |
-| 2 | "Scope creep on auth feature" | "Started login, ended up adding 2FA" | project learnings | feature-spec |
-| 3 | "deny-by-default for error paths" | "Silent allow on parse failure = gate bypass" | project learnings | coding |
-| 4 | "CORS middleware must come before auth" | "Auth middleware rejects preflight requests otherwise" | global learnings | — |
-| 5 | "Never use eval()" | "Arbitrary code execution risk" | code-quality-rules | — |
-| 6 | "Design Docs should focus on WHY, not HOW" | "HOW becomes outdated when implementation changes" | framework improvement → design-doc-format | — |
-| 7 | "Fixed typo in line 42" | — | discard | — |
+| # | Learning | Context / Rationale | Proposed Destination | Level | Initial Confidence |
+|---|----------|--------------------|--------------------|-------|--------------------|
+| 1 | "JWT chosen over session-based auth" | "Stateless requirement, multiple API consumers" | project learnings | design | 1回 \| today \| implement |
+| 2 | "Scope creep on auth feature" | "Started login, ended up adding 2FA" | project learnings | feature-spec | 1回 \| today \| implement |
+| 3 | "deny-by-default for error paths" | "Silent allow on parse failure = gate bypass" | project learnings | coding | 1回 \| today \| implement |
+| 4 | "CORS middleware must come before auth" | "Auth middleware rejects preflight requests otherwise" | global learnings | — | — |
+| 5 | "Never use eval()" | "Arbitrary code execution risk" | code-quality-rules | — | — |
+| 6 | "Design Docs should focus on WHY, not HOW" | "HOW becomes outdated when implementation changes" | framework improvement → design-doc-format | — | — |
+| 7 | "Fixed typo in line 42" | — | discard | — | — |
 
 Adjust any routing? (or "OK" to proceed)
 ```
@@ -36,12 +36,32 @@ Adjust any routing? (or "OK" to proceed)
 
 **Important**: Every learning MUST include its context/rationale — the WHY behind the decision or discovery. This context is what makes the learning reusable: when a similar situation arises later, we can ask "does the same rationale still apply?" instead of blindly repeating the same choice.
 
+**Initial Confidence column**: Only for `project learnings` destination. All new entries start at `1回 | {today's date} | {source phase}`. The promotion itself is the first confirmation. Replace `today` with the actual date (YYYY-MM-DD) and the source phase with the phase where the learning was discovered (e.g., implement, design, debug).
+
 4. Wait for human confirmation or adjustments before writing
 5. For quality rule candidates, follow the Rule Evolution Protocol in `code-quality-rules`:
    - Propose the rule to the human
    - If approved, add to SKILL.md with examples
-6. After confirmation, write to destinations and clean up promoted entries from `progress.md`
-7. Report final results
+6. After confirmation, write to destinations with the `- **Confirmed**:` field and clean up promoted entries from `progress.md`
+
+**Writing format**: Each promoted entry is written with four fields:
+```markdown
+## [entry title]
+- **Learning**: [what was learned]
+- **Context**: [why — rationale and discovery context]
+- **Implication**: [when/how to apply]
+- **Confirmed**: 1回 | 2026-02-20 | implement
+```
+
+7. **Write execution marker**: After writing promoted entries, write `.claude/context/compound-last-run.json`:
+   ```json
+   { "timestamp": "<current ISO timestamp>", "promotedCount": <number of entries promoted> }
+   ```
+   This marker is read by PreCompact and Stop hooks to determine if /compound was executed before compact.
+
+8. **Reset context pressure**: If `.claude/context/context-pressure.json` exists, delete it. Knowledge preservation is complete, so the urgency signal is no longer relevant. The next StatusLine update will recreate it if usage is still high.
+
+9. Report final results
 
 | Destination | Level | Target File | Criteria |
 |-------------|-------|-------------|----------|
@@ -80,18 +100,26 @@ After promotion is complete, review existing learnings for compression opportuni
 ```
 🗜️ Stock Compression Proposal
 
-| # | Category | Target Entries | Proposed Action | Rationale |
-|---|----------|---------------|-----------------|-----------|
-| 1 | Dedup | "deny-by-default" + "exit 2 on errors" | Merge into single entry | Same pattern, different expressions |
-| 2 | Obsolete | "Bash heredoc escaping" | Delete | Node.js migration complete |
-| 3 | Synthesize | 3 hook state patterns | Unify: "hooks = mechanical state checks" | Common principle discovered |
+| # | Category | Target Entries | Current Confidence | Proposed Action | Rationale |
+|---|----------|---------------|-------------------|-----------------|-----------|
+| 1 | Dedup | "deny-by-default" + "exit 2 on errors" | 3回 + 2回 | Merge (→ 5回) | Same pattern, different expressions |
+| 2 | Obsolete | "Bash heredoc escaping" | 4回 | Delete | Node.js migration complete |
+| 3 | Synthesize | 3 hook state patterns | 2回, 3回, 1回 | Unify (→ 1回, new) | Common principle discovered |
+| 4 | Confirm | "deny-by-default pattern" | 3回 | Confirm (→ 4回) | Still valid, increment |
 
 Approve compressions? (adjust or "OK" to proceed)
 ```
 
+**Confidence handling per operation**:
+- **Dedup (Merge)**: Sum confirmation counts, union phases, use latest date
+- **Obsolete (Delete)**: Entry is removed. High confidence does NOT prevent deletion — if the premise is invalid, delete regardless of count
+- **Synthesize (Unify)**: New abstracted entry starts at `1回`. The original entries' counts are NOT inherited — the synthesis is a new insight. Record "Synthesized from N entries" in the Context field
+- **Confirm (Increment)**: When an existing entry is reviewed and still valid, increment its count, update date, add current phase
+
 4. Wait for human confirmation
 5. Execute approved compressions
-6. Report: entries before → entries after per file
+6. For entries without a `- **Confirmed**:` field (unverified/migrated entries), add `- **Confirmed**: 1回 | {today} | compound` upon review confirmation
+7. Report: entries before → entries after per file, include confidence changes
 
 **Rationale is required** for every compression candidate. Without a clear reason, the proposal is noise.
 

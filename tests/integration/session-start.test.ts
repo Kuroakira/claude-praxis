@@ -241,4 +241,137 @@ describe("session-start integration", () => {
     expect(ctx).toMatch(/learnings\.md \(updated:/);
     expect(ctx).not.toMatch(/learnings\.md \(\d+ entries/);
   });
+
+  it("shows avg confirmed for learnings file with Confirmed fields", () => {
+    writeSkillFile("# Getting Started");
+    const contextDir = path.join(tmpDir, ".claude", "context");
+    fs.mkdirSync(contextDir, { recursive: true });
+    const content = [
+      "# Learnings",
+      "## Entry 1",
+      "- **Learning**: something",
+      "- **Confirmed**: 4回 | 2026-02-18 | implement, design",
+      "## Entry 2",
+      "- **Learning**: another",
+      "- **Confirmed**: 2回 | 2026-02-15 | review",
+    ].join("\n");
+    fs.writeFileSync(path.join(contextDir, "learnings-coding.md"), content);
+
+    const result = runHook({ session_id: "test-session" });
+    const output = JSON.parse(result.stdout);
+    const ctx = output.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("learnings-coding.md (2 entries, avg confirmed: 3.0");
+  });
+
+  it("shows unverified count when entries lack Confirmed field", () => {
+    writeSkillFile("# Getting Started");
+    const contextDir = path.join(tmpDir, ".claude", "context");
+    fs.mkdirSync(contextDir, { recursive: true });
+    const content = [
+      "# Learnings",
+      "## Entry 1",
+      "- **Learning**: no confidence",
+      "## Entry 2",
+      "- **Learning**: also no confidence",
+    ].join("\n");
+    fs.writeFileSync(path.join(contextDir, "learnings-design.md"), content);
+
+    const result = runHook({ session_id: "test-session" });
+    const output = JSON.parse(result.stdout);
+    const ctx = output.hookSpecificOutput.additionalContext;
+    expect(ctx).toContain("learnings-design.md (2 entries, 2 unverified");
+  });
+
+  describe("compact recovery guidance", () => {
+    it("injects compound-not-run guidance when last-compact.json shows compoundRun false", () => {
+      writeSkillFile("# Getting Started");
+      const contextDir = path.join(tmpDir, ".claude", "context");
+      fs.mkdirSync(contextDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        JSON.stringify({
+          timestamp: "2026-02-20T12:00:00Z",
+          compoundRun: false,
+          progressSummary: { entryCount: 5, recentHeadings: ["Task A", "Task B"] },
+          confidenceSummary: { totalEntries: 3, avgConfirmed: 1.5, unverifiedCount: 1 },
+        }),
+      );
+
+      const result = runHook({ session_id: "test-session" });
+      const output = JSON.parse(result.stdout);
+      const ctx = output.hookSpecificOutput.additionalContext;
+      expect(ctx).toContain("Compact occurred");
+      expect(ctx).toContain("/claude-praxis:compound");
+      expect(ctx).toContain("not promoted");
+    });
+
+    it("injects compound-already-run guidance when last-compact.json shows compoundRun true", () => {
+      writeSkillFile("# Getting Started");
+      const contextDir = path.join(tmpDir, ".claude", "context");
+      fs.mkdirSync(contextDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        JSON.stringify({
+          timestamp: "2026-02-20T12:00:00Z",
+          compoundRun: true,
+          progressSummary: { entryCount: 2, recentHeadings: ["Task A"] },
+          confidenceSummary: { totalEntries: 5, avgConfirmed: 2.0, unverifiedCount: 0 },
+        }),
+      );
+
+      const result = runHook({ session_id: "test-session" });
+      const output = JSON.parse(result.stdout);
+      const ctx = output.hookSpecificOutput.additionalContext;
+      expect(ctx).toContain("Compact occurred");
+      expect(ctx).toContain("preserved");
+    });
+
+    it("does not inject compact guidance when last-compact.json does not exist", () => {
+      writeSkillFile("# Getting Started");
+      const result = runHook({ session_id: "test-session" });
+      const output = JSON.parse(result.stdout);
+      const ctx = output.hookSpecificOutput.additionalContext;
+      expect(ctx).not.toContain("Compact occurred");
+    });
+
+    it("degrades gracefully when last-compact.json is corrupt", () => {
+      writeSkillFile("# Getting Started");
+      const contextDir = path.join(tmpDir, ".claude", "context");
+      fs.mkdirSync(contextDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        "not valid json",
+      );
+
+      const result = runHook({ session_id: "test-session" });
+      expect(result.exitCode).toBe(0);
+      const output = JSON.parse(result.stdout);
+      const ctx = output.hookSpecificOutput.additionalContext;
+      expect(ctx).not.toContain("Compact occurred");
+    });
+
+    it("includes progress summary in compact guidance", () => {
+      writeSkillFile("# Getting Started");
+      const contextDir = path.join(tmpDir, ".claude", "context");
+      fs.mkdirSync(contextDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(contextDir, "last-compact.json"),
+        JSON.stringify({
+          timestamp: "2026-02-20T12:00:00Z",
+          compoundRun: false,
+          progressSummary: {
+            entryCount: 5,
+            recentHeadings: ["Implement auth", "Fix bug"],
+          },
+          confidenceSummary: { totalEntries: 0, avgConfirmed: 0, unverifiedCount: 0 },
+        }),
+      );
+
+      const result = runHook({ session_id: "test-session" });
+      const output = JSON.parse(result.stdout);
+      const ctx = output.hookSpecificOutput.additionalContext;
+      expect(ctx).toContain("5 entries");
+      expect(ctx).toContain("Implement auth");
+    });
+  });
 });

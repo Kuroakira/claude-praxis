@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { parseFileConfidence } from "./confidence-parser.js";
 const TRACKED_FILES = [
     "task_plan.md",
     "progress.md",
@@ -7,6 +8,9 @@ const TRACKED_FILES = [
     "learnings-feature-spec.md",
     "learnings-design.md",
     "learnings-coding.md",
+    "compound-last-run.json",
+    "last-compact.json",
+    "context-pressure.json",
 ];
 export function detectPersistenceFiles(contextDir, globalLearningsPath) {
     const results = [];
@@ -19,6 +23,11 @@ export function detectPersistenceFiles(contextDir, globalLearningsPath) {
                 if (name === "progress.md" || name.startsWith("learnings-")) {
                     const content = fs.readFileSync(filePath, "utf-8");
                     info.entryCount = (content.match(/^## /gm) ?? []).length;
+                    if (name.startsWith("learnings-")) {
+                        const stats = parseFileConfidence(content);
+                        info.avgConfirmed = stats.avgConfirmed;
+                        info.unverifiedCount = stats.unverifiedCount;
+                    }
                 }
                 results.push(info);
             }
@@ -65,4 +74,92 @@ export function updateCompactTimestamp(filePath) {
         lines.splice(1, 0, `Last compacted: ${timestamp}`);
     }
     fs.writeFileSync(filePath, lines.join("\n"));
+}
+function readJsonFile(filePath) {
+    try {
+        const content = fs.readFileSync(filePath, "utf-8");
+        return JSON.parse(content);
+    }
+    catch {
+        return null;
+    }
+}
+function isRecord(value) {
+    return typeof value === "object" && value !== null;
+}
+function writeJsonFile(dir, fileName, data) {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, fileName), JSON.stringify(data, null, 2));
+}
+function isCompoundLastRun(data) {
+    if (!isRecord(data))
+        return false;
+    return typeof data.timestamp === "string" && typeof data.promotedCount === "number";
+}
+function isLastCompact(data) {
+    if (!isRecord(data))
+        return false;
+    if (typeof data.timestamp !== "string" || typeof data.compoundRun !== "boolean")
+        return false;
+    if (!isRecord(data.progressSummary))
+        return false;
+    const ps = data.progressSummary;
+    if (typeof ps.entryCount !== "number" || !Array.isArray(ps.recentHeadings))
+        return false;
+    if (!isRecord(data.confidenceSummary))
+        return false;
+    const cs = data.confidenceSummary;
+    if (typeof cs.totalEntries !== "number" || typeof cs.avgConfirmed !== "number" || typeof cs.unverifiedCount !== "number")
+        return false;
+    return true;
+}
+function isContextPressure(data) {
+    if (!isRecord(data))
+        return false;
+    if (typeof data.usedPercentage !== "number" || typeof data.timestamp !== "string")
+        return false;
+    if (typeof data.lastNotifiedLevel !== "string")
+        return false;
+    const validLevels = ["none", "info", "urgent"];
+    if (!validLevels.includes(data.lastNotifiedLevel))
+        return false;
+    return true;
+}
+export function readCompoundLastRun(contextDir) {
+    const data = readJsonFile(path.join(contextDir, "compound-last-run.json"));
+    return isCompoundLastRun(data) ? data : null;
+}
+export function writeCompoundLastRun(contextDir, data) {
+    writeJsonFile(contextDir, "compound-last-run.json", data);
+}
+export function readLastCompact(contextDir) {
+    const data = readJsonFile(path.join(contextDir, "last-compact.json"));
+    return isLastCompact(data) ? data : null;
+}
+export function writeLastCompact(contextDir, data) {
+    writeJsonFile(contextDir, "last-compact.json", data);
+}
+export function readContextPressure(contextDir) {
+    const data = readJsonFile(path.join(contextDir, "context-pressure.json"));
+    return isContextPressure(data) ? data : null;
+}
+export function writeContextPressure(contextDir, data) {
+    writeJsonFile(contextDir, "context-pressure.json", data);
+}
+export function getProgressSummary(filePath, maxHeadings) {
+    if (!fs.existsSync(filePath)) {
+        return { entryCount: 0, recentHeadings: [] };
+    }
+    const content = fs.readFileSync(filePath, "utf-8");
+    const lines = content.split("\n");
+    const headings = [];
+    for (const line of lines) {
+        if (line.startsWith("## ")) {
+            headings.push(line.slice(3).trim());
+        }
+    }
+    return {
+        entryCount: headings.length,
+        recentHeadings: headings.slice(0, maxHeadings),
+    };
 }

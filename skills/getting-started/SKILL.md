@@ -127,10 +127,12 @@ When the user starts a conversation or gives a new task, detect the context and 
 | /claude-praxis:research | Findings summarized, recommendations clear | "Research done. Ready for /claude-praxis:design?" |
 | /claude-praxis:design | Design Doc written, human approved | "Design approved. Ready for /claude-praxis:implement?" |
 | /claude-praxis:plan | Tasks defined with file paths and tests | "Plan ready. Start /claude-praxis:implement?" |
-| /claude-praxis:implement | All tasks done, review complete, checks passing | "All green, review done. Capture learnings with /claude-praxis:compound?" |
-| /claude-praxis:debug | Investigation Report written, human reviewed | "Investigation complete. Ready for /claude-praxis:implement to fix?" |
-| /claude-praxis:review | Review feedback addressed | "Review done. Capture learnings with /claude-praxis:compound?" |
+| /claude-praxis:implement | All tasks done, review complete, checks passing | "All green, review done. Capture learnings with /claude-praxis:compound?" (suggest if progress.md has entries) |
+| /claude-praxis:debug | Investigation Report written, human reviewed | "Investigation complete. Ready for /claude-praxis:implement to fix? Also consider /claude-praxis:compound if progress.md has entries." |
+| /claude-praxis:review | Review feedback addressed | "Review done. Capture learnings with /claude-praxis:compound?" (suggest if progress.md has entries) |
 | /claude-praxis:compound | Learnings promoted | Session complete or next task |
+
+**When to suggest /compound**: After any phase that produces entries in progress.md (implement, debug, review), always suggest /compound. The Stop hook will also remind if progress.md has unpromoted entries. This ensures knowledge preservation happens at natural work boundaries, not just when context pressure rises.
 
 ## Contextual Recall of Past Learnings
 
@@ -145,6 +147,11 @@ When learnings files exist (`learnings-feature-spec.md`, `learnings-design.md`, 
 2. Ask whether the **assumptions still hold**, not whether they remember it
 3. If the human says "same situation", apply the learning. If they say "different", explore the new context together
 4. Do NOT quiz the human ("Do you remember?"). The goal is judgment, not memorization
+5. When a learning has a `- **Confirmed**:` field, include the confidence metadata in the presentation:
+
+> "Previously we chose [X] because [rationale]. (Confirmed [N] times, last confirmed [date], verified in [phases].) Does the same assumption hold here?"
+
+**Prioritization guideline**: When multiple learnings are relevant, prefer presenting entries with higher confirmation counts and more diverse confirmed phases first. However, do NOT exclude low-confidence entries — present them with their metadata so the human can judge.
 
 **When NOT to recall**: Trivial or universal rules (e.g., "don't use eval") should be applied silently. Contextual recall is for decisions that depend on project context, trade-offs, or architectural choices.
 
