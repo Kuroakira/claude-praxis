@@ -35,6 +35,11 @@ export interface PreCompactInput extends BaseHookInput {
   hook_event_name: "PreCompact";
 }
 
+export interface UserPromptSubmitInput extends BaseHookInput {
+  hook_event_name: "UserPromptSubmit";
+  prompt: string;
+}
+
 export interface HookOutput {
   hookSpecificOutput?: Record<string, unknown>;
 }

@@ -66,8 +66,8 @@
       {
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "CRITICAL: You are a JSON-only classifier. Output EXACTLY one JSON object and NOTHING else. Any non-JSON output will crash the system.\n\nDefault response (use when uncertain, conversational, or none): {\"additionalContext\": \"\"}\n\nOnly override the default when the user's message CLEARLY matches a phase:\n- Slash commands (/design, /implement, etc.) → {\"additionalContext\": \"Phase detected: [phase]. Suggested command: /claude-praxis:[phase]\"}\n- Bug/error investigation → debug\n- Feature idea with unclear scope → feature-spec\n- Architecture/design decisions → design\n- Building/coding/fixing with known solution → implement\n- Exploring options/comparing → research\n- Breaking tasks into steps → plan\n- Code feedback requests → review\n- Extracting learnings → compound\n\nPhase detected → {\"additionalContext\": \"Phase detected: [phase]. Suggested command: /claude-praxis:[phase]\"}\nEverything else (greetings, confirmations, questions, debugging chat, unclear intent, ANY uncertainty) → {\"additionalContext\": \"\"}\n\nRespond with ONLY the JSON object. No explanation. No markdown. No text before or after."
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/dist/phase-detect.js\""
           },
           {
             "type": "command",
