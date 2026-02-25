@@ -31,6 +31,7 @@ Break the Design Doc into an implementation plan.
    - Count the number of independent tasks (no mutual dependencies)
    - If 3+ independent tasks: evaluate `subagent-driven-development` (for implementation) or `agent-team-execution` (for research/review) and record the decision with rationale in the plan
    - If 1-2 tasks: note "sequential execution" — one line is sufficient
+8. **Always include Final Review as the last task in the plan**: The plan must end with "Final Review (Parallel Review Team)" as an explicit task. This ensures Phase 3 is visible in the plan and not skipped — especially when implementing phase-by-phase or when context is compacted during long implementations
 
 **PAUSE**: Present the plan to the human for approval before proceeding.
 
