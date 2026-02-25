@@ -47,6 +47,23 @@ try {
     }
   }
 
+  // Implement final-review gate (blocking)
+  if (hasSkill(markerDir, sessionId, "implement")) {
+    const finalReviewMarker = path.join(
+      markerDir,
+      `${sessionId}-implement-final-review`,
+    );
+    if (!markerExists(finalReviewMarker)) {
+      const output: StopBlockOutput = {
+        decision: "block",
+        reason:
+          "/implement workflow detected but Final Review has not been completed. Complete Phase 3 (Final Review with Parallel Review Team) before ending.",
+      };
+      writeJson(output);
+      process.exit(0);
+    }
+  }
+
   // /compound advisory (non-blocking)
   if (shouldSuggestCompound(contextDir)) {
     writeJson({

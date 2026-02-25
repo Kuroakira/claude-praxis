@@ -10,7 +10,10 @@ This is an end-to-end workflow. Execute all phases sequentially. Human input is 
 
 ## Phase 1: Planning
 
-Break the Design Doc into an implementation plan.
+Planning creates an implementation-specific plan distinct from the Design Doc's phase/task structure. Even if the Design Doc already defines phases and tasks, this planning step is required because:
+- The Design Doc defines WHAT to build. The implementation plan defines HOW (file paths, test ordering, verification steps)
+- Final Review must be an explicit task in every plan — the Design Doc does not include this
+- The plan must be presented to the human for approval before execution begins
 
 1. **Read the Design Doc**: Understand the full scope and design decisions. If no Design Doc exists (direct implementation request), read the codebase to understand scope and create the plan from the user's intent
 2. **Scout the codebase**: Dispatch a Scout agent (Task tool, subagent_type: `claude-praxis:scout`) to explore the codebase for project structure, existing patterns, integration points, and constraints relevant to this implementation. Scout findings are required input for the plan — each task's "Existing patterns" field (step 5) must reference specific Scout findings or equivalent investigation data.
@@ -36,6 +39,8 @@ Break the Design Doc into an implementation plan.
 **PAUSE**: Present the plan to the human for approval before proceeding.
 
 ## Phase 2: Task Execution (repeat per task)
+
+Before executing any task, verify that the plan includes "Final Review (Parallel Review Team)" as the last task. If it does not, return to Phase 1 and complete planning before proceeding.
 
 For each task in the approved plan, execute this cycle:
 
@@ -159,3 +164,11 @@ Verification source: Bug report patterns, regression examples, production incide
 - Rationale: [what was learned during review]
 - Domain: [topic tag for future matching]
 ```
+
+**Mark Final Review complete**: After recording to progress.md, touch the Final Review marker to satisfy the Stop hook gate:
+
+```bash
+touch "/tmp/claude-praxis-markers/${sessionId}-implement-final-review"
+```
+
+where `${sessionId}` is the current session ID. This marker signals that Phase 3 completed. The Stop hook will block termination if `/implement` was invoked but this marker is absent.

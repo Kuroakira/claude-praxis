@@ -136,6 +136,101 @@ describe("stop-verification-gate integration", () => {
     expect(result.exitCode).toBe(0);
   });
 
+  describe("implement final-review gate", () => {
+    it("blocks when implement invoked but final-review marker missing", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "implement\nverification-before-completion\n",
+      );
+      fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      expect(result.exitCode).toBe(0);
+      const output = JSON.parse(result.stdout);
+      expect(output.decision).toBe("block");
+      expect(output.reason).toContain("Final Review");
+    });
+
+    it("allows when implement and final-review marker both exist", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "implement\nverification-before-completion\n",
+      );
+      fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
+      fs.writeFileSync(
+        path.join(markerDir, "test-session-implement-final-review"),
+        "",
+      );
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout.trim()).toBe("");
+    });
+
+    it("does not fire when implement not invoked", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "verification-before-completion\n",
+      );
+      fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout.trim()).toBe("");
+    });
+
+    it("block message includes actionable guidance for final-review", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "implement\nverification-before-completion\n",
+      );
+      fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      const output = JSON.parse(result.stdout);
+      expect(output.reason).toContain("Parallel Review Team");
+    });
+
+    it("verification gate takes priority over final-review gate", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "implement\n",
+      );
+      fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      const output = JSON.parse(result.stdout);
+      expect(output.decision).toBe("block");
+      expect(output.reason).toContain("verification-before-completion");
+    });
+
+    it("accepts prefixed implement skill name", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "claude-praxis:implement\nverification-before-completion\n",
+      );
+      fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      expect(result.exitCode).toBe(0);
+      const output = JSON.parse(result.stdout);
+      expect(output.decision).toBe("block");
+      expect(output.reason).toContain("Final Review");
+    });
+  });
+
   describe("/compound advisory", () => {
     let tmpDir: string;
     let contextDir: string;
