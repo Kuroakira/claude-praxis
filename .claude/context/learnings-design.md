@@ -25,7 +25,7 @@
 - **Learning**: Design Docで本文記述のみの操作（暗黙的なフロー）がある場合、コマンドやUIの提案テーブルに明示的な操作として昇格させると、ユーザーが意識的に選択できるようになる
 - **Context**: Confidence-Scored LearningのDesign Docでは「既存Stockのレビュー時の確認更新」を本文で説明していたが、圧縮提案テーブルには3操作（Dedup/Obsolete/Synthesize）のみだった。4つ目の「Confirm（インクリメント）」操作として表面化したことで、ユーザーが操作を選択可能に。レビュアーも「improvement over the Design Doc」と判定
 - **Implication**: command/skillの設計時、Design Docの散文的な記述に埋もれている操作がないか確認する。ユーザーが判断する場面では、暗黙より明示の方が良い
-- **Confirmed**: 1回 | 2026-02-20 | implement
+- **Confirmed**: 2回 | 2026-02-25 | implement, design
 
 ## 単一スコア(0.0-1.0)より多次元メタデータが人間の判断に有用
 
@@ -38,3 +38,17 @@
 - **Learning**: 外部プロセスがファイルにデータを書き込み、hookがそれを読む設計では、外部側は生データ（数値・タイムスタンプ）のみ書き込み、状態遷移（通知レベルのエスカレーション等）は消費側hookが所有すべき
 - **Context**: StatusLine BridgeでStatusLineが`lastNotifiedLevel: "info"`を書く設計にしたところ、hook側の`=== "none"`チェックでinfo通知が到達不能になった。修正: StatusLineは常に`"none"`を書き、hookが通知後に`"info"` → `"urgent"`へエスカレーションして書き戻す。責務分離: writer = データ報告、consumer = 状態管理
 - **Implication**: ファイルベースのプロセス間連携では、書き込み側と読み込み側の状態管理責務を明確に分離する。双方が同じフィールドを更新する設計は競合の原因になる
+
+## エージェント特化は独立した検証ソースがある場合のみ有効
+
+- **Learning**: エージェントの特化（専門分担）は、各エージェントが独立した検証ソースを持つ場合に有効。認知的に結合したフェーズ（テスト設計と実装など）を別エージェントに分割すると、コンテキスト共有コストが利点を上回る
+- **Context**: Multi-agent研究で、Research team（Problem Space / Scout / Best Practices / Devil's Advocate）とReview team（Spec Compliance / Code Quality / Security / Devil's Advocate）は各自が独立した検証ソースを持ち並列化が有効。一方、TDDのRED-GREEN-REFACTORはテスト意図と実装が密結合しており、分割は逆効果
+- **Implication**: 並列エージェントを設計する際、「各エージェントが独立に正しさを検証できるか」を判断基準にする。検証ソースが共有される場合は単一エージェントが適切
+- **Confirmed**: 1回 | 2026-02-25 | design
+
+## 因果的依存はcompliance handshakeではなくquality improvementとして設計する
+
+- **Learning**: ワークフローステップの遵守を改善する際、テンプレートの空欄埋め（compliance handshake）ではなく、上流ステップの出力データを下流ステップの必須入力にする因果的依存構造が有効。形式遵守はもっともらしいテキストで充足できるが、因果的依存はデータ生成を要求する
+- **Context**: implement.mdのScout dispatch問題で、テンプレート必須セクション方式は「チェックボックスコンプライアンス」のリスクがあり棄却。Scout findingsをPlanタスク定義の入力要件にすることで、Scoutを実行するか同等の調査を自力で行う必要がある構造にした
+- **Implication**: プロンプトでステップ遵守を求める場合、「セクションを埋めよ」（形式要件）ではなく「このデータを使って次を書け」（入力要件）として設計する
+- **Confirmed**: 1回 | 2026-02-25 | design

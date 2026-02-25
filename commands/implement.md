@@ -13,18 +13,24 @@ This is an end-to-end workflow. Execute all phases sequentially. Human input is 
 Break the Design Doc into an implementation plan.
 
 1. **Read the Design Doc**: Understand the full scope and design decisions. If no Design Doc exists (direct implementation request), read the codebase to understand scope and create the plan from the user's intent
-2. **Scout the codebase**: Dispatch a Scout agent (Task tool, subagent_type: `claude-praxis:scout`) to explore the codebase for project structure, existing patterns, integration points, and constraints relevant to this implementation. Use the Scout's findings to inform the plan
+2. **Scout the codebase**: Dispatch a Scout agent (Task tool, subagent_type: `claude-praxis:scout`) to explore the codebase for project structure, existing patterns, integration points, and constraints relevant to this implementation. Scout findings are required input for the plan — each task's "Existing patterns" field (step 5) must reference specific Scout findings or equivalent investigation data.
+   - **Skip criteria**: Scout may be skipped ONLY when: (a) the change targets a single file explicitly specified by the user with no cross-module integration points, or (b) a Scout was dispatched in the immediately preceding task covering the same codebase area. When skipping, state the specific reason in the plan header. Generic reasons ("scope is clear", "straightforward change") are not sufficient — name the file and explain why no unknown patterns exist.
 3. **Check learnings before starting**: Read `.claude/context/learnings-design.md`, `.claude/context/learnings-coding.md`, and `~/.claude/learnings/global-learnings.md` if they exist. When a past learning is relevant, present it with its original context:
    > "Previously we chose [X] because [rationale]. Does the same assumption hold here, or has the context changed?"
 4. **Break into steps sized for ~500-line PRs**: Each step produces a reviewable, self-contained change. If a step would exceed ~500 lines, split further
 5. For each step, specify:
    - Exact file paths to create or modify
+   - Existing patterns and integration points (cite specific Scout findings or investigation source)
    - What tests to write FIRST (TDD — RED before GREEN)
    - Expected line count estimate
    - Verification steps (typecheck, lint, test, build)
    - Dependencies on other steps
 6. **TDD ordering**: Within each step, list test files before implementation files
-7. For plans with 3+ independent tasks, consider using `subagent-driven-development`
+7. **Dependency analysis and parallelization evaluation**: After defining all tasks, analyze inter-task dependencies:
+   - List which tasks depend on which (shared files, output→input relationships)
+   - Count the number of independent tasks (no mutual dependencies)
+   - If 3+ independent tasks: evaluate `subagent-driven-development` (for implementation) or `agent-team-execution` (for research/review) and record the decision with rationale in the plan
+   - If 1-2 tasks: note "sequential execution" — one line is sufficient
 
 **PAUSE**: Present the plan to the human for approval before proceeding.
 
