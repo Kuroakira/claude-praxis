@@ -45,7 +45,7 @@ Controller (you)
     │          - Flag: anything surprising, non-obvious, or worth understanding
     │          - Human reviews code, asks questions if needed
     │
-    └── After all tasks: final integration review
+    └── After all tasks: parallel review team (see agent-team-execution § Parallel Review Teams)
 ```
 
 ## Key Decisions Briefing
@@ -143,7 +143,8 @@ Code quality review for: [task description]
 |-----------|--------------|-----|
 | Implementation (3+ tasks) | **Subagent (SDD)** | Focused execution + sequential review is manageable |
 | Research (multiple angles) | **Agent Teams** | Parallel exploration + mutual challenge |
-| Code review (multi-focus) | **Agent Teams** | Independent reviewers with cross-challenge |
+| Code review (per-task) | **Subagent (SDD Stage 1-2)** | Lightweight, team overhead exceeds benefit |
+| Code review (final) | **Parallel Review Team** | Independent verification sources, no attention competition |
 | Debugging (unclear root cause) | **Agent Teams** | Competing hypotheses, adversarial testing |
 | Single task | **Direct** | No orchestration overhead needed |
 | Dependent/sequential tasks | **Direct** | Coordination overhead exceeds benefit |
@@ -155,5 +156,6 @@ Code quality review for: [task description]
 - Requires `code-quality-rules` — all implementers must follow quality rules
 - Requires `verification-before-completion` — reviewers must verify independently
 - Requires `test-driven-development` from code-quality-rules — RED/GREEN/REFACTOR per task
+- Final review uses `agent-team-execution` § Parallel Review Teams — 4 parallel reviewers with independent verification sources
 - Key Decisions Briefing feeds into `/compound` — learnings from implementation decisions
 - See `agent-team-execution` for parallel exploration tasks (research, review, debugging)

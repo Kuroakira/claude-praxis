@@ -21,15 +21,15 @@ claude-praxis/
 ├── agents/
 │   ├── implementer.md           # Implementation agent (code-quality-rules preloaded)
 │   ├── reviewer.md              # Code review agent (read-only, code-quality-rules preloaded)
-│   └── researcher.md            # Research agent (haiku, lightweight)
+│   ├── researcher.md            # Research agent (haiku, lightweight)
+│   └── scout.md                 # Codebase exploration agent (haiku, read-only)
 ├── hooks/
-│   ├── hooks.json               # SessionStart + PreCompact + PreToolUse + PostToolUse + Stop + TaskCompleted hook config
+│   ├── hooks.json               # SessionStart + PreCompact + PreToolUse + PostToolUse + Stop hook config
 │   ├── session-start.sh         # Injects getting-started skill + cleans markers
 │   ├── pre-compact.sh           # Trims Flow files before compact
 │   ├── check-skill-gate.sh     # File-type skill gate (code/document/config branching)
 │   ├── mark-skill-invoked.sh   # Records Skill invocations to session markers
-│   ├── stop-verification-gate.sh  # Counter-based completion verification gate
-│   └── task-completed-gate.sh   # Per-task marker gate for TaskCompleted event
+│   └── stop-verification-gate.sh  # Counter-based completion verification gate
 ├── commands/
 │   ├── feature-spec.md          # /feature-spec — AI-driven interview to capture requirements
 │   ├── design.md                # /design — research + outline + write Design Doc
@@ -45,7 +45,7 @@ claude-praxis/
 │   ├── document-quality-rules/  # Document quality rules (structure, terminology, flow)
 │   ├── verification-before-completion/  # No claims without evidence
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
-│   ├── agent-team-execution/    # Parallel exploration: research, review, debugging
+│   ├── agent-team-execution/    # Parallel exploration: research, review teams, debugging
 │   ├── systematic-debugging/    # 4-phase root cause analysis
 │   ├── context-persistence/     # Stock/Flow memory model for context survival
 │   ├── design-doc-format/       # Design Doc specific format (Notion-compatible, WHY over HOW)
@@ -66,17 +66,17 @@ Each phase exists to deepen understanding, not just to produce output.
 Most tasks use these orchestrating commands:
 
 ```
-/claude-praxis:feature-spec → AI-driven interview to capture requirements before design
-/claude-praxis:design       → Research + Outline + Review + Write Design Doc + Quality Check + Present
-/claude-praxis:implement    → Plan + TDD per task + Auto-Review per task + Final Review
+/claude-praxis:feature-spec → AI-driven interview + parallel draft review → FeatureSpec
+/claude-praxis:design       → Parallel Research Team + Outline + Write + Parallel Review Team → Design Doc
+/claude-praxis:implement    → Scout + Plan + TDD per task + Parallel Review Team → Verified code
 /claude-praxis:debug        → Reproduce + Isolate + Diagnose + Document Findings + Present
 ```
 
-`/claude-praxis:feature-spec` captures "what to build and why" through an AI-driven interview. It produces a FeatureSpec document defining problem, scope, and success criteria — before any design or implementation begins. Interactive throughout — the AI asks questions to draw out requirements the user hasn't articulated yet.
+`/claude-praxis:feature-spec` captures "what to build and why" through an AI-driven interview. Before presenting the draft to the human, a parallel review team (Requirements Completeness, Technical Feasibility, Writing Quality, Devil's Advocate) checks it from 4 independent perspectives.
 
-`/claude-praxis:design` handles everything from research to a finished, reviewed Design Doc. The human's only input is final approval.
+`/claude-praxis:design` dispatches a parallel research team (Problem Space, Scout, Best Practices, Devil's Advocate) for multi-angle investigation, then writes the Design Doc and runs a parallel review team (Architecture, User Impact, Writing Quality, Devil's Advocate) before presenting. The human's only input is final approval.
 
-`/claude-praxis:implement` handles everything from planning to verified, reviewed code. The human approves the plan and makes decisions at implementation decision points.
+`/claude-praxis:implement` dispatches a Scout for codebase exploration before planning, executes TDD per task, then runs a parallel review team (Spec Compliance, Code Quality, Security+Performance, Devil's Advocate) as the final review. The human approves the plan and makes decisions at implementation decision points.
 
 `/claude-praxis:debug` investigates problems systematically and produces an Investigation Report. Interactive throughout — the human provides context between phases. The fix itself is done via `/claude-praxis:implement`.
 

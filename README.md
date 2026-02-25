@@ -24,8 +24,9 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 
 | Workflow | What Happens | What You Do |
 |----------|-------------|-------------|
-| `/design` | Researches the space, creates an outline, reviews it internally, writes the full Design Doc, auto-checks quality | Review and approve the final Design Doc |
-| `/implement` | Plans from Design Doc, TDD per task, auto-reviews each task, runs final code review | Approve the plan, make decisions at implementation choice points |
+| `/feature-spec` | AI-driven interview to capture requirements, then a parallel review team (4 independent perspectives) checks the draft before you see it | Answer interview questions, approve the FeatureSpec |
+| `/design` | Parallel research team (4 agents) investigates the space, writes the Design Doc, then a parallel review team checks it before you see it | Review and approve the final Design Doc |
+| `/implement` | Scout explores codebase, plans from Design Doc, TDD per task, then a parallel review team (Spec Compliance, Code Quality, Security+Perf, Devil's Advocate) runs final review | Approve the plan, make decisions at implementation choice points |
 | `/debug` | Reproduces, isolates, diagnoses the problem, documents findings as an Investigation Report | Provide context between phases, review the diagnosis |
 
 ### Supporting Commands
@@ -78,7 +79,7 @@ rm ~/.claude/skills/claude-praxis
 | `code-quality-rules` | Quality rule enforcement and self-evolution |
 | `verification-before-completion` | No claims without fresh evidence |
 | `subagent-driven-development` | Fresh agent per task + two-stage review (implementation) |
-| `agent-team-execution` | Parallel exploration with agent teams (research, review, debugging) |
+| `agent-team-execution` | Parallel exploration (research, review teams, debugging) with independent verification sources |
 | `systematic-debugging` | 4-phase root cause analysis (reproduce, isolate, diagnose, fix) |
 | `context-persistence` | Stock/Flow memory model for context survival across compact/clear |
 | `design-doc-format` | Notion-compatible document format rules |
@@ -91,8 +92,9 @@ rm ~/.claude/skills/claude-praxis
 
 | Command | Purpose |
 |---------|---------|
-| `/design` | **Main workflow**: Research + outline + write Design Doc + quality check + present |
-| `/implement` | **Main workflow**: Plan + TDD per task + auto-review per task + final review |
+| `/feature-spec` | **Main workflow**: AI-driven interview + parallel draft review → FeatureSpec |
+| `/design` | **Main workflow**: Parallel research team + outline + write + parallel review team → Design Doc |
+| `/implement` | **Main workflow**: Scout + plan + TDD per task + parallel review team → verified code |
 | `/debug` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
 | `/research` | Standalone: explore a problem space without committing to a Design Doc |
 | `/plan` | Standalone: create an implementation plan without starting implementation |

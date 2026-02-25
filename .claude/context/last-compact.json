@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-02-24T23:49:11Z",
+  "compoundRun": true,
+  "progressSummary": {
+    "entryCount": 2,
+    "recentHeadings": [
+      "2026-02-25 — /claude-praxis:design: Research complete — Collaborative Multi-Agent Workflows",
+      "2026-02-25 — /claude-praxis:design: Design Doc written — Collaborative Multi-Agent Workflows"
+    ]
+  },
+  "confidenceSummary": {
+    "totalEntries": 10,
+    "avgConfirmed": 1.5,
+    "unverifiedCount": 8
+  }
+}

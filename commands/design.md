@@ -16,18 +16,41 @@ Before starting research, check if past knowledge is relevant to this design tas
 2. When a past learning is relevant, carry it forward into Phase 1 as a constraint or starting point:
    > "Previously we chose [X] because [rationale]. Does the same assumption hold here, or has the context changed?"
 
-## Phase 1: Research
+## Phase 1: Research (Parallel Research Team)
 
-Investigate the problem space to build the foundation for design decisions.
+Dispatch 4 specialized agents in parallel. **Do NOT perform research yourself** — delegate entirely and synthesize only.
 
-1. **Understand the problem space**: Search the web for prior art, similar implementations, and established patterns. Cite all sources with URLs
-2. **Understand "what it should be"**: Research the ideal architecture or approach regardless of the current implementation. Best practices, industry standards, and well-designed OSS projects
-3. **Identify candidate approaches**: Find at least 2-3 distinct ways to solve the problem:
-   - The ideal approach (if built from scratch)
-   - A pragmatic middle ground (meaningful improvement within reasonable cost)
-   - An incremental approach (extending the current implementation)
-4. **Examine the current codebase**: Read relevant existing code to understand the starting point, constraints, and integration points
-5. **Surface constraints**: Identify project-specific constraints that narrow the choices
+### Research Team
+
+Launch all 4 agents simultaneously using Task tool:
+
+**Agent 1 — Problem Space Researcher** (subagent_type: `claude-praxis:researcher`)
+> Search the web for prior art, similar implementations, and known challenges for [topic]. Find at least 2-3 distinct approaches (ideal, pragmatic, incremental). Cite all sources with URLs.
+
+Verification source: External documentation, blog posts, GitHub repositories.
+
+**Agent 2 — Scout (Codebase Analysis)** (subagent_type: `claude-praxis:scout`)
+> Explore the project codebase for: project structure, existing patterns related to [topic], integration points, constraints that affect design choices. Focus exclusively on the codebase.
+
+Verification source: Source code itself.
+
+**Agent 3 — Best Practices Researcher** (subagent_type: `claude-praxis:researcher`)
+> Research the ideal architecture and industry standards for [topic]. Focus on official documentation, standards specifications, and well-designed OSS implementations. Cite all sources with URLs.
+
+Verification source: Official documentation, standards specifications.
+
+**Agent 4 — Devil's Advocate** (subagent_type: `claude-praxis:researcher`)
+> Find failure cases, anti-patterns, risks, and reasons NOT to pursue the proposed approaches for [topic]. Search for postmortems, critical reviews, and known pitfalls. Cite all sources with URLs.
+
+Verification source: Postmortem articles, issue trackers, failure case studies.
+
+### Synthesis
+
+After all agents return:
+1. Reconcile findings — where Researcher A/B recommend an approach, check Devil's Advocate's challenges against it
+2. Resolve contradictions explicitly (state what conflicted and which finding was adopted)
+3. Identify at least 2-3 candidate approaches with trade-offs informed by all 4 perspectives
+4. Carry synthesis forward into Phase 2 — do NOT pass raw agent outputs
 
 Do NOT present research findings to the human separately. Carry them forward into Phase 2.
 
@@ -96,22 +119,37 @@ Expand the outline into the complete Design Doc.
 - Domain: [topic tag for future matching]
 ```
 
-## Phase 5: Auto-Review
+## Phase 5: Auto-Review (Parallel Review Team)
 
-Review the completed Design Doc for quality before presenting to the human.
+Dispatch 4 parallel reviewers to check the Design Doc from independent perspectives. **Do NOT self-review with a checklist** — delegate to specialized reviewers.
 
-| Check | Question |
-|-------|----------|
-| Why over How | Can HOW sections be removed without losing the core argument? If yes, remove them |
-| Newcomer test | Would someone joining the team understand all decisions without asking follow-up questions? |
-| Alternatives quality | For each alternative: is "why Proposal is better" specific to the current context (not generic)? |
-| No local file links | Are all references inline or to shared URLs? |
-| No h4+ | Maximum heading depth is h3? |
-| No ASCII diagrams | All diagrams in mermaid format? |
-| Abstract-to-concrete | Does the document flow from problem context to design specifics throughout? |
-| Self-contained | Does the doc stand alone without requiring external documents to understand? |
+**Reviewer A — Architecture** (subagent_type: `claude-praxis:reviewer`)
+> Review this Design Doc for architecture quality. Check: design decision validity, scalability, maintainability, pattern consistency with existing architecture, whether future extension is unnecessarily constrained. Compare against design principles and well-designed OSS in the same domain.
 
-If any check fails, fix it before proceeding. Do NOT ask the human — fix it internally.
+Verification source: Design principles, architecture pattern best practices, well-designed OSS.
+
+**Reviewer B — User Impact** (subagent_type: `claude-praxis:reviewer`)
+> Review this Design Doc for user impact. Check: UI/UX implications, backward compatibility, migration path, user experience changes. Detect cases where technically correct design negatively impacts users.
+
+Verification source: UX heuristics, accessibility standards, existing user flow impact analysis.
+
+**Reviewer C — Writing Quality** (subagent_type: `claude-praxis:reviewer`)
+> Review this Design Doc for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections, WHY-over-HOW balance, no h4+ headings, no ASCII diagrams (mermaid only), no local file links, all references inline or shared URLs. Apply design-doc-format and document-quality-rules. Would a newcomer understand all decisions without follow-up questions?
+
+Verification source: design-doc-format and document-quality-rules quality criteria.
+
+**Reviewer D — Devil's Advocate (Design Challenge)** (subagent_type: `claude-praxis:reviewer`)
+> Challenge this Design Doc. Under what conditions does this design fail? What if the stated assumptions are wrong? Could a rejected alternative actually be better? What cross-cutting concerns are missing? For each alternative: is "why Proposal is better" specific to the current context, not generic? Find similar design failures.
+
+Verification source: Architecture failure case studies, postmortem articles, over-engineering examples.
+
+### Apply Findings
+
+1. For Critical/Important issues — revise the Design Doc before presenting to human
+2. For Minor issues — note them in the presentation for human judgment
+3. Resolve conflicting reviewer opinions explicitly (state which opinion was adopted and why)
+
+If any issue requires re-checking after revision, re-run only the affected reviewer(s), not the full team.
 
 ## Phase 6: Present for Human Approval
 

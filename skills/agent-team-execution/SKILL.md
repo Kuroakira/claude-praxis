@@ -143,6 +143,70 @@ Report: surviving hypothesis with evidence, disproven hypotheses with reasons.
 
 Understand the surviving hypothesis. You should be able to explain: what caused the bug, why the other hypotheses were wrong, and what to watch for in the future. This understanding feeds into `/compound` as a learning.
 
+## 4. Parallel Review Teams
+
+Use at every review point in workflows — code review, document review, or spec review.
+
+### Why Teams Beat Checklists
+
+A single reviewer checking "spec compliance AND quality AND security AND edge cases" suffers from attention resource competition — while focused on one concern, others get overlooked. Splitting by independent verification source eliminates this structural weakness.
+
+### Selection Principle
+
+**Each reviewer's judgment must be verifiable against a source that is independent of other reviewers' reasoning.** If two reviewers would use the same evidence to reach conclusions, they should be merged into one.
+
+### Team Compositions
+
+**Code Review** (used in `/implement` Final Review):
+
+| Reviewer | Focus | Verification Source |
+|----------|-------|-------------------|
+| A | Spec Compliance | Design Doc / Plan |
+| B | Code Quality | code-quality-rules, project conventions |
+| C | Security + Performance | OWASP Top 10, profiling patterns |
+| D | Devil's Advocate | Bug patterns, production incidents |
+
+**Document Review** (used in `/design` Auto-Review):
+
+| Reviewer | Focus | Verification Source |
+|----------|-------|-------------------|
+| A | Architecture | Design principles, OSS patterns |
+| B | User Impact | UX heuristics, accessibility standards |
+| C | Writing Quality | document-quality-rules, design-doc-format |
+| D | Devil's Advocate | Architecture failure case studies |
+
+**Spec Review** (used in `/feature-spec` Draft Review):
+
+| Reviewer | Focus | Verification Source |
+|----------|-------|-------------------|
+| A | Requirements Completeness | Product patterns, user journey maps |
+| B | Technical Feasibility | Codebase constraints, platform specs |
+| C | Writing Quality | document-quality-rules |
+| D | Devil's Advocate | Requirements anti-patterns, competitor failures |
+
+### Devil's Advocate is Mandatory
+
+Every review team includes a Devil's Advocate. Their verification source is "counter-evidence to the current proposal" — inherently independent from "does it meet criteria X." This prevents groupthink where all reviewers converge on "looks good."
+
+### Prompt Template
+
+```
+Dispatch 4 parallel reviewers for [target]:
+
+- Reviewer A: [Focus] — Check [specific items]. Verification source: [source].
+- Reviewer B: [Focus] — Check [specific items]. Verification source: [source].
+- Reviewer C: [Focus] — Check [specific items]. Verification source: [source].
+- Reviewer D (Devil's Advocate): Challenge the [target]. [specific challenge questions].
+  Verification source: [source].
+
+After all return: synthesize into unified report. For conflicting opinions,
+state which was adopted and why. Address Critical/Important before proceeding.
+```
+
+### Your Role After Review
+
+Read the synthesized findings. For each issue, understand **why** it's a problem. When you fix issues, you should be able to explain the underlying concern to a teammate. Patterns you didn't anticipate become `/compound` candidates.
+
 ## Cost Awareness
 
 Agent teams use significantly more tokens than a single session. Each teammate is a full Claude instance.
@@ -152,6 +216,7 @@ Agent teams use significantly more tokens than a single session. Each teammate i
 | Single session | 1x | Simple tasks |
 | Subagent | 2-3x | Focused tasks, result-only |
 | Agent team (3) | 4-6x | Parallel exploration needed |
+| Review team (4) | 5-8x | Review points in workflows |
 | Agent team (5) | 7-10x | Complex debugging only |
 
 Start with 3 teammates. Only go to 5 for debugging with many plausible hypotheses.
@@ -159,6 +224,7 @@ Start with 3 teammates. Only go to 5 for debugging with many plausible hypothese
 ## Integration
 
 - Research output feeds into `/design` phase — **you** write the Design Doc from findings
+- Review teams are used at every workflow review point: `/feature-spec` Draft Review, `/design` Auto-Review, `/implement` Final Review
 - Review output follows `requesting-code-review` format (severity ratings)
 - Debugging output feeds into fix implementation via `subagent-driven-development`
 - All outputs feed into `/compound` — extract learnings from what agents discovered
