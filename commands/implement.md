@@ -109,10 +109,20 @@ Proceed to the next task. Do NOT wait for human approval between tasks unless a 
 
 ## Phase 3: Final Review (Parallel Review Team)
 
-After ALL tasks are complete:
+After ALL tasks are complete, run the full verification suite one final time across the entire changeset:
 
-1. Run the full verification suite one final time across the entire changeset
-2. Dispatch 4 parallel reviewers to check the implementation from independent perspectives:
+```bash
+npm run typecheck
+npm run lint
+npm run test
+npm run build       # if applicable
+```
+
+All must pass before dispatching the review team.
+
+Dispatch 4 parallel reviewers to check the implementation from independent perspectives. **Do NOT self-review with a checklist** — delegate to specialized reviewers.
+
+Launch all 4 reviewers simultaneously using Task tool:
 
 **Reviewer A — Spec Compliance** (subagent_type: `claude-praxis:reviewer`)
 > Review this implementation for spec compliance. Does the code match the Design Doc/Plan exactly? Are all requirements addressed? Are there deviations from the spec? Report any gaps or mismatches.
@@ -134,9 +144,12 @@ Verification source: OWASP Top 10, performance profiling patterns.
 
 Verification source: Bug report patterns, regression examples, production incident case studies.
 
-3. Synthesize all review findings into a unified report with final severity ratings
-4. Address all Critical and Important findings before declaring implementation complete
-5. Present the final completion report using the `verification-before-completion` Completion Report template
+### Apply Findings
+
+1. For Critical/Important issues — fix the code before declaring implementation complete
+2. For Minor issues — note them in the completion report for human judgment
+3. Resolve conflicting reviewer opinions explicitly (state which opinion was adopted and why)
+4. Present the final completion report using the `verification-before-completion` Completion Report template
 
 **Record to progress.md**: Append an entry summarizing review findings worth remembering.
 
