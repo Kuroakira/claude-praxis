@@ -145,6 +145,8 @@ Understand the surviving hypothesis. You should be able to explain: what caused 
 
 ## 4. Parallel Review Teams
 
+> **Note**: The operational reviewer prompts and configurations live in `parallel-review-team` skill. This section explains the principles (why teams beat checklists, selection principle, Devil's Advocate rationale). For actual reviewer dispatch, invoke `parallel-review-team` with a type parameter.
+
 Use at every review point in workflows — code review, document review, or spec review.
 
 ### Why Teams Beat Checklists

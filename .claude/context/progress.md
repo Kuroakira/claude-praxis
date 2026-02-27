@@ -19,3 +19,8 @@
 - Decision: Created `skills/check-past-learnings/SKILL.md` consolidating Phase 0 from 4 commands + getting-started Contextual Recall. Updated implement.md, design.md, feature-spec.md, debug.md to invoke with role parameter
 - Rationale: Eliminates 5-way duplication of recall logic. Role-based file mapping (requirements/design/implementation/investigation) provides clear abstraction. Full paths in table header, recall angle operationally connected to presentation patterns, unrecognized role fallback added per review findings
 - Domain: layer-architecture, skill-extraction, learnings-recall
+
+## 2026-02-27T10:55Z — /claude-praxis:implement: Step 2 complete — parallel-review-team skill
+- Decision: Created `skills/parallel-review-team/SKILL.md` consolidating reviewer dispatch from 3 commands (implement, design, feature-spec). Updated commands to invoke with type parameter (code-review, document-review, spec-review). Added scoping note to agent-team-execution §4
+- Rationale: Eliminates 3-way duplication of reviewer configurations. Type-based dispatch (code-review/document-review/spec-review) mirrors check-past-learnings role pattern. Review restored lost nuances (newcomer test, context-specific rejection check) and added warning for unrecognized types
+- Domain: layer-architecture, skill-extraction, parallel-review

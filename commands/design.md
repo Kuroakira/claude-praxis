@@ -117,35 +117,7 @@ Expand the outline into the complete Design Doc.
 
 ## Phase 5: Auto-Review (Parallel Review Team)
 
-Dispatch 4 parallel reviewers to check the Design Doc from independent perspectives. **Do NOT self-review with a checklist** — delegate to specialized reviewers.
-
-**Reviewer A — Architecture** (subagent_type: `claude-praxis:reviewer`)
-> Review this Design Doc for architecture quality. Check: design decision validity, scalability, maintainability, pattern consistency with existing architecture, whether future extension is unnecessarily constrained. Compare against design principles and well-designed OSS in the same domain.
-
-Verification source: Design principles, architecture pattern best practices, well-designed OSS.
-
-**Reviewer B — User Impact** (subagent_type: `claude-praxis:reviewer`)
-> Review this Design Doc for user impact. Check: UI/UX implications, backward compatibility, migration path, user experience changes. Detect cases where technically correct design negatively impacts users.
-
-Verification source: UX heuristics, accessibility standards, existing user flow impact analysis.
-
-**Reviewer C — Writing Quality** (subagent_type: `claude-praxis:reviewer`)
-> Review this Design Doc for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections, WHY-over-HOW balance, no h4+ headings, no ASCII diagrams (mermaid only), no local file links, all references inline or shared URLs. Apply design-doc-format and document-quality-rules. Would a newcomer understand all decisions without follow-up questions?
-
-Verification source: design-doc-format and document-quality-rules quality criteria.
-
-**Reviewer D — Devil's Advocate (Design Challenge)** (subagent_type: `claude-praxis:reviewer`)
-> Challenge this Design Doc. Under what conditions does this design fail? What if the stated assumptions are wrong? Could a rejected alternative actually be better? What cross-cutting concerns are missing? For each alternative: is "why Proposal is better" specific to the current context, not generic? Find similar design failures.
-
-Verification source: Architecture failure case studies, postmortem articles, over-engineering examples.
-
-### Apply Findings
-
-1. For Critical/Important issues — revise the Design Doc before presenting to human
-2. For Minor issues — note them in the presentation for human judgment
-3. Resolve conflicting reviewer opinions explicitly (state which opinion was adopted and why)
-
-If any issue requires re-checking after revision, re-run only the affected reviewer(s), not the full team.
+Invoke `parallel-review-team` (type: document-review).
 
 ## Phase 6: Present for Human Approval
 

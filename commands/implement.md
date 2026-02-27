@@ -124,36 +124,9 @@ npm run build       # if applicable
 
 All must pass before dispatching the review team.
 
-Dispatch 4 parallel reviewers to check the implementation from independent perspectives. **Do NOT self-review with a checklist** — delegate to specialized reviewers.
+Invoke `parallel-review-team` (type: code-review).
 
-Launch all 4 reviewers simultaneously using Task tool:
-
-**Reviewer A — Spec Compliance** (subagent_type: `claude-praxis:reviewer`)
-> Review this implementation for spec compliance. Does the code match the Design Doc/Plan exactly? Are all requirements addressed? Are there deviations from the spec? Report any gaps or mismatches.
-
-Verification source: Design Doc and implementation Plan.
-
-**Reviewer B — Code Quality** (subagent_type: `claude-praxis:reviewer`)
-> Review this implementation for code quality. Check: code-quality-rules compliance, pattern consistency with existing project, test quality (no lazy assertions, TDD followed), YAGNI adherence, appropriate error handling.
-
-Verification source: code-quality-rules and project conventions.
-
-**Reviewer C — Security + Performance** (subagent_type: `claude-praxis:reviewer`)
-> Review this implementation for security and performance. Check: OWASP Top 10 vulnerabilities, input validation at boundaries, injection risks, data exposure, algorithmic complexity, unnecessary allocations, N+1 queries, bundle size impact. Severity-rate each finding.
-
-Verification source: OWASP Top 10, performance profiling patterns.
-
-**Reviewer D — Devil's Advocate (Edge Cases + Risks)** (subagent_type: `claude-praxis:reviewer`)
-> Challenge this implementation. What edge cases are missing? Where will this break first in production? What hidden technical debt is being introduced? Even if other reviews pass, what could still go wrong?
-
-Verification source: Bug report patterns, regression examples, production incident case studies.
-
-### Apply Findings
-
-1. For Critical/Important issues — fix the code before declaring implementation complete
-2. For Minor issues — note them in the completion report for human judgment
-3. Resolve conflicting reviewer opinions explicitly (state which opinion was adopted and why)
-4. Present the final completion report using the `verification-before-completion` Completion Report template
+Present the final completion report using the `verification-before-completion` Completion Report template.
 
 **Record to progress.md**: Append an entry summarizing review findings worth remembering.
 

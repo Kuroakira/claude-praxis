@@ -88,33 +88,7 @@ prior art.
 
 ## Phase 4: Draft Review (Parallel Review Team)
 
-Before presenting to the human, dispatch 4 parallel reviewers to check the draft from independent perspectives.
-
-**Reviewer A — Requirements Completeness** (subagent_type: `claude-praxis:reviewer`)
-> Review this FeatureSpec draft for requirements completeness. Check: user story coverage, edge case consideration, acceptance criteria clarity. Are there missing user journeys or overlooked stakeholders? Compare against common feature requirement patterns.
-
-Verification source: Similar product feature lists, user journey map patterns, requirements best practices.
-
-**Reviewer B — Technical Feasibility** (subagent_type: `claude-praxis:reviewer`)
-> Review this FeatureSpec draft for technical feasibility. Is the spec technically achievable within the existing system? Are dependencies and integration points clear? Are there hidden technical constraints that make parts of this spec impractical?
-
-Verification source: Codebase current state, technical constraints, platform specifications.
-
-**Reviewer C — Writing Quality** (subagent_type: `claude-praxis:reviewer`)
-> Review this FeatureSpec draft for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections. Apply document-quality-rules. Would a new team member understand the spec without follow-up questions?
-
-Verification source: document-quality-rules quality criteria.
-
-**Reviewer D — Devil's Advocate (Spec Challenge)** (subagent_type: `claude-praxis:reviewer`)
-> Challenge this FeatureSpec. Is the scope boundary realistic? Does the problem definition capture the real problem? Is the In/Out of Scope line reasonable? What could go wrong with these requirements? Find similar projects that failed and why.
-
-Verification source: Competitor failure cases, requirements anti-patterns, similar project lessons.
-
-### Apply Findings
-
-1. For Critical/Important issues — revise the draft before presenting to human
-2. For Minor issues — note them for human judgment during presentation
-3. Resolve conflicting reviewer opinions explicitly
+Invoke `parallel-review-team` (type: spec-review).
 
 ## Phase 5: Present and Iterate
 
