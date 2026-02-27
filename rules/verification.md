@@ -51,6 +51,9 @@ npm run build       # if applicable
 - test: [PASS/FAIL + count]
 - build: [PASS/FAIL or N/A]
 
+### Understanding Status (optional — only when /understanding-check was executed)
+Understanding Check: [Y] of [X] key decisions explained, [Z] gaps discovered
+
 ### Summary
 [What was changed and why]
 
@@ -69,6 +72,7 @@ npm run build       # if applicable
 | /claude-praxis:implement | → Run /claude-praxis:compound to capture learnings? |
 | /claude-praxis:debug | → Ready for /claude-praxis:implement to fix? |
 | /claude-praxis:review | → Run /claude-praxis:compound to capture learnings? |
+| /claude-praxis:understanding-check | → Run /claude-praxis:compound to capture learnings? |
 | Non-phase task | → No next phase needed |
 
 ## Red Flags (stop and verify)

@@ -128,7 +128,7 @@ Present a brief task completion report:
 
 If issues are found during the auto-review, propose rule additions via `rule-evolution` skill.
 
-**Record to progress.md**: Append an entry with decisions made during this task.
+**Record to progress.md**: Append an entry with decisions made during this task. Include choices made at decision points (Step A) — these entries serve as comparison material for `/understanding-check`.
 
 ```markdown
 ## [timestamp] — /claude-praxis:implement: Task [N] complete — [task name]

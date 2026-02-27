@@ -39,11 +39,23 @@ try {
         });
         process.exit(0);
     }
-    // /compound advisory (non-blocking)
-    if (shouldSuggestCompound(contextDir)) {
+    // Non-blocking advisories: UC + compound (combined when both apply)
+    const workflowSkills = ["feature-spec", "design", "implement", "debug"];
+    const workflowInvoked = workflowSkills.some((skill) => hasSkill(markerDir, sessionId, skill));
+    const suggestUC = workflowInvoked &&
+        !hasSkill(markerDir, sessionId, "understanding-check");
+    const suggestCompound = shouldSuggestCompound(contextDir);
+    const advisories = [];
+    if (suggestUC) {
+        advisories.push("/understanding-check is available to verify your understanding of the key decisions made during this session.");
+    }
+    if (suggestCompound) {
+        advisories.push("progress.md has entries that have not been promoted to learnings. Consider running /claude-praxis:compound to capture what you learned before ending the session.");
+    }
+    if (advisories.length > 0) {
         writeJson({
             hookSpecificOutput: {
-                additionalContext: "progress.md has entries that have not been promoted to learnings. Consider running /claude-praxis:compound to capture what you learned before ending the session.",
+                additionalContext: advisories.join("\n\n"),
             },
         });
         process.exit(0);

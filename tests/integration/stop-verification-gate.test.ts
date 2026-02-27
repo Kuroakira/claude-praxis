@@ -144,7 +144,7 @@ describe("stop-verification-gate integration", () => {
       expect(output.decision).toBeUndefined();
     });
 
-    it("allows when implement and final-review marker both exist", () => {
+    it("does not warn about final-review when implement and final-review marker both exist", () => {
       fs.writeFileSync(
         path.join(markerDir, "test-session"),
         "implement\nverification-before-completion\n",
@@ -159,7 +159,14 @@ describe("stop-verification-gate integration", () => {
         stop_hook_active: false,
       });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout.trim()).toBe("");
+      // Final-review gate should NOT fire (marker exists).
+      // UC advisory may fire (implement invoked, UC not invoked) — that's expected.
+      if (result.stdout.trim()) {
+        const output = JSON.parse(result.stdout);
+        expect(output.hookSpecificOutput.additionalContext).not.toContain(
+          "Final Review",
+        );
+      }
     });
 
     it("does not fire when implement not invoked", () => {
@@ -223,6 +230,132 @@ describe("stop-verification-gate integration", () => {
       const output = JSON.parse(result.stdout);
       expect(output.hookSpecificOutput.additionalContext).toContain(
         "Final Review",
+      );
+    });
+  });
+
+  describe("understanding-check advisory", () => {
+    it("suggests /understanding-check when workflow skill invoked", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "implement\n",
+      );
+      fs.writeFileSync(
+        path.join(markerDir, "test-session-implement-final-review"),
+        "",
+      );
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      expect(result.exitCode).toBe(0);
+      const output = JSON.parse(result.stdout);
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "/understanding-check",
+      );
+    });
+
+    it("suggests /understanding-check for design workflow", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "design\n",
+      );
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      expect(result.exitCode).toBe(0);
+      const output = JSON.parse(result.stdout);
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "/understanding-check",
+      );
+    });
+
+    it("does not suggest /understanding-check when already invoked", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "implement\nunderstanding-check\n",
+      );
+      fs.writeFileSync(
+        path.join(markerDir, "test-session-implement-final-review"),
+        "",
+      );
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      expect(result.exitCode).toBe(0);
+      // Should not contain understanding-check advisory
+      if (result.stdout.trim()) {
+        const output = JSON.parse(result.stdout);
+        expect(
+          output.hookSpecificOutput?.additionalContext ?? "",
+        ).not.toContain("/understanding-check");
+      }
+    });
+
+    it("does not suggest /understanding-check when no workflow invoked", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "some-other-skill\n",
+      );
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      expect(result.exitCode).toBe(0);
+      if (result.stdout.trim()) {
+        const output = JSON.parse(result.stdout);
+        expect(
+          output.hookSpecificOutput?.additionalContext ?? "",
+        ).not.toContain("/understanding-check");
+      }
+    });
+
+    it("works with prefixed skill names", () => {
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "claude-praxis:feature-spec\n",
+      );
+      const result = runHook({
+        session_id: "test-session",
+        stop_hook_active: false,
+      });
+      expect(result.exitCode).toBe(0);
+      const output = JSON.parse(result.stdout);
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "/understanding-check",
+      );
+    });
+
+    it("combines UC and compound advisories when both conditions are met", () => {
+      // Set up a tmpDir with progress.md entries and no compound-last-run
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "stop-uc-compound-"));
+      const ctxDir = path.join(tmpDir, ".claude", "context");
+      fs.mkdirSync(ctxDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(ctxDir, "progress.md"),
+        "## Entry 1\nDetails",
+      );
+      fs.writeFileSync(
+        path.join(markerDir, "test-session"),
+        "design\n",
+      );
+      const result = runScript(SCRIPT_PATH, JSON.stringify({
+        session_id: "test-session",
+        stop_hook_active: false,
+      }), {
+        cwd: tmpDir,
+        env: { ...process.env, CLAUDE_PRAXIS_MARKER_DIR: markerDir },
+      });
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+      expect(result.exitCode).toBe(0);
+      const output = JSON.parse(result.stdout);
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "/understanding-check",
+      );
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "/claude-praxis:compound",
       );
     });
   });

@@ -112,7 +112,7 @@ Present the reviewed draft to the human and iterate until approved.
 2. **Iterate**: If the user provides feedback, revise and present again. This loop continues until the user approves
 3. **Save the approved FeatureSpec**: Write the final document to `feature-specs/[name].md` (kebab-case name derived from the feature title). Create the `feature-specs/` directory if it doesn't exist
 
-**Record to progress.md**: Append an entry with the key decisions captured in the spec.
+**Record to progress.md**: Append an entry with the key decisions captured in the spec. Include scope decisions from Phase 2 (In/Out Scope choices and their reasoning) — these entries serve as comparison material for `/understanding-check`.
 
 ```markdown
 ## [timestamp] — /claude-praxis:feature-spec: FeatureSpec complete — [feature name]

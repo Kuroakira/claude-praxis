@@ -10,7 +10,7 @@
     {
       "name": "claude-praxis",
       "description": "Bring understanding back to vibe coding — a development framework where AI builds, but the engineer grows through deliberate phases and self-evolving quality rules",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "source": "./"
     }
   ]

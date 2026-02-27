@@ -92,7 +92,7 @@ Expand the outline into the complete Design Doc.
 4. Write with the assumption this doc will NOT need editing — by focusing on WHY (which stays valid even when implementation changes), the doc remains accurate over time
 5. **Save the Design Doc to file**: Write the completed doc to `claudedocs/design-docs/[name].md` (kebab-case name derived from the doc title). This ensures the doc survives context compact
 
-**Record to progress.md**: Append an entry with the chosen design direction and reasoning.
+**Record to progress.md**: Append an entry with the chosen design direction and reasoning. Record each key design decision separately — especially those from Alternatives Considered where alternatives were rejected. These entries serve as comparison material for `/understanding-check`.
 
 ```markdown
 ## [timestamp] — /claude-praxis:design: Design Doc written

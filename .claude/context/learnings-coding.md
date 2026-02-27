@@ -14,9 +14,18 @@
 - **Learning**: TypeScriptのtype guardは、対象インターフェースが宣言する全フィールドを検証しなければならない。トップレベルのプリミティブだけ検証してネストされたオブジェクトを省略すると、guardを通過した後のプロパティアクセスで実行時エラーになる
 - **Context**: `isLastCompact`が`timestamp`と`compoundRun`だけ検証し、`progressSummary`と`confidenceSummary`を省略していた。破損ファイルがguardを通過し、`session-start.ts`で`progressSummary.recentHeadings`にアクセスして実行時エラーの可能性があった。修正: `isRecord(data.progressSummary)`でネストオブジェクトの存在と型を検証
 - **Implication**: type guardを書く際のチェックリスト: (1) 全トップレベルフィールドの型チェック (2) ネストされたオブジェクトは`isRecord`で存在確認 (3) ネスト内の必須フィールドも型チェック
+- **Confirmed**: 1回 | 2026-02-28 | compound
 
 ## Claude Code hookの出力形式: blockingは`decision: "block"`, non-blockingは`additionalContext`
 
 - **Learning**: Claude Code hookシステムでは、blocking出力（`{ decision: "block", reason: "..." }`）とnon-blocking advisory（`{ hookSpecificOutput: { additionalContext: "..." } }`）は明確に異なる出力形式。同一hookスクリプト内で両方を使う場合、パスを分離して混在させない
 - **Context**: stop-verification-gateで検証ゲート（blocking）と/compound提案（non-blocking）を1スクリプトに実装。最初にblocking判定を行い`process.exit(0)`で終了、その後にnon-blocking advisoryを判定する構造にした。blockingパスを通過した場合のみadvisoryに到達する
 - **Implication**: 1つのhookスクリプトに複数の責務を持たせる場合、blocking判定を先に配置し早期exitで分離する。non-blocking advisoryはblockingを通過した後にのみ実行される
+- **Confirmed**: 1回 | 2026-02-27 | compound
+
+## 独立したnon-blocking advisoryは相互排他ではなく結合する
+
+- **Learning**: 複数のnon-blocking advisoryが独立した価値を持つ場合、mutual exclusion（早期exit）ではなく配列に集めて結合メッセージとして出力する。早期exitは先に評価されたadvisoryが後続を永久に抑制する
+- **Context**: stop-verification-gateでUC advisory → compound advisoryの順に評価し、UC条件が真なら早期exitする設計にしたところ、ワークフロー実行時にcompound advisoryが永久に表示されなくなった。修正: `advisories: string[]`に両方を追加し`advisories.join("\n\n")`で結合出力
+- **Implication**: 1スクリプト内の複数non-blocking advisoryは、配列収集→結合出力パターンを使う。早期exitパターンはblocking判定にのみ適用する
+- **Confirmed**: 1回 | 2026-02-27 | implement

@@ -51,7 +51,8 @@ claude-praxis/
 │   ├── research.md              # /research — standalone research
 │   ├── plan.md                  # /plan — standalone planning
 │   ├── review.md                # /review — standalone code review
-│   └── compound.md              # /compound — extract and accumulate learnings
+│   ├── compound.md              # /compound — extract and accumulate learnings
+│   └── understanding-check.md   # /understanding-check — verify understanding of AI-generated work
 ├── skills/
 │   ├── workflow-planner/        # Analyze task, select agents from catalogs, generate execution plan
 │   ├── dispatch-reviewers/      # Dispatch reviewers by catalog ID with graduated tiers
@@ -64,6 +65,7 @@ claude-praxis/
 │   ├── systematic-debugging/    # 4-phase root cause analysis
 │   ├── context-persistence/     # Stock/Flow memory model for context survival
 │   ├── writing-skills/          # Meta-skill: TDD for skill creation
+│   ├── understanding-check/     # Explain-Compare-Discover for understanding verification
 │   ├── requesting-code-review/  # Dispatch reviewer after tasks
 │   ├── receiving-code-review/   # Handle feedback (no sycophancy)
 │   └── git-worktrees/           # Isolated feature development
@@ -148,7 +150,8 @@ Available for direct invocation when the full workflow is not needed:
 /claude-praxis:research  → Standalone research (when you just want to explore options)
 /claude-praxis:plan      → Standalone planning (when you already have a plan in mind)
 /claude-praxis:review    → Standalone code review (when you want feedback on existing code)
-/claude-praxis:compound  → Extract what you learned, carry it forward
+/claude-praxis:compound             → Extract what you learned, carry it forward
+/claude-praxis:understanding-check  → Verify you can explain key decisions (recommended: separate session)
 ```
 
 ## Quality Rules (defined in rules/)

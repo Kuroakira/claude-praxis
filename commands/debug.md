@@ -62,7 +62,7 @@ The planner will dispatch parallel investigation agents if warranted, or recomme
 
 **PAUSE**: Present the diagnosis with supporting evidence. The human may have additional context that changes the diagnosis.
 
-**Record to progress.md**: Append an entry with the root cause and why it was hard to find.
+**Record to progress.md**: Append an entry with the root cause and why it was hard to find. Include hypothesis adoption/rejection decisions with evidence — these entries serve as comparison material for `/understanding-check`.
 
 ```markdown
 ## [timestamp] — /claude-praxis:debug: Diagnosis complete
