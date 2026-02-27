@@ -66,6 +66,46 @@ claude-praxis/
 └── CLAUDE.md                    # This file
 ```
 
+## Layer Architecture
+
+6 layers, each answering one question. **One fact lives in one place only** — other layers reference, never duplicate.
+
+| Layer | Question | Contains | Does NOT Contain |
+|-------|----------|----------|------------------|
+| **CLAUDE.md** | What is this project, how to use it? | Project info, workflow overview, skill/agent catalog | Rule details, procedures, hook logic |
+| **Rule** (`rules/`) | What must always be followed? | Constraints, prohibitions, quality standards (with examples) | Procedures, workflows, self-evolution logic |
+| **Command** (`commands/`) | In what order, by whom, where does the human decide? | Phase sequence, PAUSE points, skill invoke targets, agent dispatch targets | Procedure bodies (delegate to Skill), constraints (delegate to Rule) |
+| **Skill** (`skills/`) | How to do it? (reusable procedure) | Step-by-step procedures, templates, decision criteria | Constraints (Rule's job), phase ordering (Command's job) |
+| **Agent** (`agents/`) | Who does it? | Role, tools, model, maxTurns | Procedures (Skill's job), constraints (Rule's job) |
+| **Hook** (`hooks/`) | What to auto-detect and notify? | Event detection, warn/remind, marker management | Rule content re-statements, procedure duplication |
+
+### Loading Model
+
+```
+Always-on (session start, every session):
+  CLAUDE.md + @rules/*.md  →  constraints always in context
+  Skill descriptions        →  name + trigger only (~100 tokens/skill)
+  SessionStart hook output  →  session state facts
+
+On-demand (when invoked):
+  Skill full content        →  loaded on invoke (~2000+ tokens/skill)
+  Command content           →  loaded on slash command
+  Hooks                     →  fire on events (PreToolUse, Stop, etc.)
+```
+
+### Boundary Rule
+
+When adding or moving information, ask: "Which layer's question does this answer?"
+
+- A constraint (what to always follow) → `rules/`
+- A procedure (how to do it) → `skills/`
+- Phase ordering or human checkpoints → `commands/`
+- Who executes with what tools → `agents/`
+- Automatic detection/notification → `hooks/`
+- Project overview or catalog → `CLAUDE.md`
+
+If the same fact appears in 2+ places, one must become a reference ("see X") not a copy.
+
 ## Core Workflow
 
 Each phase exists to deepen understanding, not just to produce output.
