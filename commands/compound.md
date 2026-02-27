@@ -23,7 +23,7 @@ From progress.md, I found the following promotable learnings:
 | 2 | "Scope creep on auth feature" | "Started login, ended up adding 2FA" | project learnings | feature-spec | 1回 \| today \| implement |
 | 3 | "deny-by-default for error paths" | "Silent allow on parse failure = gate bypass" | project learnings | coding | 1回 \| today \| implement |
 | 4 | "CORS middleware must come before auth" | "Auth middleware rejects preflight requests otherwise" | global learnings | — | — |
-| 5 | "Never use eval()" | "Arbitrary code execution risk" | code-quality-rules | — | — |
+| 5 | "Never use eval()" | "Arbitrary code execution risk" | rule-evolution → rules/code-quality.md | — | — |
 | 6 | "Design Docs should focus on WHY, not HOW" | "HOW becomes outdated when implementation changes" | framework improvement → design-doc-format | — | — |
 | 7 | "Fixed typo in line 42" | — | discard | — | — |
 

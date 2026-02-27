@@ -34,18 +34,16 @@ describe("stop-verification-gate integration", () => {
     expect(result.stdout.trim()).toBe("");
   });
 
-  it("warns when code-session exists but verification not done", () => {
+  it("allows when code-session exists (verification via rules layer, not skill marker)", () => {
     fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
     const result = runHook({
       session_id: "test-session",
       stop_hook_active: false,
     });
     expect(result.exitCode).toBe(0);
-    const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.additionalContext).toContain(
-      "verification",
-    );
-    expect(output.decision).toBeUndefined();
+    // Verification is now enforced via rules/verification.md (@import),
+    // not via skill marker check. No warning expected.
+    expect(result.stdout.trim()).toBe("");
   });
 
   it("allows when code-session exists AND verification skill invoked", () => {
@@ -104,32 +102,19 @@ describe("stop-verification-gate integration", () => {
     expect(result.exitCode).toBe(0);
   });
 
-  it("warn message includes actionable guidance", () => {
-    fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
-    const result = runHook({
-      session_id: "test-session",
-      stop_hook_active: false,
-    });
-    const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.additionalContext).toContain("typecheck");
-    expect(output.hookSpecificOutput.additionalContext).toContain("lint");
-    expect(output.hookSpecificOutput.additionalContext).toContain("test");
-  });
-
-  it("unrelated skill does not satisfy verification gate", () => {
+  it("allows with code-session and unrelated skill marker (no verification gate)", () => {
     fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
     fs.writeFileSync(
       path.join(markerDir, "test-session"),
-      "code-quality-rules\n",
+      "some-skill\n",
     );
     const result = runHook({
       session_id: "test-session",
       stop_hook_active: false,
     });
-    const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.additionalContext).toContain(
-      "verification",
-    );
+    expect(result.exitCode).toBe(0);
+    // Verification is enforced via rules layer, not skill marker.
+    expect(result.stdout.trim()).toBe("");
   });
 
   it("allows on JSON parse failure (not deny-by-default)", () => {
@@ -207,7 +192,7 @@ describe("stop-verification-gate integration", () => {
       );
     });
 
-    it("verification gate takes priority over final-review gate", () => {
+    it("warns about final-review when implement invoked without final-review marker", () => {
       fs.writeFileSync(
         path.join(markerDir, "test-session"),
         "implement\n",
@@ -218,8 +203,9 @@ describe("stop-verification-gate integration", () => {
         stop_hook_active: false,
       });
       const output = JSON.parse(result.stdout);
+      // No verification gate — only final-review check fires
       expect(output.hookSpecificOutput.additionalContext).toContain(
-        "verification",
+        "Final Review",
       );
     });
 
@@ -338,7 +324,7 @@ describe("stop-verification-gate integration", () => {
       expect(result.stdout.trim()).toBe("");
     });
 
-    it("still warns for verification even when /compound advisory would apply", () => {
+    it("suggests /compound when code-session exists and progress has entries", () => {
       fs.writeFileSync(
         path.join(contextDir, "progress.md"),
         "## Entry 1\nDetails",
@@ -348,9 +334,10 @@ describe("stop-verification-gate integration", () => {
         session_id: "test-session",
         stop_hook_active: false,
       });
+      // No verification gate — compound advisory fires
       const output = JSON.parse(result.stdout);
       expect(output.hookSpecificOutput.additionalContext).toContain(
-        "verification",
+        "/claude-praxis:compound",
       );
     });
 

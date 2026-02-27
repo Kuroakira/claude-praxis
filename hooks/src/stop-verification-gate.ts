@@ -30,25 +30,12 @@ try {
   }
 
   const markerDir = getMarkerDir();
-  const codeSessionMarker = path.join(markerDir, `${sessionId}-code-session`);
   const contextDir = path.join(process.cwd(), ".claude", "context");
 
   const warnings: string[] = [];
 
-  // Verification gate (advisory)
-  if (markerExists(codeSessionMarker)) {
-    if (!hasSkill(markerDir, sessionId, "verification-before-completion")) {
-      warnings.push(
-        "Code changes detected but verification has not been confirmed. Run typecheck, lint, and test before completing. See rules/verification.md for the completion report format.",
-      );
-    }
-  }
-
   // Implement final-review gate (advisory)
-  if (
-    warnings.length === 0 &&
-    hasSkill(markerDir, sessionId, "implement")
-  ) {
+  if (hasSkill(markerDir, sessionId, "implement")) {
     const finalReviewMarker = path.join(
       markerDir,
       `${sessionId}-implement-final-review`,
