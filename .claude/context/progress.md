@@ -14,3 +14,8 @@
 - Decision: All 4 reviewers passed (A: Spec, B: Quality, C: Security, D: Devil's Advocate). Reviewer D flagged hasSkill substring match as Critical — classified as Important pre-existing issue (not a regression). No code fixes applied
 - Rationale: hasSkill uses String.includes() which could false-positive on future skills containing "implement" as substring. Risk is real but current skill names have no collisions. Separate fix warranted as a follow-up task
 - Domain: code-review, planning-enforcement, markers
+
+## 2026-02-27T10:40Z — /claude-praxis:implement: Step 1 complete — check-past-learnings skill
+- Decision: Created `skills/check-past-learnings/SKILL.md` consolidating Phase 0 from 4 commands + getting-started Contextual Recall. Updated implement.md, design.md, feature-spec.md, debug.md to invoke with role parameter
+- Rationale: Eliminates 5-way duplication of recall logic. Role-based file mapping (requirements/design/implementation/investigation) provides clear abstraction. Full paths in table header, recall angle operationally connected to presentation patterns, unrecognized role fallback added per review findings
+- Domain: layer-architecture, skill-extraction, learnings-recall

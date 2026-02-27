@@ -18,8 +18,7 @@ Planning creates an implementation-specific plan distinct from the Design Doc's 
 1. **Read the Design Doc**: Understand the full scope and design decisions. If no Design Doc exists (direct implementation request), read the codebase to understand scope and create the plan from the user's intent
 2. **Scout the codebase**: Dispatch a Scout agent (Task tool, subagent_type: `claude-praxis:scout`) to explore the codebase for project structure, existing patterns, integration points, and constraints relevant to this implementation. Scout findings are required input for the plan — each task's "Existing patterns" field (step 5) must reference specific Scout findings or equivalent investigation data.
    - **Skip criteria**: Scout may be skipped ONLY when: (a) the change targets a single file explicitly specified by the user with no cross-module integration points, or (b) a Scout was dispatched in the immediately preceding task covering the same codebase area. When skipping, state the specific reason in the plan header. Generic reasons ("scope is clear", "straightforward change") are not sufficient — name the file and explain why no unknown patterns exist.
-3. **Check learnings before starting**: Read `.claude/context/learnings-design.md`, `.claude/context/learnings-coding.md`, and `~/.claude/learnings/global-learnings.md` if they exist. When a past learning is relevant, present it with its original context:
-   > "Previously we chose [X] because [rationale]. Does the same assumption hold here, or has the context changed?"
+3. **Check learnings before starting**: Invoke `check-past-learnings` (role: implementation)
 4. **Break into steps sized for ~500-line PRs**: Each step produces a reviewable, self-contained change. If a step would exceed ~500 lines, split further
 5. For each step, specify:
    - Exact file paths to create or modify

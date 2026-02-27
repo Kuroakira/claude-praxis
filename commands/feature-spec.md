@@ -16,11 +16,7 @@ This is an interactive workflow. The AI acts as an interviewer — drawing out t
 
 ## Phase 0: Check Past Learnings
 
-Before starting the interview, check if past knowledge is relevant.
-
-1. Read `.claude/context/learnings-feature-spec.md` and `~/.claude/learnings/global-learnings.md` if they exist
-2. When a past learning is relevant, carry it forward as context for the interview:
-   > "Previously we chose [X] because [rationale]. Does the same context apply here, or is this situation different?"
+Invoke `check-past-learnings` (role: requirements). Carry relevant learnings forward as context for the interview.
 
 ## Phase 1: Free Form (Phase A)
 
