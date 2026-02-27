@@ -12,40 +12,30 @@ This is an end-to-end workflow. Execute all phases sequentially without waiting 
 
 Invoke `check-past-learnings` (role: design). Carry relevant learnings forward into Phase 1 as constraints or starting points.
 
-## Phase 1: Research (Parallel Research Team)
+## Phase 1: Plan and Research (Workflow Planner)
 
-Dispatch 4 specialized agents in parallel. **Do NOT perform research yourself** — delegate entirely and synthesize only.
+Invoke `workflow-planner` with the following domain context:
 
-### Research Team
+| Parameter | Value |
+|-----------|-------|
+| `task` | Research and write a Design Doc for [topic] |
+| `domain` | design |
+| `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. |
+| `constraints` | (1) Research must produce a synthesis with findings and contradictions. (2) Outline must be reviewed before full writing. (3) Final Design Doc must receive thorough review with 3+ reviewers including devils-advocate. (4) Design Doc format rules (rules/design-doc-format.md) must be followed. |
+| `catalog_scope` | Reviewers: architecture, document-quality, feasibility, user-impact, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research). |
 
-Launch all 4 agents simultaneously using Task tool:
+The planner will:
+1. Analyze the topic and select relevant researchers from the catalog
+2. Present the plan (transparency window — human can interrupt if direction is wrong)
+3. Dispatch selected researchers in parallel
+4. Synthesize findings — reconcile contradictions, identify candidate approaches
 
-**Agent 1 — Problem Space Researcher** (subagent_type: `claude-praxis:researcher`)
-> Search the web for prior art, similar implementations, and known challenges for [topic]. Find at least 2-3 distinct approaches (ideal, pragmatic, incremental). Cite all sources with URLs.
+### Synthesis Rules
 
-Verification source: External documentation, blog posts, GitHub repositories.
-
-**Agent 2 — Scout (Codebase Analysis)** (subagent_type: `claude-praxis:scout`)
-> Explore the project codebase for: project structure, existing patterns related to [topic], integration points, constraints that affect design choices. Focus exclusively on the codebase.
-
-Verification source: Source code itself.
-
-**Agent 3 — Best Practices Researcher** (subagent_type: `claude-praxis:researcher`)
-> Research the ideal architecture and industry standards for [topic]. Focus on official documentation, standards specifications, and well-designed OSS implementations. Cite all sources with URLs.
-
-Verification source: Official documentation, standards specifications.
-
-**Agent 4 — Devil's Advocate** (subagent_type: `claude-praxis:researcher`)
-> Find failure cases, anti-patterns, risks, and reasons NOT to pursue the proposed approaches for [topic]. Search for postmortems, critical reviews, and known pitfalls. Cite all sources with URLs.
-
-Verification source: Postmortem articles, issue trackers, failure case studies.
-
-### Synthesis
-
-After all agents return:
-1. Reconcile findings — where Researcher A/B recommend an approach, check Devil's Advocate's challenges against it
+After researcher agents return:
+1. Reconcile findings — where researchers recommend an approach, check counter-evidence against it
 2. Resolve contradictions explicitly (state what conflicted and which finding was adopted)
-3. Identify at least 2-3 candidate approaches with trade-offs informed by all 4 perspectives
+3. Identify at least 2-3 candidate approaches with trade-offs informed by all perspectives
 4. Carry synthesis forward into Phase 2 — do NOT pass raw agent outputs
 
 Do NOT present research findings to the human separately. Carry them forward into Phase 2.
@@ -76,18 +66,14 @@ Build the skeleton of the Design Doc following **abstract to concrete** ordering
 
 Do NOT present the outline to the human yet. Proceed to Phase 3.
 
-## Phase 3: Internal Outline Review
+## Phase 3: Outline Review
 
-Self-review the outline before writing the full document.
+The planner determines the review tier for the outline based on task analysis. Typical pattern:
 
-| Check | Question |
-|-------|----------|
-| Completeness | Would a newcomer understand WHY this design was chosen? |
-| Alternatives | Are at least 2 alternatives listed with rejection reasoning? |
-| Abstract-to-concrete | Does each section flow from context to specifics? |
-| Why over How | Is the outline focused on decisions and rationale, not implementation details? |
-| Scope | Does the outline stay within Goals and avoid Non-Goals territory? |
-| Audience readiness | Can someone unfamiliar with the project follow the argument? |
+- **Light review** (default): `document-quality` + `devils-advocate` — catch structural issues and directional errors before full writing
+- **Thorough review** (for high-risk designs): adds `architecture` and/or `feasibility`
+
+Invoke `dispatch-reviewers` with the planner's selected reviewers and tier.
 
 If any check fails, revise the outline before proceeding. Do NOT ask the human — fix it internally.
 
@@ -104,7 +90,7 @@ Expand the outline into the complete Design Doc.
    - Follow with specifics and details
    - End with implications and trade-offs
 4. Write with the assumption this doc will NOT need editing — by focusing on WHY (which stays valid even when implementation changes), the doc remains accurate over time
-5. **Save the Design Doc to file**: Write the completed doc to `design-docs/[name].md` (kebab-case name derived from the doc title). This ensures the doc survives context compact
+5. **Save the Design Doc to file**: Write the completed doc to `claudedocs/design-docs/[name].md` (kebab-case name derived from the doc title). This ensures the doc survives context compact
 
 **Record to progress.md**: Append an entry with the chosen design direction and reasoning.
 
@@ -115,9 +101,13 @@ Expand the outline into the complete Design Doc.
 - Domain: [topic tag for future matching]
 ```
 
-## Phase 5: Auto-Review (Parallel Review Team)
+## Phase 5: Final Review (Thorough)
 
-Invoke `parallel-review-team` (type: document-review).
+The planner selects reviewers for the final Design Doc review. This is a **thorough** review — structural floor applies (3+ reviewers including `devils-advocate`).
+
+Typical final review team: `architecture` + `document-quality` + `devils-advocate` (+ `user-impact` if the design affects users).
+
+Invoke `dispatch-reviewers` with the planner's selected reviewers, tier `thorough`, and the Design Doc as target.
 
 ## Phase 6: Present for Human Approval
 
@@ -127,6 +117,7 @@ Present the complete Design Doc to the human with:
 
 1. A brief summary of the research that informed the design (3-5 key findings with sources)
 2. The full Design Doc
-3. Explicit request for approval: "Design Doc ready for review. Approve to proceed, or share feedback for revision."
+3. **Review trace**: Which reviewers were selected at each stage and why
+4. Explicit request for approval: "Design Doc ready for review. Approve to proceed, or share feedback for revision."
 
-If the human requests changes, revise and re-run Phase 5 (auto-review) before presenting again.
+If the human requests changes, revise and re-run Phase 5 (final review) before presenting again.

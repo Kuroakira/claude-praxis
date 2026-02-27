@@ -86,9 +86,23 @@ Links to related discussions, competitor implementations, user feedback,
 prior art.
 ```
 
-## Phase 4: Draft Review (Parallel Review Team)
+## Phase 4: Draft Review
 
-Invoke `parallel-review-team` (type: spec-review).
+Invoke `workflow-planner` to determine the review tier for the draft:
+
+| Parameter | Value |
+|-----------|-------|
+| `task` | Review FeatureSpec draft for [feature name] |
+| `domain` | feature-spec |
+| `domain_context` | Requirements gathering, gap analysis, interview technique. Requirements ambiguous on edge cases → add requirements reviewer. Feasibility unclear → add feasibility early. Simple scope clarification → document-quality + devils-advocate may suffice. |
+| `constraints` | (1) Final FeatureSpec must receive thorough review with 3+ reviewers including devils-advocate before presenting to human. |
+| `catalog_scope` | Reviewers: requirements, document-quality, feasibility, devils-advocate. |
+
+The planner selects reviewers based on the draft's content:
+- **Light review** (for clear, well-scoped drafts): `requirements` + `devils-advocate`
+- **Thorough review** (for complex or ambiguous specs): `requirements` + `feasibility` + `document-quality` + `devils-advocate`
+
+Invoke `dispatch-reviewers` with the planner's selection.
 
 ## Phase 5: Present and Iterate
 

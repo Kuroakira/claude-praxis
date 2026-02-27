@@ -156,6 +156,6 @@ Code quality review for: [task description]
 - Quality rules auto-applied via `rules/code-quality.md` (@import in CLAUDE.md)
 - Verification rules auto-applied via `rules/verification.md`
 - TDD procedure: `tdd-cycle` skill — RED/GREEN/REFACTOR per task
-- Final review uses `parallel-review-team` (type: code-review) — 4 parallel reviewers with independent verification sources
+- Final review uses `dispatch-reviewers` (thorough tier) — reviewers selected from `catalog/reviewers.md`. Legacy: `parallel-review-team` delegates to `dispatch-reviewers`
 - Key Decisions Briefing feeds into `/compound` — learnings from implementation decisions
 - See `agent-team-execution` for parallel exploration tasks (research, review, debugging)

@@ -28,6 +28,9 @@ claude-praxis/
 │   ├── document-quality.md      # Structure, terminology, progressive detailing
 │   ├── design-doc-format.md     # WHY over HOW, Notion format, outline-first
 │   └── verification.md          # No claims without evidence, completion report
+├── catalog/                     # Shared agent catalogs (referenced by planner)
+│   ├── reviewers.md             # 10 reviewer types with independent verification sources
+│   └── researchers.md           # 5 researcher types with agent types and verification sources
 ├── agents/
 │   ├── implementer.md           # Implementation agent
 │   ├── reviewer.md              # Code review agent (read-only)
@@ -42,16 +45,18 @@ claude-praxis/
 │   └── stop-verification-gate.sh  # Completion verification gate (warns if unchecked)
 ├── commands/
 │   ├── feature-spec.md          # /feature-spec — AI-driven interview to capture requirements
-│   ├── design.md                # /design — research + outline + write Design Doc
-│   ├── implement.md             # /implement — plan + TDD + review
+│   ├── design.md                # /design — planner-driven research + outline + write Design Doc
+│   ├── implement.md             # /implement — planner-driven plan + TDD + graduated review
 │   ├── debug.md                 # /debug — investigate + diagnose + document
 │   ├── research.md              # /research — standalone research
 │   ├── plan.md                  # /plan — standalone planning
 │   ├── review.md                # /review — standalone code review
 │   └── compound.md              # /compound — extract and accumulate learnings
 ├── skills/
+│   ├── workflow-planner/        # Analyze task, select agents from catalogs, generate execution plan
+│   ├── dispatch-reviewers/      # Dispatch reviewers by catalog ID with graduated tiers
+│   ├── parallel-review-team/    # Backward-compatible wrapper → delegates to dispatch-reviewers
 │   ├── check-past-learnings/    # Recall relevant learnings before starting work
-│   ├── parallel-review-team/    # Dispatch 4 parallel reviewers by review type
 │   ├── tdd-cycle/               # RED-GREEN-REFACTOR procedure + decision points
 │   ├── rule-evolution/          # Propose and add new rules from discovered issues
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
@@ -68,13 +73,14 @@ claude-praxis/
 
 ## Layer Architecture
 
-6 layers, each answering one question. **One fact lives in one place only** — other layers reference, never duplicate.
+7 layers, each answering one question. **One fact lives in one place only** — other layers reference, never duplicate.
 
 | Layer | Question | Contains | Does NOT Contain |
 |-------|----------|----------|------------------|
 | **CLAUDE.md** | What is this project, how to use it? | Project info, workflow overview, skill/agent catalog | Rule details, procedures, hook logic |
 | **Rule** (`rules/`) | What must always be followed? | Constraints, prohibitions, quality standards (with examples) | Procedures, workflows, self-evolution logic |
-| **Command** (`commands/`) | In what order, by whom, where does the human decide? | Phase sequence, PAUSE points, skill invoke targets, agent dispatch targets | Procedure bodies (delegate to Skill), constraints (delegate to Rule) |
+| **Catalog** (`catalog/`) | What agents are available to select from? | Agent types with IDs, focus areas, independent verification sources, applicable domains | Procedures, phase ordering, selection logic (Skill's job) |
+| **Command** (`commands/`) | In what order, by whom, where does the human decide? | Phase sequence, PAUSE points, skill invocations, planner invocation with domain context + constraints | Procedure bodies (delegate to Skill), constraints (delegate to Rule) |
 | **Skill** (`skills/`) | How to do it? (reusable procedure) | Step-by-step procedures, templates, decision criteria | Constraints (Rule's job), phase ordering (Command's job) |
 | **Agent** (`agents/`) | Who does it? | Role, tools, model, maxTurns | Procedures (Skill's job), constraints (Rule's job) |
 | **Hook** (`hooks/`) | What to auto-detect and notify? | Event detection, warn/remind, marker management | Rule content re-statements, procedure duplication |
@@ -98,6 +104,7 @@ On-demand (when invoked):
 When adding or moving information, ask: "Which layer's question does this answer?"
 
 - A constraint (what to always follow) → `rules/`
+- An agent type with verification source → `catalog/`
 - A procedure (how to do it) → `skills/`
 - Phase ordering or human checkpoints → `commands/`
 - Who executes with what tools → `agents/`
@@ -115,19 +122,23 @@ Each phase exists to deepen understanding, not just to produce output.
 Most tasks use these orchestrating commands:
 
 ```
-/claude-praxis:feature-spec → AI-driven interview + parallel draft review → FeatureSpec
-/claude-praxis:design       → Parallel Research Team + Outline + Write + Parallel Review Team → Design Doc
-/claude-praxis:implement    → Scout + Plan + TDD per task + Parallel Review Team → Verified code
-/claude-praxis:debug        → Reproduce + Isolate + Diagnose + Document Findings + Present
+/claude-praxis:feature-spec → AI-driven interview + planner-driven review → FeatureSpec
+/claude-praxis:design       → Planner-driven research + Outline + Write + Graduated review → Design Doc
+/claude-praxis:implement    → Planner-driven plan + TDD per task + Graduated review → Verified code
+/claude-praxis:debug        → Reproduce + Isolate + Planner-driven diagnosis + Document → Present
 ```
 
-`/claude-praxis:feature-spec` captures "what to build and why" through an AI-driven interview. Before presenting the draft to the human, a parallel review team (Requirements Completeness, Technical Feasibility, Writing Quality, Devil's Advocate) checks it from 4 independent perspectives.
+All four workflows use a **planner-driven adaptive model**: the `workflow-planner` skill analyzes task content and selects agents from shared catalogs (`catalog/reviewers.md`, `catalog/researchers.md`) based on what the specific task needs. Commands define phase structure and constraints (what must happen); the planner provides judgment (which agents, how many reviewers, what research depth).
 
-`/claude-praxis:design` dispatches a parallel research team (Problem Space, Scout, Best Practices, Devil's Advocate) for multi-angle investigation, then writes the Design Doc and runs a parallel review team (Architecture, User Impact, Writing Quality, Devil's Advocate) before presenting. The human's only input is final approval.
+Review tiers are **graduated** — not all stages get the same treatment. Intermediate artifacts get light or no review; final outputs get thorough review (3+ reviewers including Devil's Advocate). The planner selects the tier and states the reasoning.
 
-`/claude-praxis:implement` dispatches a Scout for codebase exploration before planning, executes TDD per task, then runs a parallel review team (Spec Compliance, Code Quality, Security+Performance, Devil's Advocate) as the final review. The human approves the plan and makes decisions at implementation decision points.
+`/claude-praxis:feature-spec` captures "what to build and why" through an AI-driven interview. The planner selects reviewers for the draft based on spec complexity — from light (requirements + devils-advocate) to thorough (all 4 spec reviewers).
 
-`/claude-praxis:debug` investigates problems systematically and produces an Investigation Report. Interactive throughout — the human provides context between phases. The fix itself is done via `/claude-praxis:implement`.
+`/claude-praxis:design` invokes the planner for both research and review. The planner selects which researchers to dispatch (not always all 4), reviews the outline (light), then runs thorough final review. The human's only input is final approval.
+
+`/claude-praxis:implement` invokes the planner for codebase exploration, plan creation, per-task review selection, and final review. Each task gets a review plan based on its content (internal refactor → code-quality only; security-sensitive → code-quality + security-perf). The human approves the plan and makes decisions at implementation decision points.
+
+`/claude-praxis:debug` investigates problems systematically. For complex problems with multiple competing hypotheses, the planner dispatches parallel investigation agents. Produces an Investigation Report. The fix is done via `/claude-praxis:implement`.
 
 ### Supporting Commands
 
@@ -187,3 +198,4 @@ Rules are always-on constraints loaded via `@import` — no skill invocation nee
 - Contextual recall uses judgment prompts, not quizzes — "same rationale applies here?" not "do you remember?"
 - Four orchestrating workflows (`/claude-praxis:feature-spec`, `/claude-praxis:design`, `/claude-praxis:implement`, and `/claude-praxis:debug`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. Supporting commands remain for direct invocation when the full workflow is not needed
 - FeatureSpec owns "What and Why," Design Doc owns "How" — this boundary prevents requirements ambiguity from propagating into design. Phase detection automatically suggests FeatureSpec when requirements are vague
+- Planner-driven adaptive workflow: commands define phase structure and constraints, `workflow-planner` skill provides judgment on agent selection. Catalogs (`catalog/`) define the selection pool with independent verification sources per entry. Review tiers are graduated (none/light/thorough) based on stage and content. `parallel-review-team` remains as backward-compatible wrapper delegating to `dispatch-reviewers`

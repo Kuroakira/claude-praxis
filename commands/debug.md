@@ -48,7 +48,17 @@ Form hypotheses and test them with evidence.
 4. **Eliminate hypotheses** that contradict evidence
 5. The surviving hypothesis is the diagnosis
 
-For complex problems with 3+ plausible hypotheses, consider using `agent-team-execution` (Competing Hypothesis Debugging) to test hypotheses in parallel.
+For complex problems with 3+ plausible hypotheses, invoke `workflow-planner` to determine the investigation approach:
+
+| Parameter | Value |
+|-----------|-------|
+| `task` | Investigate [problem description] — [N] competing hypotheses |
+| `domain` | debug |
+| `domain_context` | Reproduction strategy, hypothesis formation, evidence gathering. 3+ competing hypotheses → parallel investigation agents. Single clear hypothesis → sequential verification. Performance issue → add security-perf perspective. Intermittent failure → add error-resilience perspective. |
+| `constraints` | (1) Investigation report must receive thorough review before presenting to human. (2) Each hypothesis must have explicit prove/disprove criteria. |
+| `catalog_scope` | Reviewers: code-quality, security-perf, error-resilience, devils-advocate. Researchers: codebase-scout, oss-research, best-practices. |
+
+The planner will dispatch parallel investigation agents if warranted, or recommend sequential verification for simpler cases. For hypothesis review, invoke `dispatch-reviewers` with the planner's selection (typically `devils-advocate` at minimum to prevent confirmation bias).
 
 **PAUSE**: Present the diagnosis with supporting evidence. The human may have additional context that changes the diagnosis.
 
