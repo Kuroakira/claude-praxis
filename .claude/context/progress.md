@@ -24,3 +24,13 @@
 - Decision: Created `skills/parallel-review-team/SKILL.md` consolidating reviewer dispatch from 3 commands (implement, design, feature-spec). Updated commands to invoke with type parameter (code-review, document-review, spec-review). Added scoping note to agent-team-execution §4
 - Rationale: Eliminates 3-way duplication of reviewer configurations. Type-based dispatch (code-review/document-review/spec-review) mirrors check-past-learnings role pattern. Review restored lost nuances (newcomer test, context-specific rejection check) and added warning for unrecognized types
 - Domain: layer-architecture, skill-extraction, parallel-review
+
+## 2026-02-27T12:00Z — /claude-praxis:implement: Steps 3-6 Tasks 1-5 complete — Layer architecture migration
+- Decision: Created rules/ (4 files), tdd-cycle + rule-evolution skills, updated agents/commands/CLAUDE.md references, changed hooks from block→warn, removed getting-started dependency from session-start, deleted 5 deprecated skills
+- Rationale: "One fact, one place" — rules are always-on constraints via @import, skills hold procedures. Hooks downgraded to advisory (warn) because rules auto-apply. session-start outputs session state facts only
+- Domain: layer-architecture, rules-layer, hook-migration, skill-deprecation
+
+## 2026-02-27T13:16Z — /claude-praxis:implement: Final review complete
+- Decision: 4 parallel reviewers all returned FAIL. Critical issues: missing @import lines in CLAUDE.md, stale references to deleted skills across ~15 files. All Critical/Important issues fixed: added @import lines, updated hook warn messages to reference rules/ instead of deleted skills, updated stale references in 14 files (context-persistence, parallel-review-team, agent-team-execution, README.md, implement.md, plan.md, research.md, design.md, compound.md, reviewer.md, requesting-code-review, receiving-code-review, writing-skills)
+- Rationale: Stale references were the main gap — the Layer Architecture Redesign changed where rules live (skills → rules/) but cross-references hadn't been updated. README.md skills table now reflects current architecture with separate Rules section
+- Domain: layer-architecture, final-review, stale-reference-cleanup

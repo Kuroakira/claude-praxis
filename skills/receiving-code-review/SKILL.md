@@ -67,5 +67,5 @@ Only add what is actually needed. YAGNI applies to review feedback too.
 ## Integration
 
 - Pairs with `requesting-code-review` — the other half of the review cycle
-- Follows `verification-before-completion` — verify reviewer's claims before acting
-- Feeds into `code-quality-rules` — if feedback reveals a new pattern, propose a rule
+- Follows `rules/verification.md` — verify reviewer's claims before acting
+- Feeds into `rule-evolution` — if feedback reveals a new pattern, propose a rule

@@ -6,7 +6,6 @@ import {
   getProgressSummary,
   readCompoundLastRun,
 } from "./lib/context-files.js";
-import type { StopBlockOutput } from "./lib/types.js";
 
 function shouldSuggestCompound(contextDir: string): boolean {
   const summary = getProgressSummary(path.join(contextDir, "progress.md"), 1);
@@ -34,34 +33,40 @@ try {
   const codeSessionMarker = path.join(markerDir, `${sessionId}-code-session`);
   const contextDir = path.join(process.cwd(), ".claude", "context");
 
-  // Verification gate (blocking)
+  const warnings: string[] = [];
+
+  // Verification gate (advisory)
   if (markerExists(codeSessionMarker)) {
     if (!hasSkill(markerDir, sessionId, "verification-before-completion")) {
-      const output: StopBlockOutput = {
-        decision: "block",
-        reason:
-          "Code changes detected but verification-before-completion has not been invoked. Run typecheck, lint, and tests, then invoke the verification-before-completion skill before completing.",
-      };
-      writeJson(output);
-      process.exit(0);
+      warnings.push(
+        "Code changes detected but verification has not been confirmed. Run typecheck, lint, and test before completing. See rules/verification.md for the completion report format.",
+      );
     }
   }
 
-  // Implement final-review gate (blocking)
-  if (hasSkill(markerDir, sessionId, "implement")) {
+  // Implement final-review gate (advisory)
+  if (
+    warnings.length === 0 &&
+    hasSkill(markerDir, sessionId, "implement")
+  ) {
     const finalReviewMarker = path.join(
       markerDir,
       `${sessionId}-implement-final-review`,
     );
     if (!markerExists(finalReviewMarker)) {
-      const output: StopBlockOutput = {
-        decision: "block",
-        reason:
-          "/implement workflow detected but Final Review has not been completed. Complete Phase 3 (Final Review with Parallel Review Team) before ending.",
-      };
-      writeJson(output);
-      process.exit(0);
+      warnings.push(
+        "/implement workflow detected but Final Review has not been completed. Complete Phase 3 (Final Review with Parallel Review Team) before ending.",
+      );
     }
+  }
+
+  if (warnings.length > 0) {
+    writeJson({
+      hookSpecificOutput: {
+        additionalContext: warnings.join("\n"),
+      },
+    });
+    process.exit(0);
   }
 
   // /compound advisory (non-blocking)

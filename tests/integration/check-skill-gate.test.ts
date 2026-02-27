@@ -25,17 +25,17 @@ describe("check-skill-gate integration", () => {
     });
   }
 
-  it("denies when code-quality-rules NOT invoked (code file edit)", () => {
+  it("warns when code-quality-rules NOT invoked (code file edit)", () => {
     const result = runHook({
       session_id: "test-session",
       tool_input: { file_path: "/path/to/file.ts" },
     });
     expect(result.exitCode).toBe(0);
     const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.permissionDecision).toBe("deny");
-    expect(output.hookSpecificOutput.permissionDecisionReason).toContain(
+    expect(output.hookSpecificOutput.additionalContext).toContain(
       "code-quality-rules",
     );
+    expect(output.hookSpecificOutput.permissionDecision).toBeUndefined();
   });
 
   it("allows when code-quality-rules IS invoked", () => {
@@ -70,22 +70,24 @@ describe("check-skill-gate integration", () => {
       tool_input: { file_path: "/path/to/file.ts" },
     });
     const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(output.hookSpecificOutput.additionalContext).toContain(
+      "code-quality-rules",
+    );
   });
 
-  it("enforces document-quality-rules gate for .md files", () => {
+  it("warns about document-quality-rules gate for .md files", () => {
     const result = runHook({
       session_id: "test-session",
       tool_input: { file_path: "/path/to/README.md" },
     });
     const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.permissionDecision).toBe("deny");
-    expect(output.hookSpecificOutput.permissionDecisionReason).toContain(
+    expect(output.hookSpecificOutput.additionalContext).toContain(
       "document-quality-rules",
     );
+    expect(output.hookSpecificOutput.permissionDecision).toBeUndefined();
   });
 
-  it("denies .md when only code-quality-rules invoked", () => {
+  it("warns for .md when only code-quality-rules invoked", () => {
     fs.writeFileSync(
       path.join(markerDir, "test-session"),
       "code-quality-rules\n",
@@ -95,7 +97,9 @@ describe("check-skill-gate integration", () => {
       tool_input: { file_path: "/path/to/README.md" },
     });
     const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.permissionDecision).toBe("deny");
+    expect(output.hookSpecificOutput.additionalContext).toContain(
+      "document-quality-rules",
+    );
   });
 
   it("allows with prefixed skill name (substring match)", () => {

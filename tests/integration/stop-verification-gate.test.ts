@@ -34,7 +34,7 @@ describe("stop-verification-gate integration", () => {
     expect(result.stdout.trim()).toBe("");
   });
 
-  it("blocks when code-session exists but verification not done", () => {
+  it("warns when code-session exists but verification not done", () => {
     fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
     const result = runHook({
       session_id: "test-session",
@@ -42,8 +42,10 @@ describe("stop-verification-gate integration", () => {
     });
     expect(result.exitCode).toBe(0);
     const output = JSON.parse(result.stdout);
-    expect(output.decision).toBe("block");
-    expect(output.reason).toContain("verification-before-completion");
+    expect(output.hookSpecificOutput.additionalContext).toContain(
+      "verification",
+    );
+    expect(output.decision).toBeUndefined();
   });
 
   it("allows when code-session exists AND verification skill invoked", () => {
@@ -102,16 +104,16 @@ describe("stop-verification-gate integration", () => {
     expect(result.exitCode).toBe(0);
   });
 
-  it("block message includes actionable guidance", () => {
+  it("warn message includes actionable guidance", () => {
     fs.writeFileSync(path.join(markerDir, "test-session-code-session"), "");
     const result = runHook({
       session_id: "test-session",
       stop_hook_active: false,
     });
     const output = JSON.parse(result.stdout);
-    expect(output.reason).toContain("typecheck");
-    expect(output.reason).toContain("lint");
-    expect(output.reason).toContain("test");
+    expect(output.hookSpecificOutput.additionalContext).toContain("typecheck");
+    expect(output.hookSpecificOutput.additionalContext).toContain("lint");
+    expect(output.hookSpecificOutput.additionalContext).toContain("test");
   });
 
   it("unrelated skill does not satisfy verification gate", () => {
@@ -125,7 +127,9 @@ describe("stop-verification-gate integration", () => {
       stop_hook_active: false,
     });
     const output = JSON.parse(result.stdout);
-    expect(output.decision).toBe("block");
+    expect(output.hookSpecificOutput.additionalContext).toContain(
+      "verification",
+    );
   });
 
   it("allows on JSON parse failure (not deny-by-default)", () => {
@@ -137,7 +141,7 @@ describe("stop-verification-gate integration", () => {
   });
 
   describe("implement final-review gate", () => {
-    it("blocks when implement invoked but final-review marker missing", () => {
+    it("warns when implement invoked but final-review marker missing", () => {
       fs.writeFileSync(
         path.join(markerDir, "test-session"),
         "implement\nverification-before-completion\n",
@@ -149,8 +153,10 @@ describe("stop-verification-gate integration", () => {
       });
       expect(result.exitCode).toBe(0);
       const output = JSON.parse(result.stdout);
-      expect(output.decision).toBe("block");
-      expect(output.reason).toContain("Final Review");
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "Final Review",
+      );
+      expect(output.decision).toBeUndefined();
     });
 
     it("allows when implement and final-review marker both exist", () => {
@@ -185,7 +191,7 @@ describe("stop-verification-gate integration", () => {
       expect(result.stdout.trim()).toBe("");
     });
 
-    it("block message includes actionable guidance for final-review", () => {
+    it("warn message includes actionable guidance for final-review", () => {
       fs.writeFileSync(
         path.join(markerDir, "test-session"),
         "implement\nverification-before-completion\n",
@@ -196,7 +202,9 @@ describe("stop-verification-gate integration", () => {
         stop_hook_active: false,
       });
       const output = JSON.parse(result.stdout);
-      expect(output.reason).toContain("Parallel Review Team");
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "Parallel Review Team",
+      );
     });
 
     it("verification gate takes priority over final-review gate", () => {
@@ -210,8 +218,9 @@ describe("stop-verification-gate integration", () => {
         stop_hook_active: false,
       });
       const output = JSON.parse(result.stdout);
-      expect(output.decision).toBe("block");
-      expect(output.reason).toContain("verification-before-completion");
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "verification",
+      );
     });
 
     it("accepts prefixed implement skill name", () => {
@@ -226,8 +235,9 @@ describe("stop-verification-gate integration", () => {
       });
       expect(result.exitCode).toBe(0);
       const output = JSON.parse(result.stdout);
-      expect(output.decision).toBe("block");
-      expect(output.reason).toContain("Final Review");
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "Final Review",
+      );
     });
   });
 
@@ -328,7 +338,7 @@ describe("stop-verification-gate integration", () => {
       expect(result.stdout.trim()).toBe("");
     });
 
-    it("still blocks for verification even when /compound advisory would apply", () => {
+    it("still warns for verification even when /compound advisory would apply", () => {
       fs.writeFileSync(
         path.join(contextDir, "progress.md"),
         "## Entry 1\nDetails",
@@ -339,8 +349,9 @@ describe("stop-verification-gate integration", () => {
         stop_hook_active: false,
       });
       const output = JSON.parse(result.stdout);
-      expect(output.decision).toBe("block");
-      expect(output.reason).toContain("verification-before-completion");
+      expect(output.hookSpecificOutput.additionalContext).toContain(
+        "verification",
+      );
     });
 
     it("does not suggest /compound when stop_hook_active is true", () => {

@@ -1,5 +1,10 @@
 # Claude Praxis - Project Overview
 
+@rules/code-quality.md
+@rules/document-quality.md
+@rules/design-doc-format.md
+@rules/verification.md
+
 ## Core Concept
 
 **Bring "understanding" back to vibe coding. A development framework where engineers grow — even when AI writes the code.**
@@ -18,18 +23,23 @@ This plugin uses AI as a "mirror" — by articulating and accumulating the "why"
 
 ```
 claude-praxis/
+├── rules/                       # Always-on constraints (@imported into context)
+│   ├── code-quality.md          # TDD, type safety, test quality, security
+│   ├── document-quality.md      # Structure, terminology, progressive detailing
+│   ├── design-doc-format.md     # WHY over HOW, Notion format, outline-first
+│   └── verification.md          # No claims without evidence, completion report
 ├── agents/
-│   ├── implementer.md           # Implementation agent (code-quality-rules preloaded)
-│   ├── reviewer.md              # Code review agent (read-only, code-quality-rules preloaded)
+│   ├── implementer.md           # Implementation agent
+│   ├── reviewer.md              # Code review agent (read-only)
 │   ├── researcher.md            # Research agent (haiku, lightweight)
 │   └── scout.md                 # Codebase exploration agent (haiku, read-only)
 ├── hooks/
 │   ├── hooks.json               # SessionStart + PreCompact + PreToolUse + PostToolUse + Stop hook config
-│   ├── session-start.sh         # Injects getting-started skill + cleans markers
+│   ├── session-start.sh         # Cleans markers + injects context
 │   ├── pre-compact.sh           # Trims Flow files before compact
-│   ├── check-skill-gate.sh     # File-type skill gate (code/document/config branching)
+│   ├── check-skill-gate.sh     # File-type skill gate (warns if rules not loaded)
 │   ├── mark-skill-invoked.sh   # Records Skill invocations to session markers
-│   └── stop-verification-gate.sh  # Counter-based completion verification gate
+│   └── stop-verification-gate.sh  # Completion verification gate (warns if unchecked)
 ├── commands/
 │   ├── feature-spec.md          # /feature-spec — AI-driven interview to capture requirements
 │   ├── design.md                # /design — research + outline + write Design Doc
@@ -40,15 +50,14 @@ claude-praxis/
 │   ├── review.md                # /review — standalone code review
 │   └── compound.md              # /compound — extract and accumulate learnings
 ├── skills/
-│   ├── getting-started/         # Bootstrap: philosophy + workflow overview
-│   ├── code-quality-rules/      # Code quality rules + self-evolution protocol
-│   ├── document-quality-rules/  # Document quality rules (structure, terminology, flow)
-│   ├── verification-before-completion/  # No claims without evidence
+│   ├── check-past-learnings/    # Recall relevant learnings before starting work
+│   ├── parallel-review-team/    # Dispatch 4 parallel reviewers by review type
+│   ├── tdd-cycle/               # RED-GREEN-REFACTOR procedure + decision points
+│   ├── rule-evolution/          # Propose and add new rules from discovered issues
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
 │   ├── agent-team-execution/    # Parallel exploration: research, review teams, debugging
 │   ├── systematic-debugging/    # 4-phase root cause analysis
 │   ├── context-persistence/     # Stock/Flow memory model for context survival
-│   ├── design-doc-format/       # Design Doc specific format (Notion-compatible, WHY over HOW)
 │   ├── writing-skills/          # Meta-skill: TDD for skill creation
 │   ├── requesting-code-review/  # Dispatch reviewer after tasks
 │   ├── receiving-code-review/   # Handle feedback (no sycophancy)
@@ -91,28 +100,14 @@ Available for direct invocation when the full workflow is not needed:
 /claude-praxis:compound  → Extract what you learned, carry it forward
 ```
 
-## Quality Rules (defined in code-quality-rules)
+## Quality Rules (defined in rules/)
 
-- **TDD Required** - If you wrote production code before tests, delete and redo
-- **No `as`** - Never use TypeScript type assertions
-- **No eslint-disable** - Fix lint errors in code
-- **No Lazy Assertions** - Don't settle for just `toBeDefined()`
-- **Post-Implementation Checks Required** - Run typecheck, lint, test, build every time
-- **Verification Before Completion** - No success claims without fresh evidence
-- **No Hardcoded Secrets** - Use environment variables, never commit secrets
-- **Input Validation at Boundaries** - Validate all external input
-- **No Dynamic Code Execution** - No eval(), Function(), exec()
-- **Dependency Awareness** - Check before adding dependencies
+Rules are always-on constraints loaded via `@import` — no skill invocation needed.
 
-## Document Quality Rules (defined in document-quality-rules)
-
-- **Abstract-to-Concrete Structure** - Document level and section level both flow from context to specifics
-- **Terminology Consistency** - One term per concept, no silent synonyms
-- **Progressive Detailing** - Build on previously defined terms, never reference before defining
-- **No Terminology Drift** - Scope changes must be explicitly bridged
-- **Self-Contained Sections** - Cross-references include inline context, minimal backtracking
-
-Note: Design Doc specific rules (WHY over HOW, Notion format, outline-first process) are in `design-doc-format`, which builds on top of these general rules.
+- **Code quality** (`rules/code-quality.md`) - TDD, type safety, no `as`, no eslint-disable, no lazy assertions, security rules
+- **Document quality** (`rules/document-quality.md`) - Abstract-to-concrete structure, terminology consistency, progressive detailing
+- **Design Doc format** (`rules/design-doc-format.md`) - WHY over HOW, Notion format, outline-first process (builds on document-quality)
+- **Verification** (`rules/verification.md`) - No success claims without fresh evidence, completion report template, next phase lookup
 
 ## Next Tasks
 
@@ -141,9 +136,9 @@ Note: Design Doc specific rules (WHY over HOW, Notion format, outline-first proc
 ## Design Decisions
 
 - Distributed as Claude Code plugin via marketplace system (install/uninstall/update with one command)
-- Self-evolving quality rules implemented via direct SKILL.md edits
+- Quality rules live in `rules/` as always-on constraints; procedural skills (`tdd-cycle`, `rule-evolution`) handle the "how"
 - Notion integration handled through format rules (API integration for future consideration)
-- SessionStart hook auto-injects getting-started skill (no CLAUDE.md dependency for bootstrap)
+- SessionStart hook cleans markers and injects context (rules auto-apply via @import)
 - Skill descriptions contain ONLY trigger conditions (CSO — prevents shortcut behavior)
 - Context persistence follows "Write Auto, Read Manual" — never auto-inject content into context
 - Phase progression uses "Auto-detect, Suggest, User decides" — commands exist for explicit use, but Claude proactively suggests the right phase based on context. Praxis lives in the phase content (articulating "why"), not in remembering to type commands

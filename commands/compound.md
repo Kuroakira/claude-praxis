@@ -39,9 +39,9 @@ Adjust any routing? (or "OK" to proceed)
 **Initial Confidence column**: Only for `project learnings` destination. All new entries start at `1回 | {today's date} | {source phase}`. The promotion itself is the first confirmation. Replace `today` with the actual date (YYYY-MM-DD) and the source phase with the phase where the learning was discovered (e.g., implement, design, debug).
 
 4. Wait for human confirmation or adjustments before writing
-5. For quality rule candidates, follow the Rule Evolution Protocol in `code-quality-rules`:
+5. For quality rule candidates, invoke the `rule-evolution` skill:
    - Propose the rule to the human
-   - If approved, add to SKILL.md with examples
+   - If approved, add to the appropriate rules/ file with examples
 6. After confirmation, write to destinations with the `- **Confirmed**:` field and clean up promoted entries from `progress.md`
 
 **Writing format**: Each promoted entry is written with four fields:
@@ -69,7 +69,7 @@ Adjust any routing? (or "OK" to proceed)
 | project learnings | design | `.claude/context/learnings-design.md` | Architecture, design patterns |
 | project learnings | coding | `.claude/context/learnings-coding.md` | Implementation patterns, quality |
 | global learnings | — | `~/.claude/learnings/global-learnings.md` | Cross-project knowledge |
-| code-quality-rules | — | self-evolution | Universal quality rule |
+| rule-evolution | — | invoke rule-evolution skill | Universal quality rule |
 | framework improvement | — | `[skill or command]` | Better way to work |
 | discard | — | — | Not reusable |
 

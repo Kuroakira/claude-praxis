@@ -37,9 +37,9 @@ Launch all 4 simultaneously using Task tool (subagent_type: `claude-praxis:revie
 Verification source: Design Doc and implementation Plan.
 
 **Reviewer B — Code Quality**
-> Review this implementation for code quality. Check: code-quality-rules compliance, pattern consistency with existing project, test quality (no lazy assertions, TDD followed), YAGNI adherence, appropriate error handling.
+> Review this implementation for code quality. Check: code quality rules compliance (rules/code-quality.md), pattern consistency with existing project, test quality (no lazy assertions, TDD followed), YAGNI adherence, appropriate error handling.
 
-Verification source: code-quality-rules and project conventions.
+Verification source: rules/code-quality.md and project conventions.
 
 **Reviewer C — Security + Performance**
 > Review this implementation for security and performance. Check: OWASP Top 10 vulnerabilities, input validation at boundaries, injection risks, data exposure, algorithmic complexity, unnecessary allocations, N+1 queries, bundle size impact. Severity-rate each finding.
@@ -66,9 +66,9 @@ Verification source: Design principles, architecture pattern best practices, wel
 Verification source: UX heuristics, accessibility standards, existing user flow impact analysis.
 
 **Reviewer C — Writing Quality**
-> Review this Design Doc for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections, WHY-over-HOW balance, no h4+ headings, no ASCII diagrams (mermaid only), no local file links, all references inline or shared URLs. Apply design-doc-format and document-quality-rules. Would a newcomer understand all decisions without follow-up questions?
+> Review this Design Doc for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections, WHY-over-HOW balance, no h4+ headings, no ASCII diagrams (mermaid only), no local file links, all references inline or shared URLs. Apply rules/design-doc-format.md and rules/document-quality.md. Would a newcomer understand all decisions without follow-up questions?
 
-Verification source: design-doc-format and document-quality-rules quality criteria.
+Verification source: rules/design-doc-format.md and rules/document-quality.md quality criteria.
 
 **Reviewer D — Devil's Advocate**
 > Challenge this Design Doc. Under what conditions does this design fail? What if the stated assumptions are wrong? Could a rejected alternative actually be better? For each alternative: is "why Proposal is better" specific to the current context, not generic? What cross-cutting concerns are missing? Find similar design failures.
@@ -90,9 +90,9 @@ Verification source: Similar product feature lists, user journey map patterns, r
 Verification source: Codebase current state, technical constraints, platform specifications.
 
 **Reviewer C — Writing Quality**
-> Review this FeatureSpec draft for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections. Apply document-quality-rules. Would a new team member understand the spec without follow-up questions?
+> Review this FeatureSpec draft for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections. Apply rules/document-quality.md. Would a new team member understand the spec without follow-up questions?
 
-Verification source: document-quality-rules quality criteria.
+Verification source: rules/document-quality.md quality criteria.
 
 **Reviewer D — Devil's Advocate**
 > Challenge this FeatureSpec. Is the scope boundary realistic? Does the problem definition capture the real problem? Is the In/Out of Scope line reasonable? What could go wrong with these requirements? Find similar projects that failed and why.
@@ -112,5 +112,5 @@ After all 4 reviewers return:
 
 - **Invoked by**: `commands/implement.md`, `commands/design.md`, `commands/feature-spec.md`
 - **Selection principle**: See `agent-team-execution` §4 for why teams beat checklists and the independent verification source principle
-- **Reviewer agent**: All reviewers use subagent_type `claude-praxis:reviewer` (read-only, code-quality-rules preloaded)
+- **Reviewer agent**: All reviewers use subagent_type `claude-praxis:reviewer` (read-only, follows code quality rules)
 - **Devil's Advocate is mandatory**: Every review type includes one. Prevents groupthink by verifying against counter-evidence

@@ -4,7 +4,7 @@ description: Implement from Design Doc — plan, TDD per task, auto-review per t
 disable-model-invocation: false
 ---
 
-Invoke skills `code-quality-rules` and `verification-before-completion`, then orchestrate the **Implementation Workflow**.
+Orchestrate the **Implementation Workflow**.
 
 This is an end-to-end workflow. Execute all phases sequentially. Human input is requested at specific points marked below.
 
@@ -45,11 +45,7 @@ For each task in the approved plan, execute this cycle:
 
 ### Step A: Implement with TDD
 
-1. **RED**: Write a failing test that defines the expected behavior
-2. **GREEN**: Write minimal code to make the test pass
-3. **REFACTOR**: Clean up while keeping tests green
-4. **Consult on decision points**: When multiple valid approaches exist (library choice, data structure, error handling strategy, API design), do NOT decide silently. Present options with trade-offs:
-   > "Two approaches here: A (simpler, less flexible) vs B (more setup, but extensible). Which fits better?"
+Invoke `tdd-cycle` for the RED-GREEN-REFACTOR procedure and decision point consultation pattern.
 
 ### Step B: Verify
 
@@ -98,7 +94,7 @@ Present a brief task completion report:
 - build: PASS
 ```
 
-If issues are found during the auto-review, propose rule additions via `code-quality-rules` self-evolution protocol.
+If issues are found during the auto-review, propose rule additions via `rule-evolution` skill.
 
 **Record to progress.md**: Append an entry with decisions made during this task.
 
@@ -126,7 +122,7 @@ All must pass before dispatching the review team.
 
 Invoke `parallel-review-team` (type: code-review).
 
-Present the final completion report using the `verification-before-completion` Completion Report template.
+Present the final completion report using the `rules/verification.md` Completion Report template.
 
 **Record to progress.md**: Append an entry summarizing review findings worth remembering.
 

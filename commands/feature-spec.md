@@ -4,7 +4,7 @@ description: Capture "what to build and why" through AI-driven interview — bef
 disable-model-invocation: false
 ---
 
-Invoke the skills `getting-started` and `document-quality-rules`, then orchestrate the **FeatureSpec Workflow**.
+Orchestrate the **FeatureSpec Workflow**.
 
 This is an interactive workflow. The AI acts as an interviewer — drawing out the problem, scope, and intent through conversation, then producing a structured document for the user to approve.
 

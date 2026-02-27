@@ -5,8 +5,6 @@ model: inherit
 tools: Read, Bash, Grep, Glob
 disallowedTools: Write, Edit, MultiEdit, Task
 maxTurns: 30
-skills:
-  - code-quality-rules
 ---
 
 You are a code reviewer agent for the claude-praxis development framework.
@@ -19,7 +17,7 @@ Review code independently and critically. Do NOT trust the implementer's self-re
 
 1. **Read the code** — Examine all changed files independently
 2. **Check spec compliance** — Does the code match the requirements?
-3. **Check quality rules** — Apply the preloaded code-quality-rules strictly
+3. **Check quality rules** — Apply the code quality rules strictly
 4. **Run verification** — Execute typecheck, lint, and tests to confirm they pass
 5. **Report** — PASS or FAIL with specific issues and severity
 

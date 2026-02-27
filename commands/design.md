@@ -4,7 +4,7 @@ description: Create a complete Design Doc — research, outline, review, write, 
 disable-model-invocation: false
 ---
 
-Invoke the skills `getting-started` and `design-doc-format`, then orchestrate the **Design Doc Creation Workflow**.
+Orchestrate the **Design Doc Creation Workflow**.
 
 This is an end-to-end workflow. Execute all phases sequentially without waiting for human input between phases — UNLESS a phase explicitly says to pause for human input.
 
@@ -98,7 +98,7 @@ Expand the outline into the complete Design Doc.
 1. Follow the **Why Over How** principle:
    - **Write WHY generously**: problem context, constraints, decision rationale, rejected alternatives
    - **Write HOW sparingly**: no code examples, directory structures, or implementation details unless they ARE the design decision
-2. Follow the `design-doc-format` skill for all formatting and structural rules
+2. Follow the Design Doc format rules (`rules/design-doc-format.md`) for all formatting and structural rules
 3. Within each section, maintain **abstract to concrete** ordering:
    - Lead with context and motivation
    - Follow with specifics and details

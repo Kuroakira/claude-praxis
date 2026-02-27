@@ -153,9 +153,9 @@ Code quality review for: [task description]
 
 ## Integration
 
-- Requires `code-quality-rules` — all implementers must follow quality rules
-- Requires `verification-before-completion` — reviewers must verify independently
-- Requires `test-driven-development` from code-quality-rules — RED/GREEN/REFACTOR per task
-- Final review uses `agent-team-execution` § Parallel Review Teams — 4 parallel reviewers with independent verification sources
+- Quality rules auto-applied via `rules/code-quality.md` (@import in CLAUDE.md)
+- Verification rules auto-applied via `rules/verification.md`
+- TDD procedure: `tdd-cycle` skill — RED/GREEN/REFACTOR per task
+- Final review uses `parallel-review-team` (type: code-review) — 4 parallel reviewers with independent verification sources
 - Key Decisions Briefing feeds into `/compound` — learnings from implementation decisions
 - See `agent-team-execution` for parallel exploration tasks (research, review, debugging)

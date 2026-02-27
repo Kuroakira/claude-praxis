@@ -114,5 +114,5 @@ Based on Cialdini's framework, validated for LLM contexts:
 
 ## Integration
 
-- Feeds into `code-quality-rules` — new rules follow this writing process
-- The self-evolution protocol in code-quality-rules uses this skill's TDD approach
+- Feeds into `rule-evolution` — new rules follow this writing process
+- The rule evolution protocol in `rule-evolution` uses this skill's TDD approach

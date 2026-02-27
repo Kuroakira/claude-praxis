@@ -3,7 +3,6 @@ import { readStdin, writeJson, exitDeny } from "./lib/io.js";
 import { getMarkerDir, hasSkill, touchMarker } from "./lib/markers.js";
 import { classifyFile } from "./lib/file-type.js";
 import { getString, getRecord } from "./lib/types.js";
-import type { PreToolUseDenyOutput } from "./lib/types.js";
 
 let input: unknown;
 try {
@@ -42,12 +41,10 @@ if (hasSkill(markerDir, sessionId, requiredSkill)) {
   process.exit(0);
 }
 
-const ext = filePath ? filePath.slice(filePath.lastIndexOf(".") + 1) : "";
-const output: PreToolUseDenyOutput = {
+const ruleFile =
+  fileType === "code" ? "rules/code-quality.md" : "rules/document-quality.md";
+writeJson({
   hookSpecificOutput: {
-    hookEventName: "PreToolUse",
-    permissionDecision: "deny",
-    permissionDecisionReason: `${requiredSkill} skill has not been invoked in this session. Invoke it before editing ${ext} files.`,
+    additionalContext: `Quality rules reminder: ensure ${ruleFile} constraints are being followed for this edit. The ${requiredSkill} skill marker was not detected.`,
   },
-};
-writeJson(output);
+});

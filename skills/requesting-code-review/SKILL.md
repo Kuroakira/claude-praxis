@@ -15,7 +15,7 @@ After completing implementation, dispatch a code reviewer before moving on.
 
 ## Process
 
-1. **Verify your work first** (use `verification-before-completion`)
+1. **Verify your work first** (follow `rules/verification.md`)
 2. **Prepare the review request** with the template below
 3. **Dispatch a reviewer agent** (Task tool with a fresh subagent)
 4. **Wait for the review** — do not proceed until review is complete
@@ -64,6 +64,6 @@ The reviewer should check:
 
 ## Integration
 
-- Requires `verification-before-completion` — verify before requesting review
+- Requires `rules/verification.md` — verify before requesting review
 - Pairs with `receiving-code-review` — how to handle the feedback
 - Used by `subagent-driven-development` — review is built into the pipeline

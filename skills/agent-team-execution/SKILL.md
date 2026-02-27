@@ -92,7 +92,7 @@ perspective. Synthesize into a unified review with agreed severity ratings.
 
 ### Key Rules
 
-- Reviewers must verify independently (verification-before-completion)
+- Reviewers must verify independently (rules/verification.md)
 - Cross-challenge is mandatory — a security issue may also be a perf issue
 - Lead produces unified report with final severity ratings
 
@@ -164,7 +164,7 @@ A single reviewer checking "spec compliance AND quality AND security AND edge ca
 | Reviewer | Focus | Verification Source |
 |----------|-------|-------------------|
 | A | Spec Compliance | Design Doc / Plan |
-| B | Code Quality | code-quality-rules, project conventions |
+| B | Code Quality | rules/code-quality.md, project conventions |
 | C | Security + Performance | OWASP Top 10, profiling patterns |
 | D | Devil's Advocate | Bug patterns, production incidents |
 
@@ -174,7 +174,7 @@ A single reviewer checking "spec compliance AND quality AND security AND edge ca
 |----------|-------|-------------------|
 | A | Architecture | Design principles, OSS patterns |
 | B | User Impact | UX heuristics, accessibility standards |
-| C | Writing Quality | document-quality-rules, design-doc-format |
+| C | Writing Quality | rules/document-quality.md, rules/design-doc-format.md |
 | D | Devil's Advocate | Architecture failure case studies |
 
 **Spec Review** (used in `/feature-spec` Draft Review):
@@ -183,7 +183,7 @@ A single reviewer checking "spec compliance AND quality AND security AND edge ca
 |----------|-------|-------------------|
 | A | Requirements Completeness | Product patterns, user journey maps |
 | B | Technical Feasibility | Codebase constraints, platform specs |
-| C | Writing Quality | document-quality-rules |
+| C | Writing Quality | rules/document-quality.md |
 | D | Devil's Advocate | Requirements anti-patterns, competitor failures |
 
 ### Devil's Advocate is Mandatory

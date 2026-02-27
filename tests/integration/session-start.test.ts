@@ -9,23 +9,16 @@ const SCRIPT_PATH = path.resolve("hooks/dist/session-start.js");
 describe("session-start integration", () => {
   let tmpDir: string;
   let markerDir: string;
-  let skillDir: string;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "session-start-test-"));
     markerDir = fs.mkdtempSync(path.join(os.tmpdir(), "markers-test-"));
-    skillDir = path.join(tmpDir, "skills", "getting-started");
-    fs.mkdirSync(skillDir, { recursive: true });
   });
 
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
     fs.rmSync(markerDir, { recursive: true, force: true });
   });
-
-  function writeSkillFile(content: string): void {
-    fs.writeFileSync(path.join(skillDir, "SKILL.md"), content);
-  }
 
   function runHook(
     input: Record<string, unknown>,
@@ -50,31 +43,10 @@ describe("session-start integration", () => {
     };
   }
 
-  it("outputs JSON with additionalContext containing skill content", () => {
-    writeSkillFile("# Getting Started\nWelcome to the framework.");
+  it("outputs empty when no persistence files exist", () => {
     const result = runHook({ session_id: "test-session" });
     expect(result.exitCode).toBe(0);
-    const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.additionalContext).toContain(
-      "Getting Started",
-    );
-    expect(output.hookSpecificOutput.additionalContext).toContain(
-      "Welcome to the framework.",
-    );
-  });
-
-  it("strips frontmatter from skill content", () => {
-    writeSkillFile(
-      "---\nname: getting-started\ndescription: test\n---\n# Getting Started\nContent here.",
-    );
-    const result = runHook({ session_id: "test-session" });
-    const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.additionalContext).not.toContain(
-      "name: getting-started",
-    );
-    expect(output.hookSpecificOutput.additionalContext).toContain(
-      "# Getting Started",
-    );
+    expect(result.stdout.trim()).toBe("");
   });
 
   it("cleans session markers on start", () => {
@@ -84,7 +56,6 @@ describe("session-start integration", () => {
     fs.writeFileSync(path.join(markerDir, `${sessionId}-stop-blocks`), "");
     fs.writeFileSync(path.join(markerDir, `${sessionId}-task-abc123`), "");
 
-    writeSkillFile("# Getting Started");
     runHook({ session_id: sessionId });
 
     expect(fs.existsSync(path.join(markerDir, sessionId))).toBe(false);
@@ -99,8 +70,7 @@ describe("session-start integration", () => {
     ).toBe(false);
   });
 
-  it("appends persistence files section when files exist", () => {
-    writeSkillFile("# Getting Started");
+  it("outputs persistence files section when files exist", () => {
     const contextDir = path.join(tmpDir, ".claude", "context");
     fs.mkdirSync(contextDir, { recursive: true });
     fs.writeFileSync(path.join(contextDir, "task_plan.md"), "# Plan");
@@ -123,7 +93,6 @@ describe("session-start integration", () => {
   });
 
   it("shows entry count for progress.md", () => {
-    writeSkillFile("# Getting Started");
     const contextDir = path.join(tmpDir, ".claude", "context");
     fs.mkdirSync(contextDir, { recursive: true });
     fs.writeFileSync(
@@ -136,24 +105,7 @@ describe("session-start integration", () => {
     expect(output.hookSpecificOutput.additionalContext).toContain("3 entries");
   });
 
-  it("omits persistence section when no files exist", () => {
-    writeSkillFile("# Getting Started");
-    const result = runHook({ session_id: "test-session" });
-    const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.additionalContext).not.toContain(
-      "Persistence Files Available",
-    );
-  });
-
-  it("exits 0 with warning when skill file is missing", () => {
-    fs.rmSync(path.join(skillDir, "SKILL.md"), { force: true });
-    const result = runHook({ session_id: "test-session" });
-    expect(result.exitCode).toBe(0);
-    expect(result.stderr).toContain("Warning");
-  });
-
   it("always exits 0", () => {
-    writeSkillFile("# Getting Started");
     const result = runHook({ session_id: "test-session" });
     expect(result.exitCode).toBe(0);
   });
@@ -168,7 +120,6 @@ describe("session-start integration", () => {
     // other session should survive
     fs.writeFileSync(path.join(markerDir, "other-session"), "data\n");
 
-    writeSkillFile("# Getting Started");
     runHook({ session_id: sessionId });
 
     expect(fs.existsSync(path.join(markerDir, sessionId))).toBe(false);
@@ -188,7 +139,6 @@ describe("session-start integration", () => {
   });
 
   it("shows entry count for each learnings-* file", () => {
-    writeSkillFile("# Getting Started");
     const contextDir = path.join(tmpDir, ".claude", "context");
     fs.mkdirSync(contextDir, { recursive: true });
     fs.writeFileSync(
@@ -213,7 +163,6 @@ describe("session-start integration", () => {
   });
 
   it("shows both old and new learnings files during migration", () => {
-    writeSkillFile("# Getting Started");
     const contextDir = path.join(tmpDir, ".claude", "context");
     fs.mkdirSync(contextDir, { recursive: true });
     fs.writeFileSync(path.join(contextDir, "learnings.md"), "old content");
@@ -230,7 +179,6 @@ describe("session-start integration", () => {
   });
 
   it("shows old learnings.md without entry count", () => {
-    writeSkillFile("# Getting Started");
     const contextDir = path.join(tmpDir, ".claude", "context");
     fs.mkdirSync(contextDir, { recursive: true });
     fs.writeFileSync(path.join(contextDir, "learnings.md"), "# Learnings\n## E1\n## E2");
@@ -243,7 +191,6 @@ describe("session-start integration", () => {
   });
 
   it("shows avg confirmed for learnings file with Confirmed fields", () => {
-    writeSkillFile("# Getting Started");
     const contextDir = path.join(tmpDir, ".claude", "context");
     fs.mkdirSync(contextDir, { recursive: true });
     const content = [
@@ -264,7 +211,6 @@ describe("session-start integration", () => {
   });
 
   it("shows unverified count when entries lack Confirmed field", () => {
-    writeSkillFile("# Getting Started");
     const contextDir = path.join(tmpDir, ".claude", "context");
     fs.mkdirSync(contextDir, { recursive: true });
     const content = [
@@ -282,9 +228,24 @@ describe("session-start integration", () => {
     expect(ctx).toContain("learnings-design.md (2 entries, 2 unverified");
   });
 
+  it("does not depend on getting-started skill file", () => {
+    const contextDir = path.join(tmpDir, ".claude", "context");
+    fs.mkdirSync(contextDir, { recursive: true });
+    fs.writeFileSync(path.join(contextDir, "task_plan.md"), "# Plan");
+
+    const result = runHook({ session_id: "test-session" });
+    expect(result.exitCode).toBe(0);
+    const output = JSON.parse(result.stdout);
+    expect(output.hookSpecificOutput.additionalContext).toContain(
+      "task_plan.md",
+    );
+    expect(output.hookSpecificOutput.additionalContext).not.toContain(
+      "Getting Started",
+    );
+  });
+
   describe("compact recovery guidance", () => {
     it("injects compound-not-run guidance when last-compact.json shows compoundRun false", () => {
-      writeSkillFile("# Getting Started");
       const contextDir = path.join(tmpDir, ".claude", "context");
       fs.mkdirSync(contextDir, { recursive: true });
       fs.writeFileSync(
@@ -306,7 +267,6 @@ describe("session-start integration", () => {
     });
 
     it("injects compound-already-run guidance when last-compact.json shows compoundRun true", () => {
-      writeSkillFile("# Getting Started");
       const contextDir = path.join(tmpDir, ".claude", "context");
       fs.mkdirSync(contextDir, { recursive: true });
       fs.writeFileSync(
@@ -327,15 +287,11 @@ describe("session-start integration", () => {
     });
 
     it("does not inject compact guidance when last-compact.json does not exist", () => {
-      writeSkillFile("# Getting Started");
       const result = runHook({ session_id: "test-session" });
-      const output = JSON.parse(result.stdout);
-      const ctx = output.hookSpecificOutput.additionalContext;
-      expect(ctx).not.toContain("Compact occurred");
+      expect(result.stdout.trim()).toBe("");
     });
 
     it("degrades gracefully when last-compact.json is corrupt", () => {
-      writeSkillFile("# Getting Started");
       const contextDir = path.join(tmpDir, ".claude", "context");
       fs.mkdirSync(contextDir, { recursive: true });
       fs.writeFileSync(
@@ -345,13 +301,9 @@ describe("session-start integration", () => {
 
       const result = runHook({ session_id: "test-session" });
       expect(result.exitCode).toBe(0);
-      const output = JSON.parse(result.stdout);
-      const ctx = output.hookSpecificOutput.additionalContext;
-      expect(ctx).not.toContain("Compact occurred");
     });
 
     it("includes progress summary in compact guidance", () => {
-      writeSkillFile("# Getting Started");
       const contextDir = path.join(tmpDir, ".claude", "context");
       fs.mkdirSync(contextDir, { recursive: true });
       fs.writeFileSync(

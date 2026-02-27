@@ -75,18 +75,27 @@ rm ~/.claude/skills/claude-praxis
 
 | Skill | Description |
 |-------|-------------|
-| `getting-started` | Workflow overview and session bootstrap |
-| `code-quality-rules` | Quality rule enforcement and self-evolution |
-| `verification-before-completion` | No claims without fresh evidence |
 | `subagent-driven-development` | Fresh agent per task + two-stage review (implementation) |
 | `agent-team-execution` | Parallel exploration (research, review teams, debugging) with independent verification sources |
+| `parallel-review-team` | 4 parallel reviewers with independent verification sources (code, document, spec review) |
 | `systematic-debugging` | 4-phase root cause analysis (reproduce, isolate, diagnose, fix) |
 | `context-persistence` | Stock/Flow memory model for context survival across compact/clear |
-| `design-doc-format` | Notion-compatible document format rules |
+| `check-past-learnings` | Recall relevant learnings at the start of any workflow phase |
+| `rule-evolution` | TDD-based protocol for proposing and adding quality rules |
+| `tdd-cycle` | RED-GREEN-REFACTOR cycle enforcement |
 | `writing-skills` | Meta-skill: TDD for creating new skills |
 | `requesting-code-review` | Dispatch reviewer after implementation |
 | `receiving-code-review` | Handle review feedback (no sycophancy) |
 | `git-worktrees` | Isolated feature development with worktrees |
+
+### Always-On Rules (loaded via @import in CLAUDE.md)
+
+| Rule | Description |
+|------|-------------|
+| `rules/code-quality.md` | Code quality enforcement (TDD, type safety, test quality, security) |
+| `rules/document-quality.md` | Document structure and terminology consistency |
+| `rules/design-doc-format.md` | Design Doc specific format (WHY over HOW, Notion-compatible) |
+| `rules/verification.md` | Verification before completion + completion report format |
 
 ## Commands
 

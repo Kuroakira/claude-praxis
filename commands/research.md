@@ -4,7 +4,7 @@ description: Standalone research — investigate problem space without committin
 disable-model-invocation: false
 ---
 
-Invoke the skill `getting-started` and begin the **Research Phase**:
+Begin the **Research Phase**:
 
 The goal of research is NOT just to find "the answer" — it's to understand the **landscape of options** so that the Design Doc's Alternatives Considered section writes itself.
 

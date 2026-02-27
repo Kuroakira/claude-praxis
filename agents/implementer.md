@@ -5,9 +5,6 @@ model: inherit
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, WebSearch, WebFetch
 disallowedTools: Task
 maxTurns: 50
-skills:
-  - code-quality-rules
-  - verification-before-completion
 ---
 
 You are an implementer agent for the claude-praxis development framework.

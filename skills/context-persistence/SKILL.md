@@ -128,9 +128,9 @@ The `lastNotifiedLevel` field tracks notification throttling — the StatusLine 
 
 ## Integration
 
-- **getting-started**: SessionStart notifies file existence + compact recovery guidance
+- **session-start hook**: SessionStart notifies file existence + compact recovery guidance
 - **`/claude-praxis:compound` command**: Promotes Flow → Stock with LLM judgment, writes `compound-last-run.json` marker
-- **code-quality-rules**: Universal quality learnings route to self-evolution protocol
+- **rule-evolution skill**: Universal quality learnings route to self-evolution protocol
 - **PreCompact hook**: Mechanical Flow cleanup + writes `last-compact.json` with state metadata
 - **Stop hook**: Suggests /compound when progress.md has unpromoted entries (non-blocking advisory)
 - **UserPromptSubmit hook**: Reads `context-pressure.json` for proactive /compound suggestions (requires StatusLine Bridge)
