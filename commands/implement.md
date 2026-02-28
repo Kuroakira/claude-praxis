@@ -26,15 +26,23 @@ Planning creates an implementation-specific plan distinct from the Design Doc's 
    |-----------|-------|
    | `task` | Plan implementation of [Design Doc topic] |
    | `domain` | implement |
-   | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra → add error-resilience. |
+   | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra → add error-resilience. Strategy exploration: if context gathering identifies 2+ viable implementation directions with no clear winner and design-decision-level differences, propose strategy exploration (see workflow-planner Strategy Exploration Protocol). Typical implementation-level constraint axes: test strategy (integration-heavy vs unit-heavy), refactoring scope (minimal change vs surrounding improvement), dependency management (existing libraries vs new introduction). |
    | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. |
-   | `catalog_scope` | Reviewers: spec-compliance, code-quality, security-perf, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices. |
+   | `catalog_scope` | Reviewers: spec-compliance, code-quality, security-perf, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices, strategy-researcher. |
 
    The planner will dispatch `codebase-scout` (and optionally `best-practices` for unfamiliar patterns) to explore the codebase.
 
    - **Skip criteria**: Scout may be skipped ONLY when: (a) the change targets a single file explicitly specified by the user with no cross-module integration points, or (b) a Scout was dispatched in the immediately preceding task covering the same codebase area. When skipping, state the specific reason in the plan header. Generic reasons ("scope is clear", "straightforward change") are not sufficient — name the file and explain why no unknown patterns exist.
 
 3. **Check learnings before starting**: Invoke `check-past-learnings` (role: implementation)
+
+### Strategy Exploration (Conditional)
+
+If the planner identifies 2+ viable implementation directions after context gathering that meet strategy exploration trigger conditions (see workflow-planner's Strategy Exploration Protocol), the planner executes the exploration protocol between Step 1 and Step 2.
+
+The exploration produces a structured comparison table and the human selects a direction. The selected direction — including its constraint set and comparison rationale — becomes the required input for Step 2 (causal dependency). The implementation plan is built around the selected direction.
+
+If exploration is not triggered, the planner proceeds to Step 2 with the strongest candidate as usual. No additional reporting is needed when exploration is skipped.
 
 ### Step 2: Create Plan
 

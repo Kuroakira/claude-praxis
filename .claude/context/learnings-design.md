@@ -56,14 +56,14 @@
 - **Learning**: ワークフローステップの遵守を改善する際、テンプレートの空欄埋め（compliance handshake）ではなく、上流ステップの出力データを下流ステップの必須入力にする因果的依存構造が有効。形式遵守はもっともらしいテキストで充足できるが、因果的依存はデータ生成を要求する
 - **Context**: implement.mdのScout dispatch問題で、テンプレート必須セクション方式は「チェックボックスコンプライアンス」のリスクがあり棄却。Scout findingsをPlanタスク定義の入力要件にすることで、Scoutを実行するか同等の調査を自力で行う必要がある構造にした
 - **Implication**: プロンプトでステップ遵守を求める場合、「セクションを埋めよ」（形式要件）ではなく「このデータを使って次を書け」（入力要件）として設計する
-- **Confirmed**: 2回 | 2026-02-27 | design, implement
+- **Confirmed**: 3回 | 2026-03-01 | design, implement
 
 ## 構造化出力フォーマットはAIの裁量を制約する（anti-sycophancy）
 
 - **Learning**: AI出力を自由記述ではなく固定カラムのテーブルや構造化テンプレートにすると、選択的省略（sycophantic elision）を構造的に防止できる。自由記述では都合の悪い項目を暗黙にスキップできるが、テーブルの空セルは目に見える
 - **Context**: Understanding Checkの比較テーブル（Decision / Your Explanation / AI's Rationale / Difference）は全エントリの表示を強制する。自由記述の「フィードバック」では、Alignedな項目を長く書きMissing/Divergentを省略するsycophancyリスクがあった
 - **Implication**: AIが人間に対してフィードバックや評価を返す場面では、構造化フォーマット（テーブル、固定セクション）を使い、全項目の明示を強制する
-- **Confirmed**: 1回 | 2026-02-27 | implement
+- **Confirmed**: 2回 | 2026-03-01 | implement, design
 
 ## Skill統合: role/typeパラメータ + ルックアップテーブル + フォールバック
 
@@ -78,3 +78,31 @@
 - **Context**: Understanding Checkの完了レポートへのUnderstanding Status追加で、「not run」を表示する案と「省略」する案を比較。Design Docの「罪悪感メカニズムの回避」原則に基づき省略方式を採用。未使用時はフィールドが存在しないため、レポート読者に不要なプレッシャーを与えない
 - **Implication**: オプション機能のステータス表示を設計する際、デフォルト状態の表現方法に注意する。「off」「disabled」「not run」は見えないプレッシャーになりうる
 - **Confirmed**: 1回 | 2026-02-27 | implement
+
+## explore-then-exploit: 浅いスケッチで方向を絞り、選定後に深掘りする
+
+- **Learning**: 複数の戦略方向を評価する際、全方向にフルリサーチチームを投入するのではなく、浅いスケッチ（viability assessment）で方向を絞り、選定後に深掘りするexplore-then-exploitパターンがコスト効率に優れる
+- **Context**: Competing Strategy Explorationの設計で、フルresearcherチーム×N方向は20-30xのコストで過大。スケッチ（7-10x）+選定後深掘り（7-10x）=14-20xの方が効率的。strategy-researcherはhaiku（軽量）で浅い評価を行い、深い調査は選定方向にのみ投資する
+- **Implication**: 並列評価の設計では、評価深度を段階的にする。全候補に等しいコストをかけるのではなく、初期スクリーニングで候補を絞ってから深い調査に移行する
+- **Confirmed**: 1回 | 2026-03-01 | design
+
+## DAの役割は検証対象の性質で限定する（LLM-as-judge回避）
+
+- **Learning**: Devil's Advocateに品質判断（「どの方向が最も良いか」）を委ねると、LLM-as-judgeバイアス（position bias, verbosity bias, self-preference）を再導入する。DAの役割を構造検証（「比較が公正か」「欠落がないか」）に限定し、品質判断は人間に委ねる
+- **Context**: Strategy Exploration ProtocolのP3で、当初DAに方向の品質比較を依頼する案があったが、LLM-as-judgeバイアスのリスクで棄却。DAの検証スコープを3項目に限定（構造的差異の検証、比較テーブル完全性、合成漏れ）。品質判断は構造化比較テーブル+人間選択に委ねた
+- **Implication**: AIに評価・判断を依頼する際、「構造的正しさの検証」と「品質・価値の判断」を分離する。前者はAIに委ねられるが、後者は人間が行うべき場面が多い
+- **Confirmed**: 1回 | 2026-03-01 | design
+
+## フォールバック前のcross-validationで共有失敗原因を排除する
+
+- **Learning**: 選択肢Aが失敗した後にBへフォールバックする前に、Aの失敗原因がBにも適用されないかcross-validateする。共有依存（同じAPI、同じ前提条件）がある場合、Bの調査コストが無駄になる
+- **Context**: Strategy Exploration Protocolのフォールバック（P6）で、当初は「選定方向が失敗→次点を調査」だったが、レビューで「共有失敗原因チェックなしだと7-10xのコストが無駄になるリスク」が指摘された。cross-validation（step 2）を追加し、共有原因がある場合はフォールバック自体をスキップする構造にした
+- **Implication**: フォールバック設計では、代替案が元の失敗原因を共有していないか事前検証する。「次を試す」前に「次も同じ理由で失敗しないか」を確認する
+- **Confirmed**: 1回 | 2026-03-01 | implement
+
+## カタログエントリのプロンプトはプレースホルダー規約に従う
+
+- **Learning**: カタログ（catalog/）のPromptフィールドには、呼び出し側が置換する`[placeholder]`を含める。プレースホルダーなしの自然言語プロンプトは、呼び出し側の統合で置換位置が不明確になる
+- **Context**: strategy-researcherのPromptが「Evaluate the following strategic direction under the specified constraints」とプレースホルダーなしで記述され、呼び出し側（workflow-planner P2）がどこに方向情報を挿入するか不明確だった。`[direction-brief]`と`[constraint-set]`を追加し、既存カタログエントリ（`[topic]`パターン）と統一
+- **Implication**: カタログにPromptフィールドを追加する際、既存エントリのプレースホルダーパターンを確認し、同じ規約に従う。呼び出し側との統合を明示的にする
+- **Confirmed**: 1回 | 2026-03-01 | implement

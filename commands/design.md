@@ -20,15 +20,16 @@ Invoke `workflow-planner` with the following domain context:
 |-----------|-------|
 | `task` | Research and write a Design Doc for [topic] |
 | `domain` | design |
-| `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. |
+| `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. Strategy exploration: if synthesis identifies 2+ viable candidate approaches with no clear winner and design-decision-level differences, propose strategy exploration (see workflow-planner Strategy Exploration Protocol). Typical design-level constraint axes: architecture approach (monolith vs microservice), data model (normalized vs denormalized), dependency choice (build vs buy). |
 | `constraints` | (1) Research must produce a synthesis with findings and contradictions. (2) Outline must be reviewed before full writing. (3) Final Design Doc must receive thorough review with 3+ reviewers including devils-advocate. (4) Design Doc format rules (rules/design-doc-format.md) must be followed. |
-| `catalog_scope` | Reviewers: architecture, document-quality, feasibility, user-impact, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research). |
+| `catalog_scope` | Reviewers: architecture, document-quality, feasibility, user-impact, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, strategy-researcher). |
 
 The planner will:
 1. Analyze the topic and select relevant researchers from the catalog
 2. Present the plan (transparency window — human can interrupt if direction is wrong)
 3. Dispatch selected researchers in parallel
 4. Synthesize findings — reconcile contradictions, identify candidate approaches
+5. If strategy exploration trigger conditions are met: execute Strategy Exploration Protocol (direction generation → parallel evaluation → DA verification → structured comparison → human selection). If not met: proceed with the strongest candidate
 
 ### Synthesis Rules
 
@@ -40,7 +41,15 @@ After researcher agents return:
 
 Do NOT present research findings to the human separately. Carry them forward into Phase 2.
 
-**Record to progress.md**: Append an entry with key findings, rejected approaches, and relevant domain tags.
+### Strategy Exploration (Conditional)
+
+If the planner's synthesis identifies 2+ viable candidate approaches that meet strategy exploration trigger conditions (see workflow-planner's Strategy Exploration Protocol), the planner executes the exploration protocol between synthesis and Phase 2.
+
+The exploration produces a structured comparison table and the human selects a direction. The selected direction — including its constraint set and comparison rationale — becomes the required input for Phase 2 (causal dependency). Phase 2's outline is built around the selected direction.
+
+If exploration is not triggered, the planner proceeds with the strongest candidate from synthesis as usual. No additional reporting is needed when exploration is skipped.
+
+**Record to progress.md**: Append an entry with key findings, rejected approaches, and relevant domain tags. If strategy exploration was triggered, include the selected direction and comparison summary.
 
 ```markdown
 ## [timestamp] — /claude-praxis:design: Research complete
