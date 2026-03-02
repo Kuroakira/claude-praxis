@@ -26,8 +26,8 @@ Planning creates an implementation-specific plan distinct from the Design Doc's 
    |-----------|-------|
    | `task` | Plan implementation of [Design Doc topic] |
    | `domain` | implement |
-   | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra → add error-resilience. Strategy exploration: if context gathering identifies 2+ viable implementation directions with no clear winner and design-decision-level differences, propose strategy exploration (see workflow-planner Strategy Exploration Protocol). Typical implementation-level constraint axes: test strategy (integration-heavy vs unit-heavy), refactoring scope (minimal change vs surrounding improvement), dependency management (existing libraries vs new introduction). |
-   | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. |
+   | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra → add error-resilience. Strategy exploration: if context gathering identifies 2+ viable implementation directions with no clear winner and design-decision-level differences, propose strategy exploration (see workflow-planner Strategy Exploration Protocol). Typical implementation-level constraint axes: test strategy (integration-heavy vs unit-heavy), refactoring scope (minimal change vs surrounding improvement), dependency management (existing libraries vs new introduction). Note: The mandatory Implementation Axes Table in Step 1 structurally prevents conflating Design Doc clarity with implementation approach clarity. The planner should use axes marked "Requires exploration" as additional input for strategy exploration trigger evaluation. |
+   | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. (5) Context gathering must produce an Implementation Axes Table — every implementation decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (6) If Implementation Axes Table has "Requires exploration" axes and Strategy Exploration is not triggered, Step 2 must create competing plan outlines. |
    | `catalog_scope` | Reviewers: spec-compliance, code-quality, security-perf, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices, strategy-researcher. |
 
    The planner will dispatch `codebase-scout` (and optionally `best-practices` for unfamiliar patterns) to explore the codebase.
@@ -36,15 +36,42 @@ Planning creates an implementation-specific plan distinct from the Design Doc's 
 
 3. **Check learnings before starting**: Invoke `check-past-learnings` (role: implementation)
 
+4. **Enumerate implementation axes (MANDATORY)** — after context gathering, produce an Implementation Axes Table covering every implementation decision where multiple valid approaches exist. This step CANNOT be skipped. Even when the Design Doc clearly defines "How" at the design level, multiple valid implementation approaches may exist for test strategy, integration ordering, refactoring scope, and dependency management.
+
+### Implementation Axes Table (Required Context Output)
+
+Every context gathering MUST produce this table. If the table has zero "Requires exploration" axes, state the justification explicitly — "no axes require exploration because [reason]."
+
+| Axis | Choices | Verdict | Rationale |
+|------|---------|---------|-----------|
+| [implementation decision] | A: [option] / B: [option] | Clear winner (A) / Requires exploration | [why A is clearly better, OR why both are viable with genuine trade-offs] |
+
+**Rules**:
+- Every implementation decision from the context gathering must appear as an axis
+- **"Requires exploration"** = both choices have genuine trade-offs that affect the implementation approach (not just cosmetic differences)
+- **"Clear winner"** = one choice is objectively better with stated rationale
+- A verdict of "0 axes require exploration" needs explicit justification — this conclusion cannot be reached by default
+- Common axes to check (not exhaustive): test strategy (integration-heavy vs unit-heavy), implementation ordering (data layer first vs UI first), refactoring scope (minimal change vs surrounding improvement), dependency management (existing libraries vs new introduction), error handling approach
+
+This table is a **required input** for Step 2 (causal dependency).
+
 ### Strategy Exploration (Conditional)
 
 If the planner identifies 2+ viable implementation directions after context gathering that meet strategy exploration trigger conditions (see workflow-planner's Strategy Exploration Protocol), the planner executes the exploration protocol between Step 1 and Step 2.
 
 The exploration produces a structured comparison table and the human selects a direction. The selected direction — including its constraint set and comparison rationale — becomes the required input for Step 2 (causal dependency). The implementation plan is built around the selected direction.
 
-If exploration is not triggered, the planner proceeds to Step 2 with the strongest candidate as usual. No additional reporting is needed when exploration is skipped.
+If exploration is not triggered but the Implementation Axes Table has axes marked "Requires exploration", proceed to Step 2 with competing plan outlines (see below).
+
+If all axes are "Clear winner" and exploration is not triggered, proceed to Step 2 with a single plan outline.
 
 ### Step 2: Create Plan
+
+The plan creation approach depends on the Implementation Axes Table.
+
+#### Single Plan (all axes "Clear winner")
+
+If the Implementation Axes Table has zero "Requires exploration" axes, create a single plan directly:
 
 4. **Break into steps sized for ~500-line PRs**: Each step produces a reviewable, self-contained change. If a step would exceed ~500 lines, split further
 5. For each step, specify:
@@ -66,7 +93,26 @@ If exploration is not triggered, the planner proceeds to Step 2 with the stronge
    - If 1-2 tasks: note "sequential execution" — one line is sufficient
 8. **Always include Final Review as the last task in the plan**: The plan must end with "Final Review (dispatch-reviewers, thorough)" as an explicit task. This ensures Phase 3 is visible in the plan and not skipped — especially when implementing phase-by-phase or when context is compacted during long implementations
 
-**PAUSE**: Present the plan to the human for approval before proceeding. Include the planner's agent selection rationale (which reviewers selected for each task and why).
+#### Competing Plan Outlines (any axis "Requires exploration")
+
+If the Implementation Axes Table has 1+ axes marked "Requires exploration" AND Strategy Exploration was NOT triggered (or was triggered but sub-axes remain), create 2-3 competing plan outlines before building the full plan:
+
+1. Each outline is a **high-level plan skeleton** — task breakdown, ordering strategy, and key approach decisions — NOT a fully detailed plan with file paths and test specs
+2. Each outline takes a **different position** on the "Requires exploration" axes (e.g., "Plan A: integration-test-heavy + data-layer-first" vs "Plan B: unit-test-heavy + UI-first")
+3. Each outline includes:
+   - Task list with 1-line descriptions and ordering rationale
+   - Position on each exploration axis and how it affects the plan structure
+   - Expected trade-offs (complexity, risk, parallelization potential)
+4. After creating all outlines, produce a **brief comparison**:
+   - How each outline's position on the exploration axes affects task ordering and dependencies
+   - Which outline minimizes risk (earlier detection of integration issues)
+   - Which outline enables better parallelization
+5. **Select the best outline** with explicit rationale referencing the comparison
+6. Expand the selected outline into the full detailed plan (steps 4-8 above)
+
+This ensures that implementation approach decisions are explicitly explored even when the Design Doc clearly defines "How" at the design level. The competing plan outlines serve as a structural fallback — if Strategy Exploration was skipped, this mechanism still forces multi-directional evaluation at the planning level.
+
+**PAUSE**: Present the plan to the human for approval before proceeding. Include the planner's agent selection rationale (which reviewers selected for each task and why). If competing plan outlines were created, include the comparison summary and selection rationale.
 
 ## Phase 2: Task Execution (repeat per task)
 

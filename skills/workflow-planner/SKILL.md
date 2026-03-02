@@ -34,7 +34,7 @@ Read the task description and domain context. Identify:
 - **Complexity**: Simple (single concern), moderate (2-3 concerns), complex (4+ concerns or cross-cutting)
 - **Risk profile**: Low (internal refactor), medium (API changes), high (security/auth, external dependencies, infrastructure)
 - **Domain signals**: Keywords and patterns that inform agent selection (see domain context for guidance)
-- **Strategy exploration potential**: Whether the task might benefit from evaluating multiple strategic directions in parallel (see domain_context for exploration guidance; only applicable in `design` and `implement` domains). **Important**: "What" clarity does not imply "How" clarity — even when the FeatureSpec precisely defines requirements, multiple valid design axes for achieving them may exist. Check for content-based exploration signals (see Trigger Conditions)
+- **Strategy exploration potential**: Whether the task might benefit from evaluating multiple strategic directions in parallel (see domain_context for exploration guidance; only applicable in `design` and `implement` domains). Note: "What" clarity does not imply "How" clarity — in `/design`, the mandatory Design Axes Table structurally prevents this conflation (see Trigger Conditions)
 
 ### Step 2: Select Agents from Catalog
 
@@ -153,23 +153,7 @@ This protocol is an execution pattern within the planner's Step 6 — not a sepa
 
 If all three are met, proceed to exploration.
 
-**Content-based exploration signals** — when the primary trigger is NOT met (synthesis converged on one approach), but the task/FeatureSpec contains any of these signals, the planner must actively re-examine the synthesis for hidden design axes before proceeding:
-
-| Signal | Why it implies multiple design axes | Example hidden axis |
-|--------|-----------------------------------|--------------------|
-| **Reference-type data** — data referenced by multiple entities | Consistency logic placement becomes a design axis (caller-side vs data-layer vs event-driven) | Where to enforce referential integrity when referenced data changes |
-| **Cross-cutting concerns** — authorization, validation, logging, error handling spanning multiple modules | Where to place cross-cutting logic becomes a design axis (middleware vs decorator vs aspect vs per-module) | Centralized validation layer vs distributed per-endpoint validation |
-| **System-wide impact on existing operations** — new feature affects all or most existing operations | Integration strategy becomes a design axis (centralized orchestration vs distributed per-operation) | Add new check to every existing API endpoint: single interceptor vs modify each handler |
-| **Multiple valid placement locations** — logic that could reasonably live in different layers | Responsibility allocation becomes a design axis (controller vs service vs model vs infrastructure) | Business rule that could be a DB constraint, a service-layer check, or a middleware guard |
-
-**Re-examination procedure** when content signals are present but primary trigger is not met:
-
-1. Identify which content signals are present in the task/FeatureSpec
-2. For each signal, ask: "Does this signal imply a design axis that the synthesis did not surface as a separate candidate?"
-3. If yes: generate the additional candidate(s) and re-check the primary trigger (3 conditions)
-4. If re-check passes: proceed to exploration. If re-check still fails (additional candidates are clearly inferior): skip exploration with explicit note: "Content signals [X, Y] were present but re-examination confirmed [reason] — proceeding without exploration"
-
-This re-examination prevents the planner from conflating "What" clarity with "How" clarity — a precisely defined requirement does not imply a single valid design approach.
+**Relationship to Design Axes Table**: In `/design`, the command requires a mandatory Design Axes Table as synthesis output (see `commands/design.md` Synthesis Rules). If the Design Axes Table surfaces axes marked "Requires exploration" that were not represented as separate candidate approaches, use those axes to generate additional candidates and re-evaluate the primary trigger. The Design Axes Table provides structural enforcement — the planner's trigger evaluation is informed by it but does not replace it. Even if this protocol is not triggered, axes marked "Requires exploration" will be addressed by the command's competing outlines mechanism.
 
 ### P1: Direction Generation (controller)
 
