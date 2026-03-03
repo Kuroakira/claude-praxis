@@ -36,6 +36,25 @@ Read the task description and domain context. Identify:
 - **Domain signals**: Keywords and patterns that inform agent selection (see domain context for guidance)
 - **Strategy exploration potential**: Whether the task might benefit from evaluating multiple strategic directions in parallel (see domain_context for exploration guidance; only applicable in `design` and `implement` domains). Note: "What" clarity does not imply "How" clarity — in `/design`, the mandatory Design Axes Table structurally prevents this conflation (see Trigger Conditions)
 
+After analysis, **enumerate design/implementation axes (MANDATORY)**:
+
+Produce an Axes Table as structured output. This table is a **required input** for Step 4 — without it, Step 4 cannot generate a well-informed execution plan.
+
+| Column | Description |
+|--------|-------------|
+| Axis | The implementation/design decision with multiple valid approaches |
+| Choices | A: [option] / B: [option] |
+| Verdict | "Clear winner (A)" or "Requires exploration" |
+| Rationale | Why A is clearly better, OR why both are viable with genuine trade-offs |
+
+Rules:
+- Every decision identified during task analysis must appear as an axis
+- "Requires exploration" = both choices have genuine trade-offs affecting the approach
+- "Clear winner" = one choice is objectively better with stated rationale
+- A verdict of "0 axes require exploration" needs explicit justification
+
+The Axes Table structure (columns, verdict options) is defined by the calling command. The planner's responsibility is to generate the table content — analyzing the task and populating each axis with informed verdicts based on the context gathered.
+
 ### Step 2: Select Agents from Catalog
 
 Using **only** the catalog entries listed in `catalog_scope`:
@@ -73,6 +92,8 @@ Apply the graduated review model to each step:
 
 Produce a step sequence where each step's output is the next step's required input (causal dependency).
 
+**Required input**: Axes Table from Step 1. The Axes Table verdicts determine the plan structure — single plan (all "Clear winner"), competing outlines fallback (any "Requires exploration" but Strategy Exploration not triggered), or Strategy Exploration protocol (full trigger conditions met). See "Axes Table → Exploration Decision Tree" in Trigger Conditions.
+
 **Step format**:
 
 ```
@@ -105,7 +126,7 @@ Step [N]: Strategy Exploration (conditional)
   protocol: See "Strategy Exploration Protocol" section
 ```
 
-If trigger conditions are not met at execution time, skip the step and proceed with the strongest candidate from synthesis. The selected direction becomes a required input for the next step (causal dependency).
+If trigger conditions are not met at execution time but the Axes Table contains "Requires exploration" axes, execute the Competing Outlines Fallback (see below) instead of skipping entirely. If all axes are "Clear winner", skip the step and proceed with a single plan. The selected direction or outline becomes a required input for the next step (causal dependency).
 
 ### Step 5: Present Plan (Transparency Window)
 
@@ -115,6 +136,7 @@ Before execution, present the complete plan to the human:
 2. **Full step sequence**: with agent selections and review tiers
 3. **Selection rationale**: why each agent was chosen/omitted
 4. **Review trace preview**: which tiers apply at which stages and why
+5. **Axes Table**: with verdicts and the resulting plan approach (single plan / competing outlines / strategy exploration)
 
 This is a **transparency window**, not an approval gate. The human sees what will happen and can interrupt if the direction is wrong. Execution proceeds unless the human intervenes.
 
@@ -136,6 +158,7 @@ After all steps complete, present to the human:
 1. **Final output** (the deliverable)
 2. **Review trace**: For each step, what review tier was applied and why
 3. **Agent selection summary**: Which agents contributed at each stage
+4. **Axes Table and exploration decision**: The verdicts, decision tree outcome, and how they shaped the plan
 
 ## Strategy Exploration Protocol (Conditional)
 
@@ -153,7 +176,18 @@ This protocol is an execution pattern within the planner's Step 6 — not a sepa
 
 If all three are met, proceed to exploration.
 
-**Relationship to Design Axes Table**: In `/design`, the command requires a mandatory Design Axes Table as synthesis output (see `commands/design.md` Synthesis Rules). If the Design Axes Table surfaces axes marked "Requires exploration" that were not represented as separate candidate approaches, use those axes to generate additional candidates and re-evaluate the primary trigger. The Design Axes Table provides structural enforcement — the planner's trigger evaluation is informed by it but does not replace it. Even if this protocol is not triggered, axes marked "Requires exploration" will be addressed by the command's competing outlines mechanism.
+**Relationship to Axes Table**: The Axes Table (produced in Step 1) is the structured input for trigger evaluation. If the Axes Table surfaces axes marked "Requires exploration" that were not represented as separate candidate approaches, use those axes to generate additional candidates and re-evaluate the primary trigger. The Axes Table provides structural enforcement — the planner's trigger evaluation is informed by it but does not replace it.
+
+### Axes Table → Exploration Decision Tree
+
+After producing the Axes Table (Step 1), evaluate the following decision tree to determine the exploration approach for Step 4:
+
+1. **Check all verdicts** in the Axes Table
+2. If any axis has "Requires exploration" AND the primary trigger (3 conditions above) is met → **Strategy Exploration Protocol** (P1-P6: parallel agent evaluation, 7-10x cost)
+3. If any axis has "Requires exploration" BUT primary trigger is NOT met (e.g., exploration axes are implementation-level rather than design-decision-level, or only 1 axis needs exploration) → **Competing Outlines Fallback** (same-context lightweight comparison, see section below)
+4. If all verdicts are "Clear winner" → **Single plan/outline** — proceed directly. State the justification for why no axes require exploration
+
+This decision tree connects the Axes Table (Step 1 output) to the execution plan structure (Step 4). The Axes Table is the input data; this tree is the evaluation logic.
 
 ### P1: Direction Generation (controller)
 
@@ -251,6 +285,35 @@ When proposing strategy exploration, include this cost estimate so the human can
 ### Opt-in Reporting
 
 When strategy exploration is triggered, record the comparison results and selection rationale to progress.md. When exploration is not triggered (conditions not met), omit from reporting entirely — do not display "Strategy Exploration: not run."
+
+## Competing Outlines Fallback
+
+A lightweight alternative to the Strategy Exploration Protocol. Used when the Axes Table contains "Requires exploration" axes but the Strategy Exploration trigger conditions are not fully met (see Axes Table → Exploration Decision Tree above).
+
+Unlike Strategy Exploration (which dispatches parallel agents for deep evaluation at 7-10x cost), this fallback generates and compares outlines within the same context — no additional agent dispatch.
+
+### When This Applies
+
+- Axes Table has 1+ axes marked "Requires exploration"
+- Strategy Exploration primary trigger is NOT met (typically: exploration axes are at implementation level rather than design-decision level, or only 1 axis needs exploration)
+
+### Procedure
+
+1. **Extract exploration axes**: Identify all axes marked "Requires exploration" from the Axes Table
+2. **Determine outline format** based on domain:
+   - `design` domain → Competing outlines (document structure, argument flow, section organization)
+   - `implement` domain → Competing plan skeletons (task breakdown, ordering strategy, dependency structure)
+3. **Generate 2-3 outlines**: Each outline takes a different position on the exploration axes. Each includes:
+   - Task/section list with 1-line descriptions
+   - Position on each exploration axis and how it affects the structure
+   - Expected trade-offs (complexity, risk, parallelization potential)
+4. **Brief comparison**: How each outline's positions affect ordering, dependencies, and risk profile
+5. **Select best outline** with explicit rationale referencing the comparison
+6. **Selected outline becomes required input** for the full plan/document generation (causal dependency)
+
+### Cost Profile
+
+This fallback operates within the existing context — no additional agent dispatch. Cost is marginal compared to Strategy Exploration's 7-10x multiplier.
 
 ## Domain Context
 
