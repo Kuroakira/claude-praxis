@@ -1,6 +1,13 @@
 ---
 name: implement
-description: Implement from Design Doc — plan, TDD per task, auto-review per task, final review
+description: >-
+  Implement from Design Doc — Axes Table, competing plan outlines, TDD per task, graduated review.
+  TRIGGER when: (1) user asks to implement or build a feature, (2) user asks to create an
+  implementation plan from a Design Doc, (3) user asks to work through or execute a Design Doc.
+  BLOCKING REQUIREMENT: invoke this skill BEFORE writing any plan document, analysis, or code.
+  Do NOT create plan documents or claudedocs files directly — Phase 1 of this skill generates
+  the plan with mandatory Axes Table and competing plan outlines.
+  NOT the same as /plan — /plan is lightweight and skips Axes Table and competing outlines.
 disable-model-invocation: false
 ---
 

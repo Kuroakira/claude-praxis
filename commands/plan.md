@@ -1,6 +1,10 @@
 ---
 name: plan
-description: Create a detailed implementation plan — break a task into small, TDD-driven steps
+description: >-
+  Create a lightweight implementation plan — break a task into small, TDD-driven steps.
+  Use when: no Design Doc exists and a quick step breakdown is needed.
+  Do NOT use when: a Design Doc is referenced or exists — use /implement instead,
+  which includes mandatory Axes Table and competing plan outlines.
 disable-model-invocation: false
 ---
 

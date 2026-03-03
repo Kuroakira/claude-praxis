@@ -1,6 +1,11 @@
 ---
 name: design
-description: Create a complete Design Doc — research, outline, review, write, quality check, present
+description: >-
+  Create a complete Design Doc — research, strategy exploration, competing outlines, review.
+  TRIGGER when: user asks to create or write a Design Doc, design a system/feature/API,
+  or produce an architectural document.
+  BLOCKING REQUIREMENT: invoke this skill BEFORE drafting any design document or claudedocs file.
+  Do NOT write Design Doc content directly.
 disable-model-invocation: false
 ---
 
