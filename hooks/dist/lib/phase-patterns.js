@@ -7,8 +7,8 @@
 // has limited impact.
 const COMPOUND_OVERRIDES = [
     {
-        // "design doc" + implementation intent → implement (not design)
-        condition: (msg) => /\bdesign\s+doc\b/i.test(msg) &&
+        // "design doc" / "DesignDoc" + implementation intent → implement (not design)
+        condition: (msg) => /\bdesign\s*doc\b/i.test(msg) &&
             (/\bimplement/i.test(msg) || /実装/.test(msg) || /プラン/.test(msg)),
         phase: "implement",
     },
@@ -43,7 +43,7 @@ export const PHASE_PATTERNS = [
     {
         phase: "implement",
         command: "/claude-praxis:implement",
-        description: "TDD, competing plan outlines, and graduated review",
+        description: "Phase 1 creates the implementation plan; then TDD-driven development with graduated review",
         patterns: [
             /\bimplement/i, /\bbuild\b/i, /\bcreate\b/i, /\badd\b.*\b(feature|function|component)\b/i,
             /実装/, /作って/, /追加/, /修正して/, /コード.*書/,

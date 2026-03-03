@@ -57,6 +57,11 @@ describe("detectPhase", () => {
       expect(result).toContain("Phase detected: implement");
     });
 
+    it("detects implement when 'DesignDoc' (no space) + implementation intent (Japanese)", () => {
+      const result = detectPhase("このDesignDocの実装プランをclaudedocs/implementationsに作成して");
+      expect(result).toContain("Phase detected: implement");
+    });
+
     it("detects implement when 'design doc' + 'implement' (English)", () => {
       const result = detectPhase("Follow the design doc and implement the plan");
       expect(result).toContain("Phase detected: implement");
@@ -110,7 +115,7 @@ describe("detectPhase", () => {
     it("includes description for implement phase", () => {
       const result = detectPhase("実装して");
       expect(result).toContain(" — ");
-      expect(result).toContain("TDD");
+      expect(result).toContain("Phase 1 creates the implementation plan");
     });
 
     it("includes description for design phase", () => {
@@ -125,7 +130,7 @@ describe("detectPhase", () => {
 
     it("includes description in slash command output", () => {
       const result = detectPhase("/implement");
-      expect(result).toContain("TDD, competing plan outlines, and graduated review");
+      expect(result).toContain("Phase 1 creates the implementation plan");
     });
   });
 });
