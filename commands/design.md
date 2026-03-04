@@ -58,7 +58,7 @@ Every synthesis MUST produce this table. If the table has zero "Requires explora
 - **"Requires exploration"** = both choices have genuine trade-offs that affect the design direction (not just implementation details)
 - **"Clear winner"** = one choice is objectively better with stated rationale
 - A verdict of "0 axes require exploration" needs explicit justification — this conclusion cannot be reached by default
-- Common axes to check (not exhaustive): data model structure, logic placement (which layer), consistency/integrity strategy, integration approach (centralized vs distributed), state management approach
+- Common axes to check (not exhaustive): data model structure, logic placement (which layer), consistency/integrity strategy, integration approach (centralized vs distributed), state management approach, performance strategy (processing model, caching, scaling approach, rendering strategy)
 
 This table is a **required input** for Phase 2 (causal dependency).
 

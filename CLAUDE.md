@@ -51,6 +51,7 @@ claude-praxis/
 │   ├── research.md              # /research — standalone research
 │   ├── plan.md                  # /plan — standalone planning
 │   ├── review.md                # /review — standalone code review
+│   ├── compare.md               # /compare — structured multi-option comparison + selection
 │   ├── compound.md              # /compound — extract and accumulate learnings
 │   └── understanding-check.md   # /understanding-check — verify understanding of AI-generated work
 ├── skills/
@@ -150,6 +151,7 @@ Available for direct invocation when the full workflow is not needed:
 /claude-praxis:research  → Standalone research (when you just want to explore options)
 /claude-praxis:plan      → Standalone planning (when you already have a plan in mind)
 /claude-praxis:review    → Standalone code review (when you want feedback on existing code)
+/claude-praxis:compare   → Structured comparison of 2-4 options with axes evaluation + human selection
 /claude-praxis:compound             → Extract what you learned, carry it forward
 /claude-praxis:understanding-check  → Verify you can explain key decisions (recommended: separate session)
 ```
