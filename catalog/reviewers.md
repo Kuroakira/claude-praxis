@@ -76,6 +76,13 @@ All reviewers use subagent_type `claude-praxis:reviewer` (read-only, inherits ma
 - **Applicable Domains**: design
 - **Prompt**: Review for user impact. Check: UI/UX implications, backward compatibility, migration path, user experience changes. Detect cases where technically correct design negatively impacts users.
 
+### `structural-fitness`
+
+- **Focus**: Whether incremental change is appropriate or broader refactoring is needed
+- **Verification Source**: Codebase structure analysis, coupling/cohesion indicators, technical debt patterns
+- **Applicable Domains**: design, implement
+- **Prompt**: Assess structural fitness. Is the proposed approach incrementally extending existing structure when broader refactoring would be more effective? Check: Does the change fight the existing architecture (working around limitations instead of fixing them)? Will it increase coupling or create structural friction for future changes? Are we patching around a design that no longer fits the requirements? Would restructuring first make this change — and future changes — simpler? Detect sunk-cost thinking: "we have this code, so we should build on it" when the code's structure doesn't fit the new need. If refactoring is warranted, describe the scope and expected benefit.
+
 ## Distinction: `error-resilience` vs `devils-advocate`
 
 `devils-advocate` challenges direction: "Is this design/implementation fundamentally wrong?"

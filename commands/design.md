@@ -1,7 +1,7 @@
 ---
 name: design
 description: >-
-  Create a complete Design Doc — research, strategy exploration, competing outlines, review.
+  Create a complete Design Doc — research, per-axis evaluation, review.
   TRIGGER when: user asks to create or write a Design Doc, design a system/feature/API,
   or produce an architectural document.
   BLOCKING REQUIREMENT: invoke this skill BEFORE drafting any design document or claudedocs file.
@@ -25,16 +25,16 @@ Invoke `workflow-planner` with the following domain context:
 |-----------|-------|
 | `task` | Research and write a Design Doc for [topic] |
 | `domain` | design |
-| `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. Strategy exploration: if synthesis identifies 2+ viable candidate approaches with no clear winner and design-decision-level differences, propose strategy exploration (see workflow-planner Strategy Exploration Protocol). Typical design-level constraint axes: architecture approach (monolith vs microservice), data model (normalized vs denormalized), dependency choice (build vs buy). Note: The mandatory Design Axes Table in Synthesis Rules structurally prevents conflating "What" clarity with "How" clarity. The planner should use axes marked "Requires exploration" as additional input for strategy exploration trigger evaluation. |
-| `constraints` | (1) Research must produce a synthesis with findings and contradictions. (2) Synthesis must include a Design Axes Table — every design decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (3) Outline must be reviewed before full writing. (4) If Design Axes Table has "Requires exploration" axes and Strategy Exploration is not triggered, Phase 2 must create competing outlines. (5) Final Design Doc must receive thorough review with 3+ reviewers including devils-advocate. (6) Design Doc format rules (rules/design-doc-format.md) must be followed. |
-| `catalog_scope` | Reviewers: architecture, document-quality, feasibility, user-impact, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, strategy-researcher). |
+| `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. The mandatory Design Axes Table in Synthesis Rules structurally prevents conflating "What" clarity with "How" clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
+| `constraints` | (1) Research must produce a synthesis with findings and contradictions. (2) Synthesis must include a Design Axes Table — every design decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (3) If Design Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before outline creation. (4) Outline must be reviewed before full writing. (5) Final Design Doc must receive thorough review with 3+ reviewers including devils-advocate. (6) Design Doc format rules (rules/design-doc-format.md) must be followed. |
+| `catalog_scope` | Reviewers: architecture, document-quality, feasibility, user-impact, security-perf, structural-fitness, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, axis-evaluator). |
 
 The planner will:
 1. Analyze the topic and select relevant researchers from the catalog
 2. Present the plan (transparency window — human can interrupt if direction is wrong)
 3. Dispatch selected researchers in parallel
 4. Synthesize findings — reconcile contradictions, identify candidate approaches
-5. If strategy exploration trigger conditions are met: execute Strategy Exploration Protocol (direction generation → parallel evaluation → DA verification → structured comparison → human selection). If not met: proceed with the strongest candidate
+5. Produce Design Axes Table. For "Requires exploration" axes: dispatch per-axis evaluators, synthesize results, resolve axes (see workflow-planner Independent Axis Evaluation)
 
 ### Synthesis Rules
 
@@ -60,19 +60,11 @@ Every synthesis MUST produce this table. If the table has zero "Requires explora
 - A verdict of "0 axes require exploration" needs explicit justification — this conclusion cannot be reached by default
 - Common axes to check (not exhaustive): data model structure, logic placement (which layer), consistency/integrity strategy, integration approach (centralized vs distributed), state management approach, performance strategy (processing model, caching, scaling approach, rendering strategy)
 
-This table is a **required input** for Phase 2 (causal dependency).
+This table is a **required input** for Independent Axis Evaluation. Axes marked "Requires exploration" are resolved through per-axis parallel evaluation before Phase 2.
 
 Do NOT present research findings to the human separately. Carry them forward into Phase 2.
 
-### Strategy Exploration (Conditional)
-
-If the planner's synthesis identifies 2+ viable candidate approaches that meet strategy exploration trigger conditions (see workflow-planner's Strategy Exploration Protocol), the planner executes the exploration protocol between synthesis and Phase 2.
-
-The exploration produces a structured comparison table and the human selects a direction. The selected direction — including its constraint set and comparison rationale — becomes the required input for Phase 2 (causal dependency). Phase 2's outline is built around the selected direction.
-
-If exploration is not triggered, the planner proceeds with the strongest candidate from synthesis as usual. No additional reporting is needed when exploration is skipped.
-
-**Record to progress.md**: Append an entry with key findings, rejected approaches, and relevant domain tags. If strategy exploration was triggered, include the selected direction and comparison summary.
+**Record to progress.md**: Append an entry with key findings, rejected approaches, and relevant domain tags. If per-axis evaluation was executed, include the resolved axes and rationale.
 
 ```markdown
 ## [timestamp] — /claude-praxis:design: Research complete
@@ -83,11 +75,9 @@ If exploration is not triggered, the planner proceeds with the strongest candida
 
 ## Phase 2: Create Outline
 
-Build the skeleton of the Design Doc following **abstract to concrete** ordering. The outline approach depends on the Design Axes Table from Phase 1.
+Build the skeleton of the Design Doc following **abstract to concrete** ordering. By this point, all axes are resolved — either "Clear winner" from synthesis or resolved through Independent Axis Evaluation.
 
-### Single Outline (all axes "Clear winner")
-
-If the Design Axes Table has zero "Requires exploration" axes, create a single outline:
+Create a single outline from the resolved axes:
 
 1. Create an outline with section headers and 1-2 sentence summaries per section
 2. Ordering principle — **abstract to concrete**:
@@ -99,22 +89,7 @@ If the Design Axes Table has zero "Requires exploration" axes, create a single o
    - A reader should understand the design direction from the outline alone
    - Each section should have a clear purpose — no sections "for completeness"
 4. Ensure Alternatives Considered is included with at least the approaches from Phase 1
-
-### Competing Outlines (any axis "Requires exploration")
-
-If the Design Axes Table has 1+ axes marked "Requires exploration" AND Strategy Exploration was NOT triggered (or was triggered but sub-axes remain), create 2-3 competing outlines:
-
-1. Each outline takes a **different position** on the "Requires exploration" axes
-2. Label each outline with its position (e.g., "Outline A: caller-side consistency + centralized integration" vs "Outline B: event-driven consistency + per-operation integration")
-3. Each outline follows the same abstract-to-concrete structure as the single outline
-4. After creating all outlines, produce a **brief comparison**:
-   - How each outline's position on the exploration axes affects the Proposal section
-   - Which outline produces the most coherent argument flow
-   - Which outline best serves the document's audience
-5. **Select the best outline** with explicit rationale referencing the comparison
-6. Carry the selected outline (and the comparison rationale) forward to Phase 3
-
-This ensures that "How" design decisions are explicitly explored even when "What" is well-defined. The competing outlines serve as a structural fallback — if Strategy Exploration was skipped, this mechanism still forces multi-directional evaluation at the outline level.
+5. For axes that went through per-axis evaluation: the resolved decision and rationale should inform the Proposal section's argument structure
 
 Do NOT present the outline to the human yet. Proceed to Phase 3.
 

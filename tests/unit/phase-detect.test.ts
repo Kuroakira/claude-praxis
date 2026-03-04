@@ -120,7 +120,7 @@ describe("detectPhase", () => {
 
     it("includes description for design phase", () => {
       const result = detectPhase("設計ドキュメントを作成して");
-      expect(result).toContain("Design Doc with research, strategy exploration, and review");
+      expect(result).toContain("Design Doc with research, per-axis evaluation, and review");
     });
 
     it("includes description for debug phase", () => {

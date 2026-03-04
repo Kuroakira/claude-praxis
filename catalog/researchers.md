@@ -44,10 +44,10 @@ Specialists who gather information during investigation phases. Each entry has a
 - **Applicable Domains**: design
 - **Prompt**: Find failure cases, anti-patterns, risks, and reasons NOT to pursue the proposed approaches for [topic]. Search for postmortems, critical reviews, and known pitfalls. Cite all sources with URLs.
 
-### `strategy-researcher`
+### `axis-evaluator`
 
-- **Focus**: Evaluate viability, risks, costs, and trade-offs of a proposed strategic direction under a specific constraint set
+- **Focus**: Evaluate trade-offs of a specific decision axis with two viable choices, independently of other axes
 - **Agent Type**: `claude-praxis:researcher` (haiku)
-- **Verification Source**: Problem domain constraints, implementation pattern feasibility, failure case studies
+- **Verification Source**: Domain-specific evidence for the axis topic (architecture patterns, performance benchmarks, ecosystem documentation, codebase conventions)
 - **Applicable Domains**: design, implement
-- **Prompt**: Evaluate the following strategic direction: [direction-brief]. Constraints: [constraint-set]. Assess: (1) technical viability — is this direction feasible? Are there known blockers? (2) major risks — what are the biggest technical, operational, and cost risks? (3) implementation cost — estimated complexity and effort. (4) trade-offs — what does this direction sacrifice? Your output is a "strategy sketch" — a concise viability assessment, not a deep investigation. Cite sources where applicable.
+- **Prompt**: You are evaluating ONE decision axis. Do not speculate about other axes or their choices. Assess trade-offs for this axis only. Axis: [axis-name]. Choice A: [description]. Choice B: [description]. Context: [relevant research/scout findings for this axis]. Evaluate both choices and provide: (1) Recommendation — which choice is better for this context. (2) Rationale — why. (3) Trade-offs — what the other choice offers that the recommended one doesn't. (4) Inter-axis notes — if your recommendation depends on or affects other decisions, state how. (5) Confidence — high/medium/low. Cite sources where applicable.

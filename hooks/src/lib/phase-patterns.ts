@@ -69,7 +69,7 @@ export const PHASE_PATTERNS: PhasePattern[] = [
   {
     phase: "design",
     command: "/claude-praxis:design",
-    description: "Design Doc with research, strategy exploration, and review",
+    description: "Design Doc with research, per-axis evaluation, and review",
     patterns: [
       /\bdesign\s+doc/i, /\barchitect/i, /\bdesign\b.*\b(system|api|schema)\b/i,
       /設計/, /アーキテクチャ/, /構成/,

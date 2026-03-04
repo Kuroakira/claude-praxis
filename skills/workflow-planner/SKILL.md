@@ -34,11 +34,10 @@ Read the task description and domain context. Identify:
 - **Complexity**: Simple (single concern), moderate (2-3 concerns), complex (4+ concerns or cross-cutting)
 - **Risk profile**: Low (internal refactor), medium (API changes), high (security/auth, external dependencies, infrastructure)
 - **Domain signals**: Keywords and patterns that inform agent selection (see domain context for guidance)
-- **Strategy exploration potential**: Whether the task might benefit from evaluating multiple strategic directions in parallel (see domain_context for exploration guidance; only applicable in `design` and `implement` domains). Note: "What" clarity does not imply "How" clarity — in `/design`, the mandatory Design Axes Table structurally prevents this conflation (see Trigger Conditions)
 
 After analysis, **enumerate design/implementation axes (MANDATORY)**:
 
-Produce an Axes Table as structured output. This table is a **required input** for Step 4 — without it, Step 4 cannot generate a well-informed execution plan.
+Produce an Axes Table as structured output. This table drives the Independent Axis Evaluation protocol (see below) and, after evaluation, provides the resolved axes that are the **required input** for Step 4.
 
 | Column | Description |
 |--------|-------------|
@@ -54,6 +53,8 @@ Rules:
 - A verdict of "0 axes require exploration" needs explicit justification
 
 The Axes Table structure (columns, verdict options) is defined by the calling command. The planner's responsibility is to generate the table content — analyzing the task and populating each axis with informed verdicts based on the context gathered.
+
+**After producing the Axes Table**: If any axes have the verdict "Requires exploration", execute the Independent Axis Evaluation protocol (see section below) to resolve them. If all axes are "Clear winner", skip evaluation and proceed to Step 2. All axes must be resolved before Step 4 generates the execution plan.
 
 ### Step 2: Select Agents from Catalog
 
@@ -92,7 +93,7 @@ Apply the graduated review model to each step:
 
 Produce a step sequence where each step's output is the next step's required input (causal dependency).
 
-**Required input**: Axes Table from Step 1. The Axes Table verdicts determine the plan structure — single plan (all "Clear winner"), competing outlines fallback (any "Requires exploration" but Strategy Exploration not triggered), or Strategy Exploration protocol (full trigger conditions met). See "Axes Table → Exploration Decision Tree" in Trigger Conditions.
+**Required input**: Resolved axes from Step 1. By this point, all axes have decisions — either "Clear winner" from initial analysis, or resolved through Independent Axis Evaluation. The plan always produces a single plan/outline (no branching).
 
 **Step format**:
 
@@ -111,23 +112,6 @@ Step [N]: [Descriptive name]
 
 **Causal dependency rule**: Step N+1 must explicitly consume Step N's output. If Step N fails or produces incomplete output, Step N+1 cannot proceed. This is structural — not a checklist item.
 
-**Conditional strategy exploration**: If domain_context includes strategy exploration guidance and Step 1 analysis identifies exploration potential, include a conditional exploration step in the plan:
-
-```
-Step [N]: Strategy Exploration (conditional)
-  requires: [Synthesis output with 2+ candidate approaches]
-  trigger: All conditions met — (1) 2+ viable candidates, (2) no clear winner,
-           (3) candidates differ at design-decision level
-  agents:
-    - strategy-researcher × [2-3]: one per direction, distinct constraint sets
-    - devils-advocate × 1: comparison structural verification
-  produces: Structured comparison table + selected direction + rationale
-  review_tier: none (human selection serves as review)
-  protocol: See "Strategy Exploration Protocol" section
-```
-
-If trigger conditions are not met at execution time but the Axes Table contains "Requires exploration" axes, execute the Competing Outlines Fallback (see below) instead of skipping entirely. If all axes are "Clear winner", skip the step and proceed with a single plan. The selected direction or outline becomes a required input for the next step (causal dependency).
-
 ### Step 5: Present Plan (Transparency Window)
 
 Before execution, present the complete plan to the human:
@@ -136,7 +120,7 @@ Before execution, present the complete plan to the human:
 2. **Full step sequence**: with agent selections and review tiers
 3. **Selection rationale**: why each agent was chosen/omitted
 4. **Review trace preview**: which tiers apply at which stages and why
-5. **Axes Table**: with verdicts and the resulting plan approach (single plan / competing outlines / strategy exploration)
+5. **Axes Table and evaluation results**: verdicts, per-axis evaluation results (if any axes required exploration), and the resolved decisions
 
 This is a **transparency window**, not an approval gate. The human sees what will happen and can interrupt if the direction is wrong. Execution proceeds unless the human intervenes.
 
@@ -149,7 +133,8 @@ Execute steps sequentially:
 3. **Reviewer dispatch**: Invoke `dispatch-reviewers` with the step's review_reviewers list and tier
 4. After each step, integrate agent outputs before proceeding to the next step
 5. Verify causal dependency: confirm the step produced the expected output before the next step consumes it
-6. **Strategy exploration**: If the plan includes a conditional strategy exploration step and trigger conditions are met at execution time, execute the Strategy Exploration Protocol (see below). If conditions are not met, skip and proceed
+
+Note: Independent Axis Evaluation (if triggered) has already been executed during Step 1. By Step 6, all axes are resolved and the plan is a single plan.
 
 ### Step 7: Present Results with Review Trace
 
@@ -158,162 +143,80 @@ After all steps complete, present to the human:
 1. **Final output** (the deliverable)
 2. **Review trace**: For each step, what review tier was applied and why
 3. **Agent selection summary**: Which agents contributed at each stage
-4. **Axes Table and exploration decision**: The verdicts, decision tree outcome, and how they shaped the plan
+4. **Axes Table and evaluation trace**: The initial verdicts, per-axis evaluation results (if any), inter-axis synthesis, and the resolved decisions that shaped the plan
 
-## Strategy Exploration Protocol (Conditional)
+## Independent Axis Evaluation
 
-An opt-in protocol for evaluating 2-3 structurally different strategic directions in parallel. Triggered when research synthesis or context gathering identifies multiple viable approaches with no clear winner.
+When the Axes Table contains axes marked "Requires exploration", each axis is evaluated by an independent agent in parallel. This replaces single-context pseudo-parallel evaluation (competing outlines) with genuinely isolated parallel evaluation — the same structural pattern that makes researcher dispatch effective.
 
-This protocol is an execution pattern within the planner's Step 6 — not a separate skill. Commands inject domain-specific exploration guidance via `domain_context`.
+### Why Per-Axis Instead of Per-Direction
 
-### Trigger Conditions
+Previous approaches (Strategy Exploration, Competing Outlines) evaluated full directions — pre-generated combinations of axis choices. This introduced planner bias at the direction-generation step: the planner's framing of directions influenced the evaluation. Per-axis evaluation removes this bias by evaluating each axis independently and letting inter-axis correlations emerge from the evaluations rather than being assumed.
 
-**Primary trigger** — all three conditions must be met:
+### When This Runs
 
-1. **Multiple viable candidates**: Synthesis identifies 2+ candidate approaches
-2. **No clear winner**: No candidate has obvious superiority across key evaluation criteria
-3. **Design-decision-level differences**: Candidates differ in trade-offs at the design level, not just implementation details
+- Executed during Step 1, after the Axes Table is produced
+- Triggered when 1+ axes have the verdict "Requires exploration"
+- All axes must be resolved before Step 4 generates the execution plan
+- If all axes are "Clear winner", this protocol is skipped entirely
 
-If all three are met, proceed to exploration.
+### Per-Axis Agent Dispatch
 
-**Relationship to Axes Table**: The Axes Table (produced in Step 1) is the structured input for trigger evaluation. If the Axes Table surfaces axes marked "Requires exploration" that were not represented as separate candidate approaches, use those axes to generate additional candidates and re-evaluate the primary trigger. The Axes Table provides structural enforcement — the planner's trigger evaluation is informed by it but does not replace it.
+For each "Requires exploration" axis, dispatch one `axis-evaluator` (see `catalog/researchers.md`) using the Task tool. All axis evaluators run **in parallel** in a single message.
 
-### Axes Table → Exploration Decision Tree
+Each agent receives:
 
-After producing the Axes Table (Step 1), evaluate the following decision tree to determine the exploration approach for Step 4:
+- **Axis definition**: The decision, both choices, and the rationale from the Axes Table
+- **Relevant context**: Pertinent findings from research/scout that relate to this axis
+- **Anti-anchoring instruction**: "You are evaluating ONE decision axis. Do not speculate about other axes or their choices. Assess trade-offs for this axis only."
 
-1. **Check all verdicts** in the Axes Table
-2. If any axis has "Requires exploration" AND the primary trigger (3 conditions above) is met → **Strategy Exploration Protocol** (P1-P6: parallel agent evaluation, 7-10x cost)
-3. If any axis has "Requires exploration" BUT primary trigger is NOT met (e.g., exploration axes are implementation-level rather than design-decision-level, or only 1 axis needs exploration) → **Competing Outlines Fallback** (same-context lightweight comparison, see section below)
-4. If all verdicts are "Clear winner" → **Single plan/outline** — proceed directly. State the justification for why no axes require exploration
+Each agent returns:
 
-This decision tree connects the Axes Table (Step 1 output) to the execution plan structure (Step 4). The Axes Table is the input data; this tree is the evaluation logic.
+```
+Axis: [name]
+Recommendation: [Choice A or B]
+Rationale: [why this choice is better for the current context]
+Trade-offs: [what the other choice offers that this one doesn't]
+Inter-axis notes: [if this choice depends on or affects other decisions, state how]
+Confidence: [high/medium/low]
+```
 
-### P1: Direction Generation (controller)
+### Synthesis (Controller)
 
-Generate 2-3 strategy briefs using **constraint-axis branching**. Each brief contains:
+After all axis evaluators return:
 
-- Direction name and one-sentence summary
-- Assigned constraint set (derived from design tensions identified in synthesis)
-- Optimization objective (what this direction prioritizes)
-- Key assumptions (preconditions for this direction to succeed)
-
-**Constraint axes**: Derive from the design tensions in the synthesis, not from a generic template. If synthesis identified "Candidate A is fast but complex" vs "Candidate B is simple but limited," the axes are speed-vs-simplicity and extensibility-vs-constraints.
-
-Reference template (for deriving axes when design tensions are ambiguous):
-
-| Axis Category | Examples |
-|---|---|
-| Optimization target | Latency vs memory vs dev speed vs maintainability |
-| Architecture assumption | Monolith vs microservice, sync vs async |
-| Dependency choice | Build vs buy, cloud vs self-hosted |
-| Trust model | Zero-trust vs network boundary |
-| Data model | Normalized vs denormalized, RDB vs document DB |
-
-**Minimum divergence validation**: Directions must differ in at least 2 constraint axes. If only 1 axis differs, the directions are "variants" not "fundamentally different directions." If validation fails: modify constraints and regenerate, or abandon exploration and proceed with the synthesis candidate.
-
-### P2: Parallel Evaluation (strategy-researcher per direction)
-
-Dispatch one `strategy-researcher` (haiku) per direction (max 3 in parallel). Each researcher evaluates their assigned direction under its constraint set:
-
-- **Viability**: Technically feasible? Known blockers?
-- **Major risks**: Biggest technical, operational, cost risks?
-- **Implementation cost**: Complexity and effort estimate
-- **Trade-offs**: What does this direction sacrifice?
-
-Each researcher's output is a **strategy sketch** — a concise viability assessment, not a deep investigation. Deep investigation is reserved for the selected direction in the post-exploration phase.
-
-### P3: Comparison Structural Verification (Devil's Advocate)
-
-Dispatch 1 Devil's Advocate using **Task tool with the custom prompt below** (not the generic `devils-advocate` catalog prompt, which is a broad challenge prompt). The DA's role here is **structural verification** — not quality judgment. Quality judgment carries the same LLM-as-judge bias risks (position bias, verbosity bias, self-preference) and is delegated to the human.
-
-DA verification prompt — use this exact scope:
-
-- Are differences between directions structural or merely surface-level? (Do constraint-axis differences produce actual architectural differences?)
-- Are all cells in the comparison table filled? Are confidence levels consistent with sketch depth?
-- Are there directions mentioned in synthesis but absent from comparison?
-
-### P4: Structured Comparison and Human Selection (controller)
-
-Synthesize all evaluation results into a structured comparison table:
-
-| Criterion | Direction A | Direction B | Direction C | Confidence |
-|---|---|---|---|---|
-| Technical viability | [assessment] | [assessment] | [assessment] | [high/medium/low] |
-| Major risks | [assessment] | [assessment] | [assessment] | [high/medium/low] |
-| Implementation cost | [assessment] | [assessment] | [assessment] | [high/medium/low] |
-| Trade-offs | [assessment] | [assessment] | [assessment] | [high/medium/low] |
-
-Attach DA findings after the table.
-
-Header note: "Based on strategy sketches (shallow evaluation). Conclusions may change after deep investigation of the selected direction."
-
-Present to the human. The controller may include a recommendation, but the human makes the final selection.
-
-### P5: Post-Selection Deep Dive
-
-The selected direction proceeds to the existing research/planning phase:
-
-- In `/design`: Phase 1 continues with full researcher team on the selected direction
-- In `/implement`: Step 2 (Create Plan) uses the selected direction as basis
-
-The selected direction's constraint set and comparison table are **required inputs** for the next step — not just metadata. The downstream step must consume them (causal dependency).
-
-### P6: Fallback Protocol
-
-If deep investigation reveals the selected direction is infeasible:
-
-1. Identify the runner-up direction from the comparison table
-2. **Cross-validate**: Before investigating the runner-up, verify that the primary direction's failure reason does not also invalidate the runner-up. If it does (e.g., shared dependency on an unavailable API), skip to step 4
-3. Execute deep investigation on the runner-up (additional 7-10x cost)
-4. Maximum 1 fallback. If a second fallback is needed or cross-validation fails, the direction generation itself is flawed — discard exploration results and proceed with controller's synthesis judgment
+1. **Collect recommendations**: Extract each axis's recommended choice + rationale
+2. **Check inter-axis notes for conflicts**:
+   - No conflicts → adopt all recommendations. All axes are now resolved
+   - Conflicts detected (e.g., Axis A recommends X "if Axis B = Y", but Axis B recommends Z) → identify the correlated axis set
+3. **Resolve conflicts**:
+   - If the controller can resolve with clear rationale (one direction has stronger evidence) → resolve and state the reasoning
+   - If genuinely ambiguous → present the correlated axes as a decision to the human: "Axes [A, B] are correlated. Option set 1: [A=X, B=Y]. Option set 2: [A=W, B=Z]. Evidence: [summaries]. Which set?"
+4. **After resolution**: All axes have decisions. Produce the **resolved axes** output — this is the required input for Step 4
 
 ### Cost Profile
 
-Cost as multiples of a single sub-agent invocation (1x):
+| Exploration axes | Cost |
+|-----------------|------|
+| 1 axis | 1-2x |
+| 2 axes | 2-4x |
+| 3 axes | 3-6x |
 
-| Item | Token Cost |
-|---|---|
-| Direction generation + divergence validation (controller) | ~1-1.5x |
-| Parallel evaluation (strategy-researcher × 2-3) | 4-6x |
-| Comparison structural verification (DA × 1) | 1-2x |
-| Comparison synthesis (controller) | ~0.5x |
-| **Total (exploration phase only)** | **7-10x** |
+Cost scales linearly with the number of "Requires exploration" axes. Each axis-evaluator is a lightweight haiku agent. Typical case (2-3 exploration axes) costs 2-6x — between the marginal cost of same-context evaluation and the 7-10x of full-direction evaluation.
 
-When proposing strategy exploration, include this cost estimate so the human can make an informed opt-in decision.
+### Reporting
 
-### Opt-in Reporting
+Record per-axis evaluation results to progress.md when axes are evaluated:
 
-When strategy exploration is triggered, record the comparison results and selection rationale to progress.md. When exploration is not triggered (conditions not met), omit from reporting entirely — do not display "Strategy Exploration: not run."
+```markdown
+## [timestamp] — Independent Axis Evaluation
+- Axes evaluated: [list]
+- Recommendations: [axis: choice for each]
+- Conflicts: [none | description of correlated axes and resolution]
+- Domain: [topic tag]
+```
 
-## Competing Outlines Fallback
-
-A lightweight alternative to the Strategy Exploration Protocol. Used when the Axes Table contains "Requires exploration" axes but the Strategy Exploration trigger conditions are not fully met (see Axes Table → Exploration Decision Tree above).
-
-Unlike Strategy Exploration (which dispatches parallel agents for deep evaluation at 7-10x cost), this fallback generates and compares outlines within the same context — no additional agent dispatch.
-
-### When This Applies
-
-- Axes Table has 1+ axes marked "Requires exploration"
-- Strategy Exploration primary trigger is NOT met (typically: exploration axes are at implementation level rather than design-decision level, or only 1 axis needs exploration)
-
-### Procedure
-
-1. **Extract exploration axes**: Identify all axes marked "Requires exploration" from the Axes Table
-2. **Determine outline format** based on domain:
-   - `design` domain → Competing outlines (document structure, argument flow, section organization)
-   - `implement` domain → Competing plan skeletons (task breakdown, ordering strategy, dependency structure)
-3. **Generate 2-3 outlines**: Each outline takes a different position on the exploration axes. Each includes:
-   - Task/section list with 1-line descriptions
-   - Position on each exploration axis and how it affects the structure
-   - Expected trade-offs (complexity, risk, parallelization potential)
-4. **Brief comparison**: How each outline's positions affect ordering, dependencies, and risk profile
-5. **Select best outline** with explicit rationale referencing the comparison
-6. **Selected outline becomes required input** for the full plan/document generation (causal dependency)
-
-### Cost Profile
-
-This fallback operates within the existing context — no additional agent dispatch. Cost is marginal compared to Strategy Exploration's 7-10x multiplier.
+When no axes require exploration (all "Clear winner"), omit from reporting entirely.
 
 ## Domain Context
 
@@ -321,17 +224,17 @@ Domain-specific judgment guidelines are injected by calling commands via the `do
 
 ## Autonomy Boundaries
 
-**Planner decides**: Which agents to dispatch, how many reviewers, which research to pursue, step ordering within a phase, whether to propose strategy exploration (based on trigger conditions)
+**Planner decides**: Which agents to dispatch, how many reviewers, which research to pursue, step ordering within a phase, per-axis evaluation synthesis (resolving non-conflicting axes)
 
 **Command decides**: Phase ordering, mandatory constraints (TDD required, final review required, learnings check required), human interaction points, minimum review floor
 
-**Human decides**: Whether to proceed with proposed strategy exploration (opt-in), which strategic direction to select from comparison table
+**Human decides**: Correlated axis conflicts that the controller cannot resolve with clear evidence
 
 The planner operates within the command's guardrails. It adds judgment to agent selection — it does not invent phases or bypass constraints.
 
 ## Integration
 
 - **Invoked by**: `commands/design.md`, `commands/implement.md`, `commands/feature-spec.md`, `commands/debug.md`
-- **Catalogs**: `catalog/reviewers.md`, `catalog/researchers.md` (including `strategy-researcher` for exploration)
-- **Dispatches**: `dispatch-reviewers` for review steps, Task tool for researcher/scout dispatch, `strategy-researcher` for exploration evaluation
+- **Catalogs**: `catalog/reviewers.md`, `catalog/researchers.md` (including `axis-evaluator` for per-axis evaluation)
+- **Dispatches**: `dispatch-reviewers` for review steps, Task tool for researcher/scout/axis-evaluator dispatch
 - **Principle**: Constrained dynamic — commands define structure, planner provides judgment
