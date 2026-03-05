@@ -5,9 +5,9 @@ description: Use after completing any coding task — implementation, bug fix, r
 
 # Requesting Code Review
 
-After completing implementation, dispatch a code reviewer before moving on.
+After completing implementation, suggest dispatching a code review before moving on.
 
-## When to Request
+## When to Suggest
 
 - After completing a task in the implementation plan
 - After a batch of related changes
@@ -16,41 +16,20 @@ After completing implementation, dispatch a code reviewer before moving on.
 ## Process
 
 1. **Verify your work first** (follow `rules/verification.md`)
-2. **Prepare the review request** with the template below
-3. **Dispatch a reviewer agent** (Task tool with a fresh subagent)
-4. **Wait for the review** — do not proceed until review is complete
-5. **Address feedback** using `receiving-code-review` skill
+2. **Collect changed file paths** — these become the `target` for `dispatch-reviewers`
+3. **Assess scope** to determine tier and reviewer selection:
+   - 1-3 files, single module → light: `code-quality` + `devils-advocate`
+   - 4+ files, cross-module, or security-sensitive → thorough: `code-quality` + `security-perf` + `devils-advocate`
+4. **Dispatch via `dispatch-reviewers`** with file paths only as target
+5. **Wait for the review** — do not proceed until review is complete
+6. **Address feedback** using `receiving-code-review` skill
 
-## Review Request Template
+## Controller Notes (NOT sent to reviewers)
 
-When dispatching a reviewer via `dispatch-reviewers`, pass **file paths only** as target. The reviewer reads the files independently. Do NOT include implementation rationale or design context in the reviewer's prompt.
-
-The template below is for your own preparation — extract the file paths from it for the `target` parameter:
-
-```
-## Code Review Request (controller reference — NOT sent to reviewer)
-
-### Changed Files
-[List of file paths — these become the `target` parameter]
-
-### How to Verify
-```bash
-[Commands to run: test, build, etc.]
-```
-
-### Specific Concerns (controller notes)
-[Any areas you want extra attention on — use to select appropriate reviewer IDs, NOT passed to reviewers]
-```
-
-## Reviewer Focus Areas
-
-The reviewer should check:
-
-1. **Plan alignment** — Does implementation match the spec?
-2. **Code quality** — Follows project patterns? No quality rule violations?
-3. **Test quality** — Specific assertions? TDD followed?
-4. **Edge cases** — Error handling? Boundary conditions?
-5. **Architecture** — Fits the existing design? No unnecessary complexity?
+Before dispatching, note internally:
+- **Changed files**: List of file paths (becomes `target`)
+- **Specific concerns**: Areas you want extra attention on (use to select reviewer IDs, NOT passed to reviewers)
+- **Verification commands**: How to run tests/build (for your own reference)
 
 ## Issue Severity
 
@@ -63,5 +42,6 @@ The reviewer should check:
 ## Integration
 
 - Requires `rules/verification.md` — verify before requesting review
+- Dispatches via `dispatch-reviewers` — graduated tier with context isolation
 - Pairs with `receiving-code-review` — how to handle the feedback
 - Used by `subagent-driven-development` — review is built into the pipeline

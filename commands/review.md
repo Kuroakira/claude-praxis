@@ -4,9 +4,56 @@ description: Request a code review for completed work
 disable-model-invocation: false
 ---
 
-Invoke the skill `requesting-code-review`:
+Orchestrate a **standalone code review** with graduated tier selection.
 
-1. Verify all changes pass (typecheck, lint, test, build)
-2. Prepare review request with changed files and requirements
-3. Dispatch a reviewer agent
-4. Handle feedback using `receiving-code-review` skill
+## Step 1: Verify
+
+Run the full verification suite before requesting review:
+
+```bash
+npm run typecheck
+npm run lint
+npm run test
+npm run build       # if applicable
+```
+
+All must pass before proceeding.
+
+## Step 2: Assess Scope
+
+Identify all changed files (use `git diff --name-only` against the base branch or last clean commit). Count:
+- Number of changed files
+- Approximate lines changed
+- Whether changes touch external APIs, auth, or security-sensitive code
+- Whether changes span multiple modules/features
+
+## Step 3: Determine Tier and Select Reviewers
+
+Apply the graduated tier model:
+
+| Condition | Tier | Typical Reviewers |
+|-----------|------|-------------------|
+| 1-3 files, single module, no security | **light** | `code-quality` + `devils-advocate` |
+| 4+ files, or cross-module, or new feature | **thorough** | `code-quality` + `security-perf` + `devils-advocate` (+ `error-resilience` if external deps) |
+| Security-sensitive (auth, input validation, secrets) | **thorough** | `code-quality` + `security-perf` + `devils-advocate` |
+
+Adjust based on the specific changes:
+- API changes → add `spec-compliance`
+- Architecture changes → add `architecture`
+- New hook/utility patterns → add `structural-fitness`
+
+## Step 4: Dispatch
+
+Invoke `dispatch-reviewers` with:
+- `reviewers`: selected reviewer IDs from Step 3
+- `tier`: determined tier from Step 3
+- `target`: **changed file paths only** (from Step 2)
+- `reasoning`: brief rationale for tier and reviewer selection (human-facing only)
+
+## Step 5: Address Feedback
+
+Handle review results using `receiving-code-review` skill:
+1. **Critical/Important issues** — fix before proceeding
+2. **Minor issues** — note for human judgment
+3. **Conflicting opinions** — resolve explicitly (state which adopted and why)
+4. If fixes were needed, re-verify (Step 1) and re-run only affected reviewers
