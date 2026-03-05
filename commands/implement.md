@@ -117,7 +117,7 @@ All four must pass before proceeding.
 After verification passes, execute the planner's per-task review plan:
 
 - **If review tier is None**: Self-review only (check plan alignment, TDD compliance, code quality, pattern consistency, edge cases). Fix issues internally.
-- **If review tier is Light or Thorough**: Invoke `dispatch-reviewers` with the planner's selected reviewers, tier, and the task's changes as target.
+- **If review tier is Light or Thorough**: Invoke `dispatch-reviewers` with the planner's selected reviewers, tier, and the **changed file paths** as target (e.g., `[src/auth.ts, src/auth.test.ts]`). Do NOT include task descriptions or implementation rationale — reviewers read the files independently.
 
 Self-review checklist (applies regardless of tier):
 
@@ -181,7 +181,7 @@ npm run build       # if applicable
 
 All must pass before dispatching the review team.
 
-Invoke `dispatch-reviewers` with the planner's final review selection. Structural floor applies: 3+ reviewers including `devils-advocate`. Typical final review: `spec-compliance` + `code-quality` + `security-perf` + `devils-advocate` (+ `error-resilience` if the implementation touches external dependencies).
+Invoke `dispatch-reviewers` with the planner's final review selection, using **all changed file paths** across the implementation as target. Structural floor applies: 3+ reviewers including `devils-advocate`. Typical final review: `spec-compliance` + `code-quality` + `security-perf` + `devils-advocate` (+ `error-resilience` if the implementation touches external dependencies).
 
 Present the final completion report using the `rules/verification.md` Completion Report template. Include the **review trace**: which reviewers were selected at each task and at the final review, and why.
 

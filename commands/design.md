@@ -100,9 +100,9 @@ The planner determines the review tier for the outline based on task analysis. T
 - **Light review** (default): `document-quality` + `devils-advocate` — catch structural issues and directional errors before full writing
 - **Thorough review** (for high-risk designs): adds `architecture` and/or `feasibility`
 
-Invoke `dispatch-reviewers` with the planner's selected reviewers and tier.
+Save the outline to `claudedocs/design-docs/[name]-outline.md` before dispatching, so reviewers can read it independently. Invoke `dispatch-reviewers` with the planner's selected reviewers, tier, and the **outline file path** as target.
 
-If any check fails, revise the outline before proceeding. Do NOT ask the human — fix it internally.
+If any check fails, revise the outline before proceeding. Do NOT ask the human — fix it internally. Delete the outline file after the full Design Doc is written in Phase 4 (it is superseded).
 
 ## Phase 4: Write Full Design Doc
 
@@ -134,7 +134,7 @@ The planner selects reviewers for the final Design Doc review. This is a **thoro
 
 Typical final review team: `architecture` + `document-quality` + `devils-advocate` (+ `user-impact` if the design affects users).
 
-Invoke `dispatch-reviewers` with the planner's selected reviewers, tier `thorough`, and the Design Doc as target.
+Invoke `dispatch-reviewers` with the planner's selected reviewers, tier `thorough`, and the **Design Doc file path** as target (e.g., `claudedocs/design-docs/auth.md`). Do NOT include summaries or design rationale — reviewers read the document independently.
 
 ## Phase 6: Present for Human Approval
 

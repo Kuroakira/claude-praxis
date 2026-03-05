@@ -58,7 +58,7 @@ For complex problems with 3+ plausible hypotheses, invoke `workflow-planner` to 
 | `constraints` | (1) Investigation report must receive thorough review before presenting to human. (2) Each hypothesis must have explicit prove/disprove criteria. |
 | `catalog_scope` | Reviewers: code-quality, security-perf, error-resilience, devils-advocate. Researchers: codebase-scout, oss-research, best-practices. |
 
-The planner will dispatch parallel investigation agents if warranted, or recommend sequential verification for simpler cases. For hypothesis review, invoke `dispatch-reviewers` with the planner's selection (typically `devils-advocate` at minimum to prevent confirmation bias).
+The planner will dispatch parallel investigation agents if warranted, or recommend sequential verification for simpler cases. For hypothesis review, save the investigation report to file first, then invoke `dispatch-reviewers` with the planner's selection and the **report file path** as target (typically `devils-advocate` at minimum to prevent confirmation bias).
 
 **PAUSE**: Present the diagnosis with supporting evidence. The human may have additional context that changes the diagnosis.
 

@@ -23,25 +23,23 @@ After completing implementation, dispatch a code reviewer before moving on.
 
 ## Review Request Template
 
+When dispatching a reviewer via `dispatch-reviewers`, pass **file paths only** as target. The reviewer reads the files independently. Do NOT include implementation rationale or design context in the reviewer's prompt.
+
+The template below is for your own preparation — extract the file paths from it for the `target` parameter:
+
 ```
-## Code Review Request
-
-### What Changed
-[Brief summary of changes]
-
-### Requirements / Spec
-[What the code should do — from the plan or Design Doc]
+## Code Review Request (controller reference — NOT sent to reviewer)
 
 ### Changed Files
-[List of files with brief description of changes per file]
+[List of file paths — these become the `target` parameter]
 
 ### How to Verify
 ```bash
 [Commands to run: test, build, etc.]
 ```
 
-### Specific Concerns
-[Any areas you're unsure about or want extra attention on]
+### Specific Concerns (controller notes)
+[Any areas you want extra attention on — use to select appropriate reviewer IDs, NOT passed to reviewers]
 ```
 
 ## Reviewer Focus Areas

@@ -4,6 +4,21 @@ Specialists who evaluate outputs at each stage. Each entry has an independent ve
 
 All reviewers use subagent_type `claude-praxis:reviewer` (read-only, inherits main model).
 
+## Context Isolation Rule
+
+```
+REVIEWERS EVALUATE INDEPENDENTLY — BASED ONLY ON TARGET FILES AND THEIR VERIFICATION SOURCE
+```
+
+Every reviewer receives only file paths as target. The reviewer reads the files themselves and evaluates based solely on:
+1. Their own reading of the target files
+2. Their verification source (listed per entry below)
+3. The focus area defined in their Prompt
+
+Reviewers do NOT receive and MUST NOT rely on: implementation discussion, design rationale from the conversation, planner reasoning, or other reviewers' findings. This ensures fresh-eyes evaluation without anchoring bias.
+
+The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at dispatch time.
+
 ## Entries
 
 ### `architecture`

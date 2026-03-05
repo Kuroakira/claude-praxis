@@ -102,7 +102,7 @@ The planner selects reviewers based on the draft's content:
 - **Light review** (for clear, well-scoped drafts): `requirements` + `devils-advocate`
 - **Thorough review** (for complex or ambiguous specs): `requirements` + `feasibility` + `document-quality` + `devils-advocate`
 
-Invoke `dispatch-reviewers` with the planner's selection.
+Invoke `dispatch-reviewers` with the planner's selection, using the **FeatureSpec file path** as target (e.g., `feature-specs/auth-login.md`). Save the draft to file before dispatching so reviewers can read it independently.
 
 ## Phase 5: Present and Iterate
 

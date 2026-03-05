@@ -21,8 +21,8 @@ This skill is invoked with:
 |-----------|----------|-------------|
 | `reviewers` | Yes | List of catalog IDs (e.g., `[code-quality, security-perf, devils-advocate]`) |
 | `tier` | Yes | `light` (1-2 reviewers) or `thorough` (3-4 reviewers) |
-| `target` | Yes | What is being reviewed (description or file reference) |
-| `reasoning` | No | Why this tier and these reviewers were chosen (from planner) |
+| `target` | Yes | **File paths only** — list of files to review (e.g., `[src/auth.ts, src/auth.test.ts]` or `claudedocs/design-docs/auth.md`). Do NOT include descriptions, rationale, or implementation context. Reviewers read the files themselves |
+| `reasoning` | No | Why this tier and these reviewers were chosen (from planner). **Human-facing only** — displayed before dispatch but NOT included in reviewer prompts |
 
 ## Review Tiers
 
@@ -46,15 +46,21 @@ If the `reviewers` list for a thorough review has fewer than 3 entries or omits 
 
 2. **Enforce structural floor**: For thorough tier, ensure 3+ reviewers and devils-advocate presence
 
-3. **Build reviewer prompts**: For each valid ID, construct a Task tool call:
-   - subagent_type: `claude-praxis:reviewer`
-   - Prompt: Use the `Prompt` field from the catalog entry, substituting `[topic]` with the `target` parameter
-   - Include the reviewer's verification source in the prompt
-
-4. **Launch all reviewers in parallel**: Use Task tool with all reviewer calls in a single message
-
-5. **If reasoning was provided**: Display it before dispatching:
+3. **Display reasoning (human-facing only)**: If reasoning was provided, display it BEFORE building prompts:
    > **Review plan**: [tier] tier — [reviewer IDs]. Reasoning: [reasoning]
+
+   This is for human transparency only. Reasoning is NOT passed to reviewers.
+
+4. **Build reviewer prompts**: For each valid ID, construct a Task tool call:
+   - subagent_type: `claude-praxis:reviewer`
+   - Prompt structure (in this order):
+     1. **Context Isolation preamble** (from `catalog/reviewers.md` Context Isolation Rule): "Evaluate based ONLY on the target files listed below and your verification source. Do NOT use or reference conversation history, implementation discussions, design rationale, or planner reasoning. Read the files yourself and form your own independent judgment."
+     2. **Catalog Prompt**: The `Prompt` field from the catalog entry
+     3. **Target files**: "Review the following files: [file path list from `target` parameter]"
+     4. **Verification source**: The reviewer's verification source from the catalog
+   - Do NOT include: `reasoning`, implementation context, task descriptions, or any conversation-derived content
+
+5. **Launch all reviewers in parallel**: Use Task tool with all reviewer calls in a single message
 
 ## Apply Findings
 

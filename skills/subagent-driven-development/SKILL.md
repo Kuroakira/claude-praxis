@@ -104,11 +104,16 @@ When dispatching a task agent, include:
 ## Spec Review Prompt Template
 
 ```
-## Review Task
-Review the implementation of: [task description]
+## Context Isolation
+Evaluate based ONLY on the files listed below. Do NOT use or reference conversation
+history, implementation discussions, design rationale, or planner reasoning.
+Read the files yourself and form your own independent judgment.
 
-## Changed Files
-[list of files changed]
+## Review Task
+Review the following files for spec compliance.
+
+## Target Files
+[list of file paths]
 
 ## Instructions
 - Read the code independently — do NOT trust the implementer's report
@@ -122,11 +127,16 @@ Review the implementation of: [task description]
 ## Code Quality Review Prompt Template
 
 ```
-## Review Task
-Code quality review for: [task description]
+## Context Isolation
+Evaluate based ONLY on the files listed below. Do NOT use or reference conversation
+history, implementation discussions, design rationale, or planner reasoning.
+Read the files yourself and form your own independent judgment.
 
-## Changed Files
-[list of files changed]
+## Review Task
+Code quality review for the following files.
+
+## Target Files
+[list of file paths]
 
 ## Instructions
 - Spec compliance already verified — focus on code quality only
