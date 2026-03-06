@@ -43,7 +43,7 @@ After researcher agents return:
 2. Resolve contradictions explicitly (state what conflicted and which finding was adopted)
 3. Identify at least 2-3 candidate approaches with trade-offs informed by all perspectives
 4. **Enumerate design axes (MANDATORY)** — produce a Design Axes Table covering every design decision where multiple valid approaches exist. This step CANNOT be skipped. "What" clarity does not imply "How" clarity — even when requirements are precisely defined, multiple design axes for achieving them may exist
-5. Carry synthesis (including Design Axes Table) forward into Phase 2 — do NOT pass raw agent outputs
+5. Carry synthesis (including Design Axes Table) forward into Phase 3 — do NOT pass raw agent outputs
 
 ### Design Axes Table (Required Synthesis Output)
 
@@ -60,9 +60,9 @@ Every synthesis MUST produce this table. If the table has zero "Requires explora
 - A verdict of "0 axes require exploration" needs explicit justification — this conclusion cannot be reached by default
 - Common axes to check (not exhaustive): data model structure, logic placement (which layer), consistency/integrity strategy, integration approach (centralized vs distributed), state management approach, performance strategy (processing model, caching, scaling approach, rendering strategy), complexity trade-off (simpler design with fewer features vs comprehensive design with more moving parts)
 
-This table is a **required input** for Independent Axis Evaluation. Axes marked "Requires exploration" are resolved through per-axis parallel evaluation before Phase 2.
+This table is a **required input** for Independent Axis Evaluation. Axes marked "Requires exploration" are resolved through per-axis parallel evaluation before Phase 3.
 
-Do NOT present research findings to the human separately. Carry them forward into Phase 2.
+Do NOT present research findings to the human separately. Carry them forward into Phase 2 and Phase 3.
 
 **Record to progress.md**: Append an entry with key findings, rejected approaches, and relevant domain tags. If per-axis evaluation was executed, include the resolved axes and rationale.
 
@@ -73,7 +73,22 @@ Do NOT present research findings to the human separately. Carry them forward int
 - Domain: [topic tag for future matching]
 ```
 
-## Phase 2: Create Outline
+## Phase 2: Analyze Architecture
+
+Invoke `architecture-analysis` to capture the current codebase state before making design decisions. Research (Phase 1) provides "what's possible out there"; analysis provides "what exists here now." Both inform the Design Axes Table.
+
+1. **Determine scope**: Narrow to modules, directories, or layers named in the research synthesis. If research identified specific integration points or affected areas, those become the analysis scope
+2. **Invoke `architecture-analysis`** with:
+   - `scope`: Task-relevant area identified from research findings
+   - `anticipated_changes`: The design topic and candidate approaches from Phase 1
+   - `research_context`: Key findings from Phase 1 synthesis
+3. **Output**: Durable report saved to `claudedocs/analysis/[scope-name].md`
+
+Carry the analysis report forward into Phase 3 (outline creation). If the analysis detects structural friction, update the Design Axes Table (produced in Phase 1) to include a structural fitness axis with "extend current structure" vs "restructure first" as choices.
+
+Do NOT present the analysis to the human separately. Proceed to Phase 3.
+
+## Phase 3: Create Outline
 
 Build the skeleton of the Design Doc following **abstract to concrete** ordering. By this point, all axes are resolved — either "Clear winner" from synthesis or resolved through Independent Axis Evaluation.
 
@@ -91,9 +106,9 @@ Create a single outline from the resolved axes:
 4. Ensure Alternatives Considered is included with at least the approaches from Phase 1
 5. For axes that went through per-axis evaluation: the resolved decision and rationale should inform the Proposal section's argument structure
 
-Do NOT present the outline to the human yet. Proceed to Phase 3.
+Do NOT present the outline to the human yet. Proceed to Phase 4.
 
-## Phase 3: Outline Review
+## Phase 4: Outline Review
 
 The planner determines the review tier for the outline based on task analysis. Typical pattern:
 
@@ -102,9 +117,9 @@ The planner determines the review tier for the outline based on task analysis. T
 
 Save the outline to `claudedocs/design-docs/[name]-outline.md` before dispatching, so reviewers can read it independently. Invoke `dispatch-reviewers` with the planner's selected reviewers, tier, and the **outline file path** as target.
 
-If any check fails, revise the outline before proceeding. Do NOT ask the human — fix it internally. Delete the outline file after the full Design Doc is written in Phase 4 (it is superseded).
+If any check fails, revise the outline before proceeding. Do NOT ask the human — fix it internally. Delete the outline file after the full Design Doc is written in Phase 5 (it is superseded).
 
-## Phase 4: Write Full Design Doc
+## Phase 5: Write Full Design Doc
 
 Expand the outline into the complete Design Doc.
 
@@ -128,7 +143,7 @@ Expand the outline into the complete Design Doc.
 - Domain: [topic tag for future matching]
 ```
 
-## Phase 5: Final Review (Thorough)
+## Phase 6: Final Review (Thorough)
 
 The planner selects reviewers for the final Design Doc review. This is a **thorough** review — structural floor applies (3+ reviewers including `devils-advocate`).
 
@@ -136,7 +151,7 @@ Typical final review team: `architecture` + `document-quality` + `simplicity` + 
 
 Invoke `dispatch-reviewers` with the planner's selected reviewers, tier `thorough`, and the **Design Doc file path** as target (e.g., `claudedocs/design-docs/auth.md`). Do NOT include summaries or design rationale — reviewers read the document independently.
 
-## Phase 6: Present for Human Approval
+## Phase 7: Present for Human Approval
 
 **This is the ONLY point where the workflow pauses for human input.**
 
@@ -147,4 +162,4 @@ Present the complete Design Doc to the human with:
 3. **Review trace**: Which reviewers were selected at each stage and why
 4. Explicit request for approval: "Design Doc ready for review. Approve to proceed, or share feedback for revision."
 
-If the human requests changes, revise and re-run Phase 5 (final review) before presenting again.
+If the human requests changes, revise and re-run Phase 6 (final review) before presenting again.
