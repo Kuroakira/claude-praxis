@@ -62,11 +62,15 @@ Background facts. A reader unfamiliar with the project understands the problem f
 ## Proposal
 The chosen approach at boundary/interface level. Why this is the best fit. Key design decisions with reasoning.
 
+Include structural impact: Does the existing architecture naturally support this feature, or does the architecture need to change first? If restructuring is needed, state what and why — this is a design decision, not an implementation detail.
+
 ### System-Context Diagram (optional)
 Mermaid diagram showing where this fits in the existing system.
 
 ## Alternatives Considered (MANDATORY)
 For each: description, why Proposal is preferred, when to reconsider.
+
+When the feature could be implemented by either extending the current structure or restructuring first, both options must appear as alternatives with explicit trade-offs.
 
 ## Cross-Cutting Concerns
 Security, Privacy, Observability — only sections relevant to this design.
