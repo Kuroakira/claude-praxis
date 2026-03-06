@@ -1,6 +1,7 @@
 ---
 name: context-persistence
 description: Use when starting a long task, needing to preserve context across compact/clear, or when explicitly asked to save state.
+user-invokable: false
 ---
 
 # Context Persistence

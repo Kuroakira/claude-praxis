@@ -1,6 +1,7 @@
 ---
 name: rule-evolution
 description: Use when a quality issue is discovered during work and should become a permanent rule, or when the human provides feedback that reveals a missing rule.
+user-invokable: false
 ---
 
 # Rule Evolution

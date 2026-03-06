@@ -1,6 +1,7 @@
 ---
 name: dispatch-reviewers
 description: Dispatch reviewers from the shared catalog by ID list. Accepts dynamic reviewer selection and review tiers. Invoked by workflow-planner or directly by commands.
+user-invokable: false
 ---
 
 # Dispatch Reviewers
