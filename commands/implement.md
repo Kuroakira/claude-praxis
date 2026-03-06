@@ -35,7 +35,7 @@ Planning creates an implementation-specific plan distinct from the Design Doc's 
    | `domain` | implement |
    | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra → add error-resilience. Change that extends or modifies existing architecture → add structural-fitness to assess whether incremental modification or broader refactoring is appropriate. The mandatory Implementation Axes Table in Step 1 structurally prevents conflating Design Doc clarity with implementation approach clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
    | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. (5) Context gathering must produce an Implementation Axes Table — every implementation decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (6) If Implementation Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before plan creation. |
-   | `catalog_scope` | Reviewers: spec-compliance, code-quality, security-perf, structural-fitness, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices, axis-evaluator. |
+   | `catalog_scope` | Reviewers: spec-compliance, code-quality, simplicity, security-perf, structural-fitness, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices, axis-evaluator. |
 
    The planner will dispatch `codebase-scout` (and optionally `best-practices` for unfamiliar patterns) to explore the codebase.
 
@@ -75,9 +75,10 @@ By this point, all axes are resolved — either "Clear winner" from initial anal
    - Verification steps (typecheck, lint, test, build)
    - Dependencies on other steps
    - **Per-task review plan**: The planner selects reviewers for each task based on content:
-     - Internal refactor → Light: `code-quality`
-     - API change / auth → Light-Thorough: `code-quality` + `security-perf`
-     - External dependency / infra → Light-Thorough: `code-quality` + `error-resilience`
+     - Internal refactor → Light: `code-quality` + `simplicity`
+     - API change / auth → Light-Thorough: `code-quality` + `simplicity` + `security-perf`
+     - External dependency / infra → Light-Thorough: `code-quality` + `simplicity` + `error-resilience`
+     - `simplicity` is included in ALL per-task reviews — AI-generated code consistently trends toward unnecessary complexity
 6. **TDD ordering**: Within each step, list test files before implementation files
 7. **Dependency analysis and parallelization evaluation**: After defining all tasks, analyze inter-task dependencies:
    - List which tasks depend on which (shared files, output→input relationships)
@@ -126,6 +127,7 @@ Self-review checklist (applies regardless of tier):
 | Plan alignment | Does the implementation match the spec from the plan? |
 | TDD compliance | Were tests written BEFORE implementation code? |
 | Code quality | No `as` assertions, no eslint-disable, no lazy assertions? |
+| Simplicity | Could any abstraction, wrapper, or indirection be removed without losing functionality? Are functions short and flat (guard clauses over nesting)? |
 | Pattern consistency | Does the code follow existing project patterns? |
 | Edge cases | Are boundary conditions and error paths handled? |
 
@@ -181,7 +183,7 @@ npm run build       # if applicable
 
 All must pass before dispatching the review team.
 
-Invoke `dispatch-reviewers` with the planner's final review selection, using **all changed file paths** across the implementation as target. Structural floor applies: 3+ reviewers including `devils-advocate`. Typical final review: `spec-compliance` + `code-quality` + `security-perf` + `devils-advocate` (+ `error-resilience` if the implementation touches external dependencies).
+Invoke `dispatch-reviewers` with the planner's final review selection, using **all changed file paths** across the implementation as target. Structural floor applies: 3+ reviewers including `devils-advocate`. Typical final review: `spec-compliance` + `code-quality` + `simplicity` + `security-perf` + `devils-advocate` (+ `error-resilience` if the implementation touches external dependencies). `simplicity` is mandatory in final reviews — it catches accumulated over-engineering across tasks.
 
 Present the final completion report using the `rules/verification.md` Completion Report template. Include the **review trace**: which reviewers were selected at each task and at the final review, and why.
 

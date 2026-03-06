@@ -98,9 +98,23 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 - **Applicable Domains**: design, implement
 - **Prompt**: Assess structural fitness. Is the proposed approach incrementally extending existing structure when broader refactoring would be more effective? Check: Does the change fight the existing architecture (working around limitations instead of fixing them)? Will it increase coupling or create structural friction for future changes? Are we patching around a design that no longer fits the requirements? Would restructuring first make this change — and future changes — simpler? Detect sunk-cost thinking: "we have this code, so we should build on it" when the code's structure doesn't fit the new need. If refactoring is warranted, describe the scope and expected benefit.
 
+### `simplicity`
+
+- **Focus**: Unnecessary complexity, over-abstraction, cognitive load reduction
+- **Verification Source**: Cyclomatic complexity indicators, function size, nesting depth, abstraction layer count, conditional logic structure
+- **Applicable Domains**: design, implement, debug
+- **Prompt**: Review for unnecessary complexity — especially the kind AI-generated code tends to introduce. Check: (1) Over-abstraction: Are there wrapper functions, utility classes, or abstraction layers that serve only one caller? Could the code be inlined without loss of clarity? (2) Conditional complexity: Can nested if/else chains be flattened with early returns, guard clauses, or lookup tables? Are there boolean parameters that split a function into two disguised functions? (3) Premature generalization: Are generic type parameters, configuration objects, or strategy patterns used where a simple concrete implementation would suffice? (4) Layer bloat: Are there unnecessary indirection layers (service → helper → util → actual logic)? Could the call chain be shortened? (5) Function size: Can functions over ~20 lines be split into named steps? Are there god functions that do too many things? (6) Design-level complexity (for design reviews): Is the proposed architecture more complex than the problem requires? Are there simpler alternatives that meet the same goals? For each finding, suggest the specific simplification and state what is lost (if anything). Severity-rate: high = complexity with no benefit, medium = justified complexity that could be simpler, low = stylistic simplification.
+
 ## Distinction: `error-resilience` vs `devils-advocate`
 
 `devils-advocate` challenges direction: "Is this design/implementation fundamentally wrong?"
 `error-resilience` challenges coverage assuming correct direction: "Are only happy paths implemented?"
 
 AI-generated code tends to work perfectly on happy paths but break in production — returning "auth failed" on DB connection loss, no retry storm prevention, no circuit breakers, uniform error handling without distinction. `error-resilience` detects these patterns. Their verification sources differ (failure case studies vs production failure patterns/chaos engineering), making them independently valuable.
+
+## Distinction: `code-quality` vs `simplicity`
+
+`code-quality` checks correctness and standards: TDD compliance, type safety, test quality, pattern consistency.
+`simplicity` checks cognitive economy: Is this more complex than it needs to be? Could a simpler approach achieve the same result?
+
+AI-generated code tends to be correct but over-engineered — adding unnecessary abstraction layers, premature generalization (generic where concrete suffices), configuration objects for single-use cases, and wrapper functions that add indirection without value. `simplicity` detects these patterns. Their verification sources differ (rules compliance vs complexity metrics/cognitive load), making them independently valuable.

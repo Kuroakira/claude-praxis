@@ -62,6 +62,28 @@ expect(result).toEqual({ id: 1, name: 'Test User' });
 expect(users).toHaveLength(3);
 ```
 
+## Simplicity Over Cleverness
+
+AI-generated code systematically tends toward over-engineering. Actively resist this.
+
+```
+❌ Wrapper function with one caller
+❌ Generic type parameter used with only one concrete type
+❌ Configuration object for values that never change
+❌ Abstract class with a single implementation
+❌ Strategy/factory pattern for 1-2 variants (use if/switch)
+❌ Nested if/else chains (flatten with early returns)
+❌ Service → Helper → Util → actual logic (unnecessary indirection)
+
+✅ Inline simple logic — extract only when reused or complex
+✅ Concrete types until generalization is proven necessary
+✅ Direct values until configuration is proven necessary
+✅ Guard clauses and early returns over nested conditionals
+✅ Shortest call chain that maintains clarity
+```
+
+**Rule of thumb**: If removing a layer, parameter, or abstraction would make the code simpler without losing functionality, remove it.
+
 ## No Obvious Comments
 
 Comments explain WHY, not WHAT. If code already shows what it does, a restating comment is noise.
@@ -96,6 +118,9 @@ npm run build       # if applicable
 | "I'll fix it later" | Fix it now. |
 | "This case is an exception" | Consult the human. |
 | "Testing is hard" | Code design is bad. Revisit. |
+| "It might be needed later" | YAGNI. Remove it now. |
+| "This abstraction makes it extensible" | Extensible for what? Prove the need. |
+| "It's a best practice" | Best practice for this scale? Simplicity is also a best practice. |
 
 **Following the letter of the rule IS following the spirit.**
 

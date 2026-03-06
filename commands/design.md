@@ -27,7 +27,7 @@ Invoke `workflow-planner` with the following domain context:
 | `domain` | design |
 | `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. The mandatory Design Axes Table in Synthesis Rules structurally prevents conflating "What" clarity with "How" clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
 | `constraints` | (1) Research must produce a synthesis with findings and contradictions. (2) Synthesis must include a Design Axes Table — every design decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (3) If Design Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before outline creation. (4) Outline must be reviewed before full writing. (5) Final Design Doc must receive thorough review with 3+ reviewers including devils-advocate. (6) Design Doc format rules (rules/design-doc-format.md) must be followed. |
-| `catalog_scope` | Reviewers: architecture, document-quality, feasibility, user-impact, security-perf, structural-fitness, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, axis-evaluator). |
+| `catalog_scope` | Reviewers: architecture, document-quality, simplicity, feasibility, user-impact, security-perf, structural-fitness, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, axis-evaluator). |
 
 The planner will:
 1. Analyze the topic and select relevant researchers from the catalog
@@ -58,7 +58,7 @@ Every synthesis MUST produce this table. If the table has zero "Requires explora
 - **"Requires exploration"** = both choices have genuine trade-offs that affect the design direction (not just implementation details)
 - **"Clear winner"** = one choice is objectively better with stated rationale
 - A verdict of "0 axes require exploration" needs explicit justification — this conclusion cannot be reached by default
-- Common axes to check (not exhaustive): data model structure, logic placement (which layer), consistency/integrity strategy, integration approach (centralized vs distributed), state management approach, performance strategy (processing model, caching, scaling approach, rendering strategy)
+- Common axes to check (not exhaustive): data model structure, logic placement (which layer), consistency/integrity strategy, integration approach (centralized vs distributed), state management approach, performance strategy (processing model, caching, scaling approach, rendering strategy), complexity trade-off (simpler design with fewer features vs comprehensive design with more moving parts)
 
 This table is a **required input** for Independent Axis Evaluation. Axes marked "Requires exploration" are resolved through per-axis parallel evaluation before Phase 2.
 
@@ -132,7 +132,7 @@ Expand the outline into the complete Design Doc.
 
 The planner selects reviewers for the final Design Doc review. This is a **thorough** review — structural floor applies (3+ reviewers including `devils-advocate`).
 
-Typical final review team: `architecture` + `document-quality` + `devils-advocate` (+ `user-impact` if the design affects users).
+Typical final review team: `architecture` + `document-quality` + `simplicity` + `devils-advocate` (+ `user-impact` if the design affects users). `simplicity` reviews Design Docs for architectural over-complexity — unnecessary layers, premature generalization in the proposed design, and whether simpler alternatives would meet the same goals.
 
 Invoke `dispatch-reviewers` with the planner's selected reviewers, tier `thorough`, and the **Design Doc file path** as target (e.g., `claudedocs/design-docs/auth.md`). Do NOT include summaries or design rationale — reviewers read the document independently.
 
