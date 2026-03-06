@@ -53,6 +53,16 @@ Rules:
 - "Clear winner" = one choice is objectively better with stated rationale
 - A verdict of "0 axes require exploration" needs explicit justification
 
+**Structural fitness axis (mandatory for `implement` domain)**:
+
+- **What to evaluate**: "Does the existing structure naturally support this change, or would restructuring first make the implementation simpler?"
+- **Axis format**: Choices like "A: Extend current structure / B: Restructure [specific area] first, then add feature"
+- **Friction signals that trigger "Requires exploration"**:
+  - Feature touches many files relative to its conceptual complexity
+  - Implementation requires adding conditionals to accommodate the new behavior
+  - Patterns need to be duplicated because the structure doesn't allow reuse
+- **Default**: Do not default to incremental addition. Evaluate structural fitness based on scout findings.
+
 The Axes Table structure (columns, verdict options) is defined by the calling command. The planner's responsibility is to generate the table content — analyzing the task and populating each axis with informed verdicts based on the context gathered.
 
 **After producing the Axes Table**: If any axes have the verdict "Requires exploration", execute the Independent Axis Evaluation protocol (see section below) to resolve them. If all axes are "Clear winner", skip evaluation and proceed to Step 2. All axes must be resolved before Step 4 generates the execution plan.

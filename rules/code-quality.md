@@ -64,7 +64,25 @@ expect(users).toHaveLength(3);
 
 ## Simplicity Over Cleverness
 
-AI-generated code systematically tends toward over-engineering. Actively resist this.
+AI-generated code systematically tends toward over-engineering. Actively resist this — at **every level**, from planning to code.
+
+### Planning Level
+
+Before adding a feature, ask: "Does the existing structure naturally support this, or are we forcing it?"
+
+```
+❌ Plan to add conditionals/branches to accommodate the new feature
+❌ Plan to duplicate patterns in a new location because the existing structure doesn't fit
+❌ Plan that touches many files for a conceptually simple feature (structural friction signal)
+❌ Plan that assumes the current structure is the right structure without evaluating fitness
+
+✅ If the feature fights the structure, restructure first, then add
+✅ If adding requires spreading logic across many places, consolidate first
+✅ Include refactoring tasks BEFORE feature tasks when structure doesn't fit
+✅ "What's the simplest structure that supports both existing and new behavior?"
+```
+
+### Code Level
 
 ```
 ❌ Wrapper function with one caller
@@ -82,7 +100,7 @@ AI-generated code systematically tends toward over-engineering. Actively resist 
 ✅ Shortest call chain that maintains clarity
 ```
 
-**Rule of thumb**: If removing a layer, parameter, or abstraction would make the code simpler without losing functionality, remove it.
+**Rule of thumb**: If removing a layer, parameter, or abstraction would make the code simpler without losing functionality, remove it. If restructuring existing code would make the new feature simpler to add, restructure first.
 
 ## No Obvious Comments
 
