@@ -47,6 +47,7 @@ claude-praxis/
 │   ├── feature-spec.md          # /feature-spec — AI-driven interview to capture requirements
 │   ├── design.md                # /design — planner-driven research + outline + write Design Doc
 │   ├── implement.md             # /implement — planner-driven plan + TDD + graduated review
+│   ├── analyze.md               # /analyze — codebase architecture analysis + durable report
 │   ├── debug.md                 # /debug — investigate + diagnose + document
 │   ├── research.md              # /research — standalone research
 │   ├── plan.md                  # /plan — standalone planning
@@ -58,6 +59,7 @@ claude-praxis/
 │   ├── workflow-planner/        # Analyze task, select agents from catalogs, generate execution plan
 │   ├── dispatch-reviewers/      # Dispatch reviewers by catalog ID with graduated tiers
 │   ├── parallel-review-team/    # Backward-compatible wrapper → delegates to dispatch-reviewers
+│   ├── architecture-analysis/   # Multi-pass codebase analysis with durable reports
 │   ├── check-past-learnings/    # Recall relevant learnings before starting work
 │   ├── tdd-cycle/               # RED-GREEN-REFACTOR procedure + decision points
 │   ├── rule-evolution/          # Propose and add new rules from discovered issues
@@ -126,8 +128,8 @@ Most tasks use these orchestrating commands:
 
 ```
 /claude-praxis:feature-spec → AI-driven interview + planner-driven review → FeatureSpec
-/claude-praxis:design       → Planner-driven research + Outline + Write + Graduated review → Design Doc
-/claude-praxis:implement    → Planner-driven plan + TDD per task + Graduated review → Verified code
+/claude-praxis:design       → Planner-driven research + Architecture analysis + Outline + Write + Graduated review → Design Doc
+/claude-praxis:implement    → Architecture analysis + Planner-driven plan + TDD per task + Graduated review → Verified code
 /claude-praxis:debug        → Reproduce + Isolate + Planner-driven diagnosis + Document → Present
 ```
 
@@ -137,9 +139,9 @@ Review tiers are **graduated** — not all stages get the same treatment. Interm
 
 `/claude-praxis:feature-spec` captures "what to build and why" through an AI-driven interview. The planner selects reviewers for the draft based on spec complexity — from light (requirements + devils-advocate) to thorough (all 4 spec reviewers).
 
-`/claude-praxis:design` invokes the planner for both research and review. The planner selects which researchers to dispatch (not always all 4), reviews the outline (light), then runs thorough final review. The human's only input is final approval.
+`/claude-praxis:design` invokes the planner for research, architecture analysis, and review. Research gathers external context, analysis captures current codebase state, and both inform the Design Axes Table. The planner reviews the outline (light), then runs thorough final review. The human's only input is final approval.
 
-`/claude-praxis:implement` invokes the planner for codebase exploration, plan creation, per-task review selection, and final review. Each task gets a review plan based on its content (internal refactor → code-quality only; security-sensitive → code-quality + security-perf). The human approves the plan and makes decisions at implementation decision points.
+`/claude-praxis:implement` invokes architecture analysis and the planner for codebase exploration, plan creation, per-task review selection, and final review. Analysis captures current structure before planning; each task gets a review plan based on its content (internal refactor → code-quality only; security-sensitive → code-quality + security-perf). The human approves the plan and makes decisions at implementation decision points.
 
 `/claude-praxis:debug` investigates problems systematically. For complex problems with multiple competing hypotheses, the planner dispatches parallel investigation agents. Produces an Investigation Report. The fix is done via `/claude-praxis:implement`.
 
@@ -148,6 +150,7 @@ Review tiers are **graduated** — not all stages get the same treatment. Interm
 Available for direct invocation when the full workflow is not needed:
 
 ```
+/claude-praxis:analyze   → Codebase architecture analysis (also invoked as workflow phase in /design and /implement)
 /claude-praxis:research  → Standalone research (when you just want to explore options)
 /claude-praxis:plan      → Standalone planning (when you already have a plan in mind)
 /claude-praxis:review    → Standalone code review (when you want feedback on existing code)

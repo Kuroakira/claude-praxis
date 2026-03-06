@@ -34,3 +34,29 @@
 - Rationale: Regex cannot disambiguate semantic intent when both "design doc" and "implement" keywords appear. Advisory-only system means misclassification has limited impact. Tests document the behavior as intentional, not accidental
 - Learning: When implementing advisory-only systems with known false positive/negative trade-offs, document the trade-off in code comments AND test expectations. This prevents future contributors from "fixing" the intentional behavior
 - Domain: phase-detection, testing, trade-off-documentation
+
+## 2026-03-06 — /claude-praxis:design: Design Doc written — /analyze command
+- Decision: /analyze is a standalone workflow phase (not a researcher catalog entry) that produces durable documents
+- Decision: Workflow integration — /design: research → analyze → Axes Table → outline → full doc; /implement: analyze → Axes Table → plan → TDD
+- Decision: Multi-pass analysis in both modes (standalone + workflow) — accuracy matters more than speed since output feeds planning decisions
+- Decision: Mandatory refactoring consideration — every analysis report must assess structural fitness, feeding directly into Axes Table structural fitness axis
+- Decision: Drill-to-source verification principle — every finding references specific file paths/symbols for human verification
+- Decision: Rejected researcher catalog entry (Alternative A) because researcher output is ephemeral; analysis needs to persist as durable document
+- Decision: Rejected single-pass analysis (Alternative C) because 25-30% AI error rate applies regardless of scope; structural issues hide in cross-file patterns
+- Rationale: Causal dependency learning drives the design — analysis as required input for Axes Table creates structural guarantee that architecture is understood before design/implementation decisions
+- Domain: analyze, architecture-understanding, structural-simplicity
+
+## 2026-03-06 — /claude-praxis:implement: Task 3 complete — Integrate into workflows + documentation
+- Decision: design.md Phase 2 (Analyze Architecture) inserted between research (Phase 1) and outline (now Phase 3), all subsequent phases renumbered 3-7
+- Decision: implement.md analyze step added as item 2 in Step 1 (before scout), existing items renumbered 3-5
+- Decision: Axes Table production stays in Phase 1; analysis may update it with structural fitness axis (update model, not defer model) — minimizes restructuring of pre-existing Phase 1
+- Decision: CLAUDE.md updated with file structure entries, workflow descriptions, and /analyze in Supporting Commands
+- Rationale: Thin command-layer integration — Phase 2 specifies WHAT (invoke architecture-analysis with parameters) not HOW (analysis procedure stays in skill). Simplicity reviewer caught Axes Table ordering confusion; fixed to clarify update-after-analysis model
+- Domain: analyze, workflow-integration
+
+## 2026-03-06 — /claude-praxis:implement: Final review complete
+- Decision: Simplified SKILL.md — removed over-specified agent prompts (converted to task descriptions), removed Scope Determination section (command-layer concern), removed save path duplication (commands handle output location), simplified Integration section
+- Decision: Added scout-analysis coordination in implement.md — analysis report path passed to scout so it focuses on task-specific patterns rather than re-scanning architecture
+- Decision: Documented research_context behavior — when absent (in /implement), analysis relies solely on codebase scanning
+- Rationale: Simplicity reviewer identified layer boundary violations (skill duplicating command logic). DA identified scout overlap as critical — resolved by passing analysis report to scout as context rather than adding a reuse mechanism
+- Domain: analyze, architecture-understanding, layer-boundaries

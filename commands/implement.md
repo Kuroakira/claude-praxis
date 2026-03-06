@@ -25,7 +25,8 @@ Planning creates an implementation-specific plan distinct from the Design Doc's 
 ### Step 1: Gather Context
 
 1. **Read the Design Doc**: Understand the full scope and design decisions. If no Design Doc exists (direct implementation request), read the codebase to understand scope and create the plan from the user's intent
-2. **Scout the codebase**: Invoke `workflow-planner` for codebase exploration:
+2. **Analyze architecture**: Invoke `architecture-analysis` to understand current codebase structure before planning. Pass `scope` derived from the Design Doc's affected areas and `anticipated_changes` from the Design Doc's proposal. The analysis produces a durable report at `claudedocs/analysis/[scope-name].md` that informs the Implementation Axes Table — particularly whether to extend current structure or restructure first. Pass the analysis report path to the scout (Step 3) so it can focus on task-specific patterns rather than re-scanning architecture
+3. **Scout the codebase**: Invoke `workflow-planner` for codebase exploration:
 
    Invoke `workflow-planner` with:
 
@@ -41,9 +42,9 @@ Planning creates an implementation-specific plan distinct from the Design Doc's 
 
    - **Skip criteria**: Scout may be skipped ONLY when: (a) the change targets a single file explicitly specified by the user with no cross-module integration points, or (b) a Scout was dispatched in the immediately preceding task covering the same codebase area. When skipping, state the specific reason in the plan header. Generic reasons ("scope is clear", "straightforward change") are not sufficient — name the file and explain why no unknown patterns exist.
 
-3. **Check learnings before starting**: Invoke `check-past-learnings` (role: implementation)
+4. **Check learnings before starting**: Invoke `check-past-learnings` (role: implementation)
 
-4. **Enumerate implementation axes (MANDATORY)** — after context gathering, produce an Implementation Axes Table covering every implementation decision where multiple valid approaches exist. This step CANNOT be skipped. Even when the Design Doc clearly defines "How" at the design level, multiple valid implementation approaches may exist for test strategy, integration ordering, refactoring scope, and dependency management.
+5. **Enumerate implementation axes (MANDATORY)** — after context gathering, produce an Implementation Axes Table covering every implementation decision where multiple valid approaches exist. This step CANNOT be skipped. Even when the Design Doc clearly defines "How" at the design level, multiple valid implementation approaches may exist for test strategy, integration ordering, refactoring scope, and dependency management.
 
 ### Implementation Axes Table (Required Context Output)
 
