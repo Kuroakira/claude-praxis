@@ -4,40 +4,79 @@
   <title>{{TITLE}}</title>
   <link rel="stylesheet" href="style.css">
   <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css"
         integrity="sha512-0MQwo6K1MmMGmoaZEjMzmKPRYma6JEEmq5TSmVKl1JRhcLjrMZqN1ieV1GF3bFfcKMJHe9UNGTJkAfRXfKdCSA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"
           integrity="sha512-EBLzUL8XLl+va/zAsmXwS7Z2B1F9HUHkZwyS/VKwh3S7T/U0nF4BaU29EP/ZSf6zgiIxYAnKLu6bJ8dqpmX5uw=="
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script defer>document.addEventListener('DOMContentLoaded', function() { hljs.highlightAll(); mermaid.initialize({ startOnLoad: true, theme: 'neutral' }); });</script>
-  <script defer>
-  document.addEventListener('DOMContentLoaded', function() {
+  <script>
+  document.addEventListener('DOMContentLoaded', async function() {
+    hljs.highlightAll();
+    mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+    await mermaid.run();
+
+    function createBtn(text, title) {
+      var btn = document.createElement('button');
+      btn.textContent = text;
+      btn.title = title;
+      btn.className = 'mermaid-btn';
+      return btn;
+    }
+
+    function openFullscreen(svg) {
+      var overlay = document.createElement('div');
+      overlay.className = 'mermaid-overlay';
+      var content = document.createElement('div');
+      content.className = 'mermaid-overlay-content';
+      var clone = svg.cloneNode(true);
+      clone.removeAttribute('style');
+      content.appendChild(clone);
+
+      var controls = document.createElement('div');
+      controls.className = 'mermaid-controls mermaid-overlay-controls';
+      var btnIn = createBtn('\u{1F50D}+', 'Zoom in');
+      var btnOut = createBtn('\u{1F50D}\u2212', 'Zoom out');
+      var btnReset = createBtn('\u21BB', 'Reset');
+      var btnClose = createBtn('\u2715', 'Close');
+      btnClose.className = 'mermaid-btn mermaid-overlay-close';
+      controls.append(btnIn, btnOut, btnReset, btnClose);
+
+      overlay.append(content, controls);
+      document.body.appendChild(overlay);
+
+      var pz = Panzoom(clone, { maxScale: 10, minScale: 0.3, contain: 'outside' });
+      content.addEventListener('wheel', pz.zoomWithWheel);
+      btnIn.addEventListener('click', function() { pz.zoomIn(); });
+      btnOut.addEventListener('click', function() { pz.zoomOut(); });
+      btnReset.addEventListener('click', function() { pz.reset(); });
+
+      function close() { pz.destroy(); overlay.remove(); document.removeEventListener('keydown', onKey); }
+      function onKey(e) { if (e.key === 'Escape') close(); }
+      btnClose.addEventListener('click', close);
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+      document.addEventListener('keydown', onKey);
+    }
+
     document.querySelectorAll('.mermaid').forEach(function(el) {
-      el.addEventListener('click', function() {
-        var overlay = document.createElement('div');
-        overlay.className = 'mermaid-overlay';
-        var container = document.createElement('div');
-        container.className = 'mermaid-overlay-content';
-        container.innerHTML = el.querySelector('svg')
-          ? el.querySelector('svg').outerHTML
-          : el.innerHTML;
-        var svg = container.querySelector('svg');
-        if (svg) { svg.style.maxWidth = '100%'; svg.style.height = 'auto'; }
-        var close = document.createElement('button');
-        close.className = 'mermaid-overlay-close';
-        close.textContent = '\u00d7';
-        close.onclick = function() { overlay.remove(); };
-        overlay.appendChild(container);
-        overlay.appendChild(close);
-        overlay.addEventListener('click', function(e) {
-          if (e.target === overlay) overlay.remove();
-        });
-        document.addEventListener('keydown', function handler(e) {
-          if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', handler); }
-        });
-        document.body.appendChild(overlay);
-      });
+      var svg = el.querySelector('svg');
+      if (!svg) return;
+
+      var controls = document.createElement('div');
+      controls.className = 'mermaid-controls';
+      var btnIn = createBtn('\u{1F50D}+', 'Zoom in');
+      var btnOut = createBtn('\u{1F50D}\u2212', 'Zoom out');
+      var btnReset = createBtn('\u21BB', 'Reset');
+      var btnFs = createBtn('\u26F6', 'Fullscreen');
+      controls.append(btnIn, btnOut, btnReset, btnFs);
+      el.appendChild(controls);
+
+      var pz = Panzoom(svg, { maxScale: 5, minScale: 0.5, contain: 'outside' });
+      btnIn.addEventListener('click', function() { pz.zoomIn(); });
+      btnOut.addEventListener('click', function() { pz.zoomOut(); });
+      btnReset.addEventListener('click', function() { pz.reset(); });
+      btnFs.addEventListener('click', function() { openFullscreen(svg); });
     });
   });
   </script>
