@@ -70,7 +70,9 @@ If the scope is small enough that Pass 1 already covers the full data flow, skip
 The main agent (not a subagent) writes the complete guide as a multi-page HTML book using scout findings as input. This pass produces the output folder following the HTML Page Structure below.
 
 Key writing responsibilities:
-- Create the output folder and write `style.css` (verbatim from CSS Template below)
+- **Locate assets**: Use Glob with pattern `**/guide-generation/assets/style.css` to find the skill's asset directory. This resolves the correct path whether claude-praxis is the current project or installed as a plugin
+- **Copy CSS**: Copy the located `style.css` to the output folder using bash `cp` — do not generate CSS manually
+- **Embed head**: Read the located `head.html` from the same assets directory and use its content as the `<head>` for every HTML page, replacing `{{TITLE}}` with the page title (e.g., `Guide: [Scope Name]` for index, `[Focus Area Name]` for chapters)
 - Write `index.html` (Big Picture hub page) using analogies and plain language
 - Write each chapter page (`NN-[focus-area].html`) following the zoom-in/zoom-out rhythm
 - Include mermaid diagrams as `<div class="mermaid">` blocks (rendered client-side)
@@ -81,7 +83,7 @@ Key writing responsibilities:
 
 **Single narrator requirement**: The main agent writes the entire guide to maintain a consistent voice, tone, and level of detail throughout. Do not delegate writing to subagents.
 
-**Short guide rule**: If the scope has 2 or fewer Focus Areas, write a single `index.html` containing all content (no chapter split). The sidebar TOC links to sections within the same page via anchor links. The style.css is still generated separately.
+**Short guide rule**: If the scope has 2 or fewer Focus Areas, write a single `index.html` containing all content (no chapter split). The sidebar TOC links to sections within the same page via anchor links. The style.css is still copied separately.
 
 ### Content Density Requirements
 
@@ -126,7 +128,7 @@ claudedocs/guides/[scope-name]/
 ├── 01-[focus-area].html    # Chapter 1 (spoke page)
 ├── 02-[focus-area].html    # Chapter 2 (spoke page)
 ├── ...
-├── style.css               # Shared stylesheet (verbatim from CSS Template)
+├── style.css               # Shared stylesheet (copied from assets/style.css)
 └── images/                 # Optional: generated concept visuals
 ```
 
@@ -136,50 +138,7 @@ claudedocs/guides/[scope-name]/
 <!DOCTYPE html>
 <html lang="en">
 <!-- Set lang attribute to match the guide's language (e.g., lang="ja" for Japanese) -->
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guide: [Scope Name]</title>
-  <link rel="stylesheet" href="style.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css"
-        integrity="sha512-0MQwo6K1MmMGmoaZEjMzmKPRYma6JEEmq5TSmVKl1JRhcLjrMZqN1ieV1GF3bFfcKMJHe9UNGTJkAfRXfKdCSA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"
-          integrity="sha512-EBLzUL8XLl+va/zAsmXwS7Z2B1F9HUHkZwyS/VKwh3S7T/U0nF4BaU29EP/ZSf6zgiIxYAnKLu6bJ8dqpmX5uw=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script defer>document.addEventListener('DOMContentLoaded', function() { hljs.highlightAll(); mermaid.initialize({ startOnLoad: true, theme: 'neutral' }); });</script>
-  <script defer>
-  document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.mermaid').forEach(function(el) {
-      el.addEventListener('click', function() {
-        var overlay = document.createElement('div');
-        overlay.className = 'mermaid-overlay';
-        var container = document.createElement('div');
-        container.className = 'mermaid-overlay-content';
-        container.innerHTML = el.querySelector('svg')
-          ? el.querySelector('svg').outerHTML
-          : el.innerHTML;
-        var svg = container.querySelector('svg');
-        if (svg) { svg.style.maxWidth = '100%'; svg.style.height = 'auto'; }
-        var close = document.createElement('button');
-        close.className = 'mermaid-overlay-close';
-        close.textContent = '\u00d7';
-        close.onclick = function() { overlay.remove(); };
-        overlay.appendChild(container);
-        overlay.appendChild(close);
-        overlay.addEventListener('click', function(e) {
-          if (e.target === overlay) overlay.remove();
-        });
-        document.addEventListener('keydown', function handler(e) {
-          if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', handler); }
-        });
-        document.body.appendChild(overlay);
-      });
-    });
-  });
-  </script>
-</head>
+<!-- <head> content: Read from assets/head.html, replace {{TITLE}} with "Guide: [Scope Name]" -->
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <nav class="sidebar" aria-label="Guide navigation">
@@ -230,9 +189,7 @@ claudedocs/guides/[scope-name]/
 <!DOCTYPE html>
 <html lang="en">
 <!-- Same lang as index.html -->
-<head>
-  <!-- Same <head> as index.html -->
-</head>
+<!-- <head> content: Read from assets/head.html, replace {{TITLE}} with "[Focus Area Name]" -->
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <nav class="sidebar" aria-label="Guide navigation">
@@ -295,307 +252,14 @@ claudedocs/guides/[scope-name]/
 - Last chapter: no "Next →" link (omit)
 - Every chapter: always has "Big Picture" center link and "← Back to Big Picture" at the top
 
-## CSS Template
+## Static Assets
 
-Write the following CSS **verbatim** to `style.css`. Do not modify, abbreviate, or rephrase — copy exactly as shown.
+CSS and HTML `<head>` templates are maintained as static files in `assets/` to ensure deterministic output. Do not duplicate their content in this file.
 
-```css
-:root {
-  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  --color-bg: #ffffff;
-  --color-text: #1a1a2e;
-  --color-heading: #16213e;
-  --color-link: #0f3460;
-  --color-link-hover: #e94560;
-  --color-sidebar-bg: #f8f9fa;
-  --color-sidebar-active: #e8edf2;
-  --color-border: #dee2e6;
-  --color-code-bg: #f6f8fa;
-  --color-nav-bg: #f0f2f5;
-  --content-max-width: 54rem;
-  --sidebar-width: 16rem;
-}
+- `assets/style.css` — Complete guide stylesheet (grid layout, sidebar, mermaid overlay, callouts, responsive breakpoints, skip-link). Copy to output folder with bash `cp`
+- `assets/head.html` — HTML `<head>` block with CDN links (mermaid 11.4.1, highlight.js 11.11.1 with SRI), initialization scripts, and mermaid click-to-zoom JavaScript. Contains `{{TITLE}}` placeholder — replace with the page title when embedding
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  font-family: var(--font-body);
-  color: var(--color-text);
-  background: var(--color-bg);
-  line-height: 1.7;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: var(--sidebar-width);
-  background: var(--color-sidebar-bg);
-  border-right: 1px solid var(--color-border);
-  padding: 2rem 1rem;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  overflow-y: auto;
-}
-
-.sidebar h2 {
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6c757d;
-  margin-bottom: 1rem;
-}
-
-.sidebar ul { list-style: none; }
-
-.sidebar li { margin-bottom: 0.25rem; }
-
-.sidebar a {
-  display: block;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.25rem;
-  color: var(--color-text);
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-.sidebar a:hover { background: var(--color-sidebar-active); }
-
-.sidebar a.active {
-  background: var(--color-sidebar-active);
-  font-weight: 600;
-}
-
-.content {
-  margin-left: var(--sidebar-width);
-  padding: 3rem 2rem;
-  display: grid;
-  grid-template-columns: 1fr min(var(--content-max-width), calc(100% - 4rem)) 1fr;
-}
-
-.content > * {
-  grid-column: 2;
-}
-
-.content > .mermaid,
-.content > pre,
-.content > .wide {
-  grid-column: 1 / -1;
-  max-width: 72rem;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 2rem;
-  padding-right: 2rem;
-}
-
-h1 {
-  font-size: 2rem;
-  color: var(--color-heading);
-  margin-bottom: 0.5rem;
-  border-bottom: 2px solid var(--color-border);
-  padding-bottom: 0.5rem;
-}
-
-h2 {
-  font-size: 1.5rem;
-  color: var(--color-heading);
-  margin-top: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-h3 {
-  font-size: 1.15rem;
-  color: var(--color-heading);
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
-}
-
-p { margin-bottom: 1rem; }
-
-a { color: var(--color-link); }
-a:hover { color: var(--color-link-hover); }
-
-ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
-li { margin-bottom: 0.375rem; }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-}
-
-th, td {
-  padding: 0.625rem 0.875rem;
-  border: 1px solid var(--color-border);
-  text-align: left;
-}
-
-th {
-  background: var(--color-sidebar-bg);
-  font-weight: 600;
-  color: var(--color-heading);
-}
-
-tr:nth-child(even) { background: #fafbfc; }
-
-pre {
-  background: var(--color-code-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
-  padding: 1rem;
-  overflow-x: auto;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-code { font-family: var(--font-code); font-size: 0.875em; }
-
-p code, li code, td code {
-  background: var(--color-code-bg);
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.25rem;
-  border: 1px solid var(--color-border);
-}
-
-.mermaid {
-  text-align: center;
-  margin: 1.5rem 0;
-  cursor: zoom-in;
-}
-
-.callout {
-  border-left: 4px solid;
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
-  border-radius: 0 0.375rem 0.375rem 0;
-}
-
-.callout > :last-child { margin-bottom: 0; }
-
-.callout-note { border-color: #0969da; background: #ddf4ff; }
-.callout-warning { border-color: #d29922; background: #fff8c5; }
-.callout-tip { border-color: #1a7f37; background: #dafbe1; }
-
-.mermaid-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
-.mermaid-overlay-content {
-  background: #fff;
-  border-radius: 0.5rem;
-  padding: 2rem;
-  max-width: 95vw;
-  max-height: 90vh;
-  overflow: auto;
-}
-
-.mermaid-overlay-content svg {
-  max-width: 100%;
-  height: auto;
-}
-
-.mermaid-overlay-close {
-  position: fixed;
-  top: 1rem;
-  right: 1.5rem;
-  background: #333;
-  color: #fff;
-  border: none;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1.25rem;
-  z-index: 10001;
-}
-
-.mermaid-overlay-close:hover { background: #555; }
-
-.page-nav {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.page-nav a {
-  padding: 0.5rem 1rem;
-  background: var(--color-nav-bg);
-  border-radius: 0.375rem;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-.page-nav a:hover { background: var(--color-sidebar-active); }
-
-.back-to-hub {
-  display: inline-block;
-  margin-bottom: 1.5rem;
-  padding: 0.375rem 0.75rem;
-  background: var(--color-nav-bg);
-  border-radius: 0.25rem;
-  text-decoration: none;
-  font-size: 0.875rem;
-}
-
-.back-to-hub:hover { background: var(--color-sidebar-active); }
-
-.meta {
-  color: #6c757d;
-  font-style: italic;
-  font-size: 0.875rem;
-  margin-bottom: 2rem;
-}
-
-.concept-image {
-  max-width: 100%;
-  margin: 1.5rem 0;
-  border-radius: 0.5rem;
-}
-
-@media (max-width: 768px) {
-  .sidebar { display: none; }
-  .content {
-    margin-left: 0;
-    padding: 1.5rem 1rem;
-    grid-template-columns: 1fr;
-  }
-  .content > * { grid-column: auto; }
-  .content > .mermaid,
-  .content > pre,
-  .content > .wide {
-    grid-column: auto;
-    padding-left: 0;
-    padding-right: 0;
-  }
-}
-
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: var(--color-heading);
-  color: #fff;
-  padding: 0.5rem 1rem;
-  z-index: 100;
-  transition: top 0.2s;
-}
-
-.skip-link:focus {
-  top: 0;
-}
-```
+**Path discovery**: Use Glob `**/guide-generation/assets/style.css` to locate the assets directory. This works regardless of whether the skill runs from the project root or from a plugin installation path
 
 ## Image Generation MCP (Optional)
 
@@ -613,8 +277,9 @@ At the start of Pass 3, use ToolSearch to check if any image generation MCP tool
 
 ## Integration
 
+- **Static assets**: `assets/style.css` (bash `cp` to output) and `assets/head.html` (Read + `{{TITLE}}` substitution) ensure deterministic CSS and `<head>` output — no LLM generation of these critical templates
 - **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for precise symbol hierarchy and cross-file reference tracing — run by the main agent
 - **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only). Main agent writes the guide
-- **External libraries**: mermaid.js 11.4.1 (jsDelivr CDN) for diagram rendering, highlight.js 11.11.1 (cdnjs CDN, SRI verified) for syntax highlighting. Both loaded client-side with version pinning
+- **External libraries**: mermaid.js 11.4.1 (jsDelivr CDN) for diagram rendering, highlight.js 11.11.1 (cdnjs CDN, SRI verified) for syntax highlighting. Both loaded client-side with version pinning. CDN URLs and SRI hashes are maintained in `assets/head.html`
 - **Image generation**: Optional MCP-based concept visuals (ToolSearch detection, silent skip if unavailable)
 - **Invoked by**: `commands/guide.md`

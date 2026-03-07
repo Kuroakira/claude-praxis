@@ -1,0 +1,44 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITLE}}</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css"
+        integrity="sha512-0MQwo6K1MmMGmoaZEjMzmKPRYma6JEEmq5TSmVKl1JRhcLjrMZqN1ieV1GF3bFfcKMJHe9UNGTJkAfRXfKdCSA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"
+          integrity="sha512-EBLzUL8XLl+va/zAsmXwS7Z2B1F9HUHkZwyS/VKwh3S7T/U0nF4BaU29EP/ZSf6zgiIxYAnKLu6bJ8dqpmX5uw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer>document.addEventListener('DOMContentLoaded', function() { hljs.highlightAll(); mermaid.initialize({ startOnLoad: true, theme: 'neutral' }); });</script>
+  <script defer>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.mermaid').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var overlay = document.createElement('div');
+        overlay.className = 'mermaid-overlay';
+        var container = document.createElement('div');
+        container.className = 'mermaid-overlay-content';
+        container.innerHTML = el.querySelector('svg')
+          ? el.querySelector('svg').outerHTML
+          : el.innerHTML;
+        var svg = container.querySelector('svg');
+        if (svg) { svg.style.maxWidth = '100%'; svg.style.height = 'auto'; }
+        var close = document.createElement('button');
+        close.className = 'mermaid-overlay-close';
+        close.textContent = '\u00d7';
+        close.onclick = function() { overlay.remove(); };
+        overlay.appendChild(container);
+        overlay.appendChild(close);
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) overlay.remove();
+        });
+        document.addEventListener('keydown', function handler(e) {
+          if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', handler); }
+        });
+        document.body.appendChild(overlay);
+      });
+    });
+  });
+  </script>
+</head>
