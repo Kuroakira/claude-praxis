@@ -25,7 +25,7 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 
 - **Focus**: Design principles, system boundaries, pattern fitness
 - **Verification Source**: Architecture research, OSS reference implementations
-- **Applicable Domains**: design, implement
+- **Applicable Domains**: design, implement, guide
 - **Prompt**: Review for architecture quality. Check: design decision validity, scalability, maintainability, pattern consistency with existing architecture, whether future extension is unnecessarily constrained. Compare against design principles and well-designed OSS in the same domain.
 
 ### `spec-compliance`
@@ -38,9 +38,9 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 ### `document-quality`
 
 - **Focus**: Structure, terminology, abstract-to-concrete flow
-- **Verification Source**: Project document quality rules (`rules/document-quality.md`, `rules/design-doc-format.md`)
-- **Applicable Domains**: feature-spec, design
-- **Prompt**: Review for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections, WHY-over-HOW balance, no h4+ headings, no ASCII diagrams (mermaid only), no local file links. Apply rules/design-doc-format.md and rules/document-quality.md. Would a newcomer understand all decisions without follow-up questions?
+- **Verification Source**: Project document quality rules (`rules/document-quality.md`; additionally `rules/design-doc-format.md` for design domain only)
+- **Applicable Domains**: feature-spec, design, guide
+- **Prompt**: Review for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections. Apply rules/document-quality.md for all domains. For design domain only, additionally apply rules/design-doc-format.md (WHY-over-HOW balance, no h4+ headings, no ASCII diagrams, no local file links). Would a newcomer understand the document without follow-up questions?
 
 ### `code-quality`
 
