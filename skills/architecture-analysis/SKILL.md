@@ -16,6 +16,14 @@ DRILL TO SOURCE — EVERY FINDING REFERENCES SPECIFIC FILE PATHS AND SYMBOLS
 
 No vague claims. Every observation in the report must include a file path (and symbol name where applicable) so the human can verify it by reading the code. The report is a hypothesis document — findings say "this appears to be" rather than "this is."
 
+## Semantic-First Approach
+
+Use Serena's semantic analysis tools as the primary source for structural data. Serena provides LSP-backed precision — symbol hierarchy from `get_symbols_overview`, cross-file reference chains from `find_referencing_symbols`. No guessing from grep patterns.
+
+Scout agents complement Serena with broader context that semantic tools don't capture: directory organization, import conventions, documentation patterns, and architectural intent.
+
+**Division of labor**: Serena (main agent) → structural facts. Scouts → contextual interpretation.
+
 ## Parameters
 
 | Parameter | Required | Description |
@@ -28,17 +36,34 @@ No vague claims. Every observation in the report must include a file path (and s
 
 ### Pass 1: Overview Scan
 
-Dispatch one overview agent (subagent_type: `claude-praxis:scout`) to scan the scope broadly. The agent scans directory structure, imports, public interfaces, and module boundaries — NOT function bodies. For each component: note responsibility, key dependencies, and public interface surface. Flag friction signals: high coupling, scattered responsibility, excessive complexity. Every finding must reference specific file paths.
+**Step 1a — Semantic Structure (Main Agent, Serena)**
 
-**Output**: A structured list of components, their dependencies, and flagged friction areas with severity ratings.
+Use Serena's `get_symbols_overview` on key files/directories within the scope to get the precise symbol hierarchy (classes, functions, methods, and their nesting). This provides the structural map.
+
+- Project-wide scope: scan each top-level module/directory
+- Module scope: scan all files in the module
+
+The output is a structured symbol map: what symbols exist, where, and how they nest.
+
+**Step 1b — Broad Context (Scout Agent)**
+
+Dispatch one scout agent (subagent_type: `claude-praxis:scout`) with the symbol map from Step 1a as context. The scout adds what Serena doesn't capture: directory organization, import patterns, documentation, config files, and architectural conventions. For each component: note responsibility, key dependencies, and public interface surface. Flag friction signals: high coupling, scattered responsibility, excessive complexity. Every finding must reference specific file paths.
+
+**Output**: A structured list of components (enriched by both Serena symbols and scout observations), their dependencies, and flagged friction areas with severity ratings.
 
 ### Pass 2: Targeted Deep Dives
 
-If Pass 1 identifies friction areas, dispatch deep-dive agents. One agent per friction area, up to a maximum of 3 (subagent_type: `claude-praxis:scout`). If more than 3 friction areas are flagged, prioritize by severity (highest coupling/complexity first).
-
-Each deep-dive agent reads function bodies, traces data flow, and maps coupling chains for its assigned friction area. Assess: coupling patterns, simplification/restructuring opportunities, and cross-file dependencies the overview may have missed. Every finding must reference specific file paths and symbol names.
+If Pass 1 identifies friction areas, analyze them in depth. One friction area at a time, up to a maximum of 3. Prioritize by severity (highest coupling/complexity first).
 
 If Pass 1 identifies no friction areas, skip Pass 2 entirely. State in the report that no friction areas were detected and proceed to synthesis.
+
+**Step 2a — Reference Chain Analysis (Main Agent, Serena)**
+
+For each friction area, use `find_referencing_symbols` on the relevant symbols to trace precise cross-file dependency chains. This gives exact coupling data: which files reference which symbols, how many callers, and the coupling direction.
+
+**Step 2b — Deep Dive (Scout Agent)**
+
+Dispatch one scout agent per friction area (subagent_type: `claude-praxis:scout`) with the reference chain data from Step 2a. Each agent reads function bodies, traces data flow, and assesses simplification/restructuring opportunities. Every finding must reference specific file paths and symbol names.
 
 ### Pass 3: Synthesis
 
@@ -99,5 +124,6 @@ Explicit "assessed / not assessed" scope. Each observation above includes a veri
 
 ## Integration
 
-- **Agent type**: Uses `claude-praxis:scout` for both overview and deep-dive agents (read-only, haiku)
+- **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for precise symbol hierarchy and cross-file dependency tracing — run by the main agent
+- **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only)
 - **Invoked by**: `commands/analyze.md`, `commands/design.md`, `commands/implement.md`
