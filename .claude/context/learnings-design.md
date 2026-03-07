@@ -56,14 +56,14 @@
 - **Learning**: ワークフローステップの遵守を改善する際、テンプレートの空欄埋め（compliance handshake）ではなく、上流ステップの出力データを下流ステップの必須入力にする因果的依存構造が有効。形式遵守はもっともらしいテキストで充足できるが、因果的依存はデータ生成を要求する
 - **Context**: implement.mdのScout dispatch問題で、テンプレート必須セクション方式は「チェックボックスコンプライアンス」のリスクがあり棄却。Scout findingsをPlanタスク定義の入力要件にすることで、Scoutを実行するか同等の調査を自力で行う必要がある構造にした
 - **Implication**: プロンプトでステップ遵守を求める場合、「セクションを埋めよ」（形式要件）ではなく「このデータを使って次を書け」（入力要件）として設計する
-- **Confirmed**: 3回 | 2026-03-01 | design, implement
+- **Confirmed**: 4回 | 2026-03-07 | design, implement
 
 ## 構造化出力フォーマットはAIの裁量を制約する（anti-sycophancy）
 
 - **Learning**: AI出力を自由記述ではなく固定カラムのテーブルや構造化テンプレートにすると、選択的省略（sycophantic elision）を構造的に防止できる。自由記述では都合の悪い項目を暗黙にスキップできるが、テーブルの空セルは目に見える
 - **Context**: Understanding Checkの比較テーブル（Decision / Your Explanation / AI's Rationale / Difference）は全エントリの表示を強制する。自由記述の「フィードバック」では、Alignedな項目を長く書きMissing/Divergentを省略するsycophancyリスクがあった
 - **Implication**: AIが人間に対してフィードバックや評価を返す場面では、構造化フォーマット（テーブル、固定セクション）を使い、全項目の明示を強制する
-- **Confirmed**: 2回 | 2026-03-01 | implement, design
+- **Confirmed**: 3回 | 2026-03-07 | implement, design
 
 ## Skill統合: role/typeパラメータ + ルックアップテーブル + フォールバック
 
@@ -99,6 +99,34 @@
 - **Context**: Strategy Exploration Protocolのフォールバック（P6）で、当初は「選定方向が失敗→次点を調査」だったが、レビューで「共有失敗原因チェックなしだと7-10xのコストが無駄になるリスク」が指摘された。cross-validation（step 2）を追加し、共有原因がある場合はフォールバック自体をスキップする構造にした
 - **Implication**: フォールバック設計では、代替案が元の失敗原因を共有していないか事前検証する。「次を試す」前に「次も同じ理由で失敗しないか」を確認する
 - **Confirmed**: 1回 | 2026-03-01 | implement
+
+## 下流ワークフローが消費する出力は永続ドキュメントにする（エフェメラル不可）
+
+- **Learning**: ワークフローの上流ステップの出力が下流ステップの入力として消費される場合、その出力はエフェメラル（セッション内で消える）ではなく永続ドキュメント（ファイルとして保存）にする。エフェメラル出力はセッション間で失われ、下流ワークフローが常に再生成を強いられる
+- **Context**: /analyzeをresearcherカタログエントリ（Alternative A）として設計する案があったが、researcher出力はエフェメラル。分析結果はAxes Table（/design, /implement）の入力として使われるため、永続ドキュメント（claudedocs/analysis/）に保存する設計を採用。/guideも同様に永続ドキュメント（claudedocs/guides/）
+- **Implication**: 新しいワークフローステップを設計する際、「この出力は他のステップで消費されるか」を確認する。消費される場合は永続化の仕組みを設計に含める
+- **Confirmed**: 1回 | 2026-03-06 | design
+
+## Layer boundary: Skillはcommand-layer関心事を所有しない
+
+- **Learning**: Skillが保存先パス、スコープ決定、エージェントプロンプトの詳細（command-layerの関心事）を持つと、commandとskillの境界が曖昧になる。Skillは「手続き（HOW）」のみを所有し、「何をどの順序で（WHAT/WHEN）」はcommandが所有する
+- **Context**: architecture-analysis SKILL.mdがScope Determination（command-layerの関心事）、保存先パス（commandが指定すべき）、詳細なエージェントプロンプト（タスク記述で十分）を持っていた。Simplicity reviewerが指摘し、すべて削除してcommand-layer（analyze.md, design.md, implement.md）に委譲。結果としてskillが簡潔になり、commandごとのカスタマイズが容易に
+- **Implication**: 新しいskillを作る際、「この情報はcommandが判断すべきか、skillが規定すべきか」を問う。保存先・スコープ・提示方法はcommand、手続き・構造・制約はskill
+- **Confirmed**: 1回 | 2026-03-06 | implement
+
+## 人間向けドキュメントはzoom-in/zoom-out構造で全体像を見失わせない
+
+- **Learning**: 詳細に入ると全体像を見失う — これが人間がドキュメントを読むのをやめる最大の理由。「全体像 → フォーカス → 全体像に戻る → 次のフォーカス」のhub-and-spoke構造で、読者は細部に入った後も常に「今どこにいるか」を確認できる
+- **Context**: /guideのDesign Docで、当初は線形なナラティブウォークスルーを設計していたが、ユーザーのフィードバック「細かいところを読んでいると全体像が見えにくくなる。細かいところを必ず全体像のどこか？に戻れるような構成にならないと結局読まなくなる」で方向転換。Big Picture（hub）+ Focus Areas（spokes）+ "Back to the Big Picture"セクションで構造化
+- **Implication**: 人間の理解を目的とするドキュメント（ガイド、チュートリアル、オンボーディング）を設計する際、「詳細セクションの後に全体像に戻る」遷移を構造的に組み込む。特に長いドキュメントでは必須
+- **Confirmed**: 1回 | 2026-03-07 | design
+
+## カタログプロンプトが複数ドメインで異なるルールを適用する場合、ドメイン条件分岐が必要
+
+- **Learning**: カタログエントリのPromptフィールドが複数のApplicable Domainsを持ち、かつドメインによって適用ルールが異なる場合、プロンプト内にドメイン条件分岐を含める必要がある。呼び出し側command内のコメントや注釈はdispatch-reviewersを経由してレビュアーに届かない
+- **Context**: document-qualityレビュアーがdesign, feature-spec, guideの3ドメインで使われるが、rules/design-doc-format.mdはdesignドメインのみに適用される。当初プロンプトが無条件に「Apply rules/design-doc-format.md」と記述していたため、guideレビューでHOW重視のガイドにWHY-over-HOWルールが適用される矛盾が発生。修正: 「For design domain only, additionally apply rules/design-doc-format.md」
+- **Implication**: カタログエントリにApplicable Domainsを追加する際、既存プロンプトが新ドメインにも適切かを確認する。プロンプトがドメイン固有ルールを含む場合、条件分岐を明示的に記述する
+- **Confirmed**: 1回 | 2026-03-07 | implement
 
 ## カタログエントリのプロンプトはプレースホルダー規約に従う
 

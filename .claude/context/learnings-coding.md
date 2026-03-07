@@ -29,3 +29,10 @@
 - **Context**: stop-verification-gateでUC advisory → compound advisoryの順に評価し、UC条件が真なら早期exitする設計にしたところ、ワークフロー実行時にcompound advisoryが永久に表示されなくなった。修正: `advisories: string[]`に両方を追加し`advisories.join("\n\n")`で結合出力
 - **Implication**: 1スクリプト内の複数non-blocking advisoryは、配列収集→結合出力パターンを使う。早期exitパターンはblocking判定にのみ適用する
 - **Confirmed**: 1回 | 2026-02-27 | implement
+
+## Advisory systemのtrade-offはコードコメントANDテスト期待値で文書化する
+
+- **Learning**: Advisory-only system（phase detection等）に既知のfalse positive/negativeトレードオフがある場合、コードコメントだけでなくテスト期待値にも明記する。テストが「この動作は意図的」と示さなければ、将来の貢献者が「バグ修正」として意図的な振る舞いを変更してしまう
+- **Context**: phase-detect.tsのcompound overrideで、「Create a design doc for implementation」がimplementに解決される（designではなく）トレードオフがあった。コードコメントのみだと見落とされるが、テストに`// Known ambiguity: resolves to implement because...`を記述することで、テスト変更時にトレードオフの存在に気づける
+- **Implication**: 意図的な不正確さを含むシステムでは、テストを「動作のドキュメント」として活用する。テスト期待値にWHYコメントを添えることで、将来の判断材料になる
+- **Confirmed**: 1回 | 2026-03-03 | implement

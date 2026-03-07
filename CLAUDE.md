@@ -29,7 +29,7 @@ claude-praxis/
 │   ├── design-doc-format.md     # WHY over HOW, Notion format, outline-first
 │   └── verification.md          # No claims without evidence, completion report
 ├── catalog/                     # Shared agent catalogs (referenced by planner)
-│   ├── reviewers.md             # 10 reviewer types with independent verification sources
+│   ├── reviewers.md             # 12 reviewer types with independent verification sources
 │   └── researchers.md           # 5 researcher types with agent types and verification sources
 ├── agents/
 │   ├── implementer.md           # Implementation agent
@@ -48,6 +48,7 @@ claude-praxis/
 │   ├── design.md                # /design — planner-driven research + outline + write Design Doc
 │   ├── implement.md             # /implement — planner-driven plan + TDD + graduated review
 │   ├── analyze.md               # /analyze — codebase architecture analysis + durable report
+│   ├── guide.md                 # /guide — codebase walkthrough guide for human understanding
 │   ├── debug.md                 # /debug — investigate + diagnose + document
 │   ├── research.md              # /research — standalone research
 │   ├── plan.md                  # /plan — standalone planning
@@ -60,6 +61,7 @@ claude-praxis/
 │   ├── dispatch-reviewers/      # Dispatch reviewers by catalog ID with graduated tiers
 │   ├── parallel-review-team/    # Backward-compatible wrapper → delegates to dispatch-reviewers
 │   ├── architecture-analysis/   # Multi-pass codebase analysis with durable reports
+│   ├── guide-generation/        # Multi-pass codebase exploration + single-narrator guide writing
 │   ├── check-past-learnings/    # Recall relevant learnings before starting work
 │   ├── tdd-cycle/               # RED-GREEN-REFACTOR procedure + decision points
 │   ├── rule-evolution/          # Propose and add new rules from discovered issues
@@ -151,6 +153,7 @@ Available for direct invocation when the full workflow is not needed:
 
 ```
 /claude-praxis:analyze   → Codebase architecture analysis (also invoked as workflow phase in /design and /implement)
+/claude-praxis:guide     → Codebase walkthrough guide (narrative document for human understanding)
 /claude-praxis:research  → Standalone research (when you just want to explore options)
 /claude-praxis:plan      → Standalone planning (when you already have a plan in mind)
 /claude-praxis:review    → Standalone code review (when you want feedback on existing code)
