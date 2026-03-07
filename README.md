@@ -33,10 +33,14 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 
 | Command | When to Use Directly |
 |---------|---------------------|
-| `/research` | You want to explore a problem space without committing to a Design Doc |
-| `/plan` | You want just an implementation plan, not the full implementation |
-| `/review` | You want a code review on existing code outside the implementation flow |
+| `/analyze` | Analyze codebase architecture — produces a Markdown+mermaid report with structural friction detection |
+| `/guide` | Generate a codebase walkthrough guide as a multi-page HTML book |
+| `/compare` | Structured comparison of 2-4 options with axes evaluation — when facing a decision with multiple viable approaches |
+| `/research` | Explore a problem space without committing to a Design Doc |
+| `/plan` | Create just an implementation plan, not the full implementation |
+| `/review` | Code review on existing code outside the implementation flow |
 | `/compound` | Extract and classify learnings from completed work |
+| `/understanding-check` | Verify you can explain key decisions in AI-generated work (recommended: separate session) |
 
 Commands are auto-suggested based on context. You can also invoke any command directly.
 
@@ -75,18 +79,20 @@ rm ~/.claude/skills/claude-praxis
 
 | Skill | Description |
 |-------|-------------|
+| `workflow-planner` | Analyze task content, select agents from shared catalogs, generate execution plan |
+| `dispatch-reviewers` | Dispatch reviewers by catalog ID with graduated tiers |
 | `subagent-driven-development` | Fresh agent per task + two-stage review (implementation) |
 | `agent-team-execution` | Parallel exploration (research, review teams, debugging) with independent verification sources |
-| `parallel-review-team` | 4 parallel reviewers with independent verification sources (code, document, spec review) |
+| `architecture-analysis` | Multi-pass codebase analysis with durable Markdown+mermaid reports |
+| `guide-generation` | Multi-pass codebase exploration + single-narrator guide as HTML book |
 | `systematic-debugging` | 4-phase root cause analysis (reproduce, isolate, diagnose, fix) |
 | `context-persistence` | Stock/Flow memory model for context survival across compact/clear |
 | `check-past-learnings` | Recall relevant learnings at the start of any workflow phase |
 | `rule-evolution` | TDD-based protocol for proposing and adding quality rules |
 | `tdd-cycle` | RED-GREEN-REFACTOR cycle enforcement |
-| `writing-skills` | Meta-skill: TDD for creating new skills |
+| `understanding-check` | Explain-Compare-Discover procedure for verifying understanding |
 | `requesting-code-review` | Dispatch reviewer after implementation |
 | `receiving-code-review` | Handle review feedback (no sycophancy) |
-| `git-worktrees` | Isolated feature development with worktrees |
 
 ### Always-On Rules (loaded via @import in CLAUDE.md)
 
@@ -105,10 +111,14 @@ rm ~/.claude/skills/claude-praxis
 | `/design` | **Main workflow**: Parallel research team + outline + write + parallel review team → Design Doc |
 | `/implement` | **Main workflow**: Scout + plan + TDD per task + parallel review team → verified code |
 | `/debug` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
+| `/analyze` | Standalone: codebase architecture analysis → Markdown+mermaid report |
+| `/guide` | Standalone: codebase walkthrough guide → multi-page HTML book |
+| `/compare` | Standalone: structured comparison of 2-4 options with axes evaluation |
 | `/research` | Standalone: explore a problem space without committing to a Design Doc |
 | `/plan` | Standalone: create an implementation plan without starting implementation |
 | `/review` | Standalone: code review on existing code |
 | `/compound` | Extract learnings and carry them to the next project |
+| `/understanding-check` | Standalone: verify understanding of AI-generated work |
 
 ## Quality Rules (Defaults)
 
