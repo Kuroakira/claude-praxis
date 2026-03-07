@@ -51,7 +51,7 @@ Dispatch one scout agent (subagent_type: `claude-praxis:scout`) with the symbol 
 
 ### Pass 2: Targeted Deep Dives
 
-Based on Pass 1 findings, select the most important data flow paths starting from identified entry points. One path at a time, up to a maximum of 3. Prioritize by: (1) paths from the primary entry point, (2) paths that touch the most components.
+Based on Pass 1 findings, select the most important data flow paths starting from identified entry points. One path at a time, up to a maximum of 5. Prioritize by: (1) paths from the primary entry point, (2) paths that touch the most components.
 
 **Step 2a — Reference Chain Analysis (Main Agent, Serena)**
 
@@ -61,7 +61,7 @@ For each deep-dive path, use `find_referencing_symbols` on the key symbols along
 
 Dispatch one scout agent per path (subagent_type: `claude-praxis:scout`) with the reference chain data from Step 2a. Each agent reads function bodies, traces the full data flow through the path, and notes: what each step does, why it exists, how it connects to the next step, and what design decisions are visible. Every finding must reference specific file paths and symbol names.
 
-For "project" scope: deep dives cover only the top-level component interactions, not internal module details. Individual modules are covered by separate `/guide [module]` invocations.
+For "project" scope: deep dives cover top-level component interactions and important internal implementation patterns that reveal design intent. Show how key components work internally (e.g., the main processing logic, critical algorithms, state management) — not just their public interfaces. Individual modules can still be explored in more depth via separate `/guide [module]` invocations.
 
 If the scope is small enough that Pass 1 already covers the full data flow, skip Pass 2. State this in the guide's Coverage Boundary.
 
@@ -85,27 +85,34 @@ Key writing responsibilities:
 
 ### Content Density Requirements
 
-Guides must feel information-rich. Prose alone is thin — density comes from integrated code examples, structured comparisons, and visual callouts interspersed with narrative.
+Guides must feel information-rich. Prose alone is thin — density comes from real codebase examples, structured comparisons, visual callouts, and design rationale interspersed with narrative.
 
-**One concept, one code example**: After each concept explanation (2-3 sentences), include a code example (3-10 lines) showing the actual interface, type, or pattern being discussed. Mark the "point" of each example with a comment.
+**Show real code from the codebase**: Every code example must come from the actual codebase being documented — not hypothetical illustrations. Include the file path as a comment or preceding text so readers can open the file alongside the guide. Show the code, then explain what it does and why.
 
-**Type signatures and interfaces**: Display public interfaces in dedicated code blocks. These are the most information-dense elements — readers can infer behavior from types.
+**One concept, one code example**: After each concept explanation (2-3 sentences), include a code example (3-15 lines) showing the actual implementation, interface, or pattern. Mark the "point" of each example with a comment. Larger examples (up to 25 lines) are acceptable when showing a complete data flow path or critical algorithm.
 
-**Comparison tables**: Use `<table>` for component responsibilities, pattern tradeoffs, or "before vs after" comparisons. Tables compress information more than bullet lists.
+**Type signatures and interfaces**: Display public interfaces and key types in dedicated code blocks. Include not just the signatures but brief inline annotations explaining non-obvious fields or parameters. Types are the most information-dense elements — readers can infer behavior from them.
+
+**Comparison tables**: Use `<table>` for component responsibilities, pattern tradeoffs, "what vs why vs where" breakdowns, or cross-component relationship maps. Tables compress information more than bullet lists. Use them liberally.
 
 **Callout boxes**: Use `<div class="callout callout-note/warning/tip">` for:
 - Gotchas discovered during deep dives (warning)
 - Design decisions that surprised you or are non-obvious (note)
 - Practical tips for working with the code (tip)
+- "Why not X?" explanations for rejected alternatives (note)
 
 **Before/After pairs**: For design decisions, show the naive approach, then the actual approach, then explain why the actual is better.
 
 **Progressive complexity**: Start with the simplest happy path through each component. Then layer in error handling, edge cases, and optimizations.
 
-**Minimum density targets**:
-- Each chapter page should have at least 2 code examples and 1 table or callout
-- The Big Picture (index.html) should have at least 1 mermaid diagram and 1 comparison table
-- No section of 3+ paragraphs without a code example, table, diagram, or callout breaking up the prose
+**Cross-references with context**: When one component depends on another, show the specific integration point — the function call, the import, the shared type. Don't just say "A uses B"; show how.
+
+**Minimum density targets** (MUST — not aspirational):
+- Each chapter page must have at least 4 code examples, 2 tables, and 2 callouts
+- The Big Picture (index.html) must have at least 1 mermaid diagram, 1 comparison table, and 1 code example showing a representative interaction
+- No section of 2+ paragraphs without a code example, table, diagram, or callout breaking up the prose
+- Every chapter must include at least 1 "Design Decision" callout explaining why something is built the way it is
+- Every chapter must include at least 1 relationship table showing how the focus area connects to other components
 
 ## HTML Page Structure
 
@@ -243,7 +250,32 @@ claudedocs/guides/[scope-name]/
     <!-- Step-by-step narrative following the data flow through this area. Each step:
          - What it does (plain language, analogies where helpful)
          - Where it lives (file path + symbol name as <code>)
-         - Why it's designed this way (if visible from the code) -->
+         - Why it's designed this way (if visible from the code)
+         - Show actual code for key logic, not just describe it
+         - Include callout boxes for non-obvious design decisions or gotchas -->
+
+    <h2>Key Code</h2>
+    <!-- The most important code in this area, shown with full context.
+         For each snippet:
+         - File path and symbol name
+         - The actual code (5-25 lines, from the real codebase)
+         - Annotation: what makes this code important, what design decisions it embodies
+         Include type signatures, key interfaces, or critical algorithms.
+         Aim for 2-3 annotated code blocks in this section. -->
+
+    <h2>Design Decisions</h2>
+    <!-- Why is this area designed the way it is?
+         For each decision:
+         - What the decision is
+         - Why it was made (evidence from the code)
+         - What the alternative would be and why it wasn't chosen (if visible)
+         Use callout-note boxes for each decision. Aim for 2-3 decisions per chapter. -->
+
+    <h2>Connections</h2>
+    <!-- How this area relates to other parts of the system.
+         Use a table showing: Component | Relationship | Integration Point (file:symbol)
+         Or a mermaid diagram showing the dependency/data flow connections.
+         This is more detailed than "Back to the Big Picture" — show specific integration points. -->
 
     <h2>Back to the Big Picture</h2>
     <p>Now that we've seen how [X] works, we know that [insight]. Next, we'll look at [Y], which receives [X]'s output and...</p>
