@@ -76,7 +76,6 @@ body {
 }
 
 .content > .mermaid,
-.content > pre,
 .content > .wide {
   grid-column: 1 / -1;
   max-width: 72rem;
@@ -271,7 +270,6 @@ p code, li code, td code {
   }
   .content > * { grid-column: auto; }
   .content > .mermaid,
-  .content > pre,
   .content > .wide {
     grid-column: auto;
     padding-left: 0;
