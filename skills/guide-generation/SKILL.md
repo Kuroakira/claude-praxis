@@ -83,6 +83,30 @@ Key writing responsibilities:
 
 **Short guide rule**: If the scope has 2 or fewer Focus Areas, write a single `index.html` containing all content (no chapter split). The sidebar TOC links to sections within the same page via anchor links. The style.css is still generated separately.
 
+### Content Density Requirements
+
+Guides must feel information-rich. Prose alone is thin — density comes from integrated code examples, structured comparisons, and visual callouts interspersed with narrative.
+
+**One concept, one code example**: After each concept explanation (2-3 sentences), include a code example (3-10 lines) showing the actual interface, type, or pattern being discussed. Mark the "point" of each example with a comment.
+
+**Type signatures and interfaces**: Display public interfaces in dedicated code blocks. These are the most information-dense elements — readers can infer behavior from types.
+
+**Comparison tables**: Use `<table>` for component responsibilities, pattern tradeoffs, or "before vs after" comparisons. Tables compress information more than bullet lists.
+
+**Callout boxes**: Use `<div class="callout callout-note/warning/tip">` for:
+- Gotchas discovered during deep dives (warning)
+- Design decisions that surprised you or are non-obvious (note)
+- Practical tips for working with the code (tip)
+
+**Before/After pairs**: For design decisions, show the naive approach, then the actual approach, then explain why the actual is better.
+
+**Progressive complexity**: Start with the simplest happy path through each component. Then layer in error handling, edge cases, and optimizations.
+
+**Minimum density targets**:
+- Each chapter page should have at least 2 code examples and 1 table or callout
+- The Big Picture (index.html) should have at least 1 mermaid diagram and 1 comparison table
+- No section of 3+ paragraphs without a code example, table, diagram, or callout breaking up the prose
+
 ## HTML Page Structure
 
 The guide follows a zoom-in/zoom-out navigation pattern expressed as a multi-page HTML book. The `index.html` (Big Picture) is the hub that readers navigate to and from between each focused chapter.
@@ -118,6 +142,36 @@ claudedocs/guides/[scope-name]/
           integrity="sha512-EBLzUL8XLl+va/zAsmXwS7Z2B1F9HUHkZwyS/VKwh3S7T/U0nF4BaU29EP/ZSf6zgiIxYAnKLu6bJ8dqpmX5uw=="
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script defer>document.addEventListener('DOMContentLoaded', function() { hljs.highlightAll(); mermaid.initialize({ startOnLoad: true, theme: 'neutral' }); });</script>
+  <script defer>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.mermaid').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var overlay = document.createElement('div');
+        overlay.className = 'mermaid-overlay';
+        var container = document.createElement('div');
+        container.className = 'mermaid-overlay-content';
+        container.innerHTML = el.querySelector('svg')
+          ? el.querySelector('svg').outerHTML
+          : el.innerHTML;
+        var svg = container.querySelector('svg');
+        if (svg) { svg.style.maxWidth = '100%'; svg.style.height = 'auto'; }
+        var close = document.createElement('button');
+        close.className = 'mermaid-overlay-close';
+        close.textContent = '\u00d7';
+        close.onclick = function() { overlay.remove(); };
+        overlay.appendChild(container);
+        overlay.appendChild(close);
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) overlay.remove();
+        });
+        document.addEventListener('keydown', function handler(e) {
+          if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', handler); }
+        });
+        document.body.appendChild(overlay);
+      });
+    });
+  });
+  </script>
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -227,7 +281,7 @@ Write the following CSS **verbatim** to `style.css`. Do not modify, abbreviate, 
   --color-border: #dee2e6;
   --color-code-bg: #f6f8fa;
   --color-nav-bg: #f0f2f5;
-  --content-max-width: 48rem;
+  --content-max-width: 54rem;
   --sidebar-width: 16rem;
 }
 
@@ -238,7 +292,6 @@ body {
   color: var(--color-text);
   background: var(--color-bg);
   line-height: 1.7;
-  display: flex;
   min-height: 100vh;
 }
 
@@ -284,8 +337,24 @@ body {
 .content {
   margin-left: var(--sidebar-width);
   padding: 3rem 2rem;
-  max-width: calc(var(--content-max-width) + 4rem);
+  display: grid;
+  grid-template-columns: 1fr min(var(--content-max-width), calc(100% - 4rem)) 1fr;
+}
+
+.content > * {
+  grid-column: 2;
+}
+
+.content > .mermaid,
+.content > pre,
+.content > .wide {
+  grid-column: 1 / -1;
+  max-width: 72rem;
   width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 h1 {
@@ -318,6 +387,27 @@ a:hover { color: var(--color-link-hover); }
 ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
 li { margin-bottom: 0.375rem; }
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+th, td {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+th {
+  background: var(--color-sidebar-bg);
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+tr:nth-child(even) { background: #fafbfc; }
+
 pre {
   background: var(--color-code-bg);
   border: 1px solid var(--color-border);
@@ -331,7 +421,7 @@ pre {
 
 code { font-family: var(--font-code); font-size: 0.875em; }
 
-p code, li code {
+p code, li code, td code {
   background: var(--color-code-bg);
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
@@ -341,7 +431,63 @@ p code, li code {
 .mermaid {
   text-align: center;
   margin: 1.5rem 0;
+  cursor: zoom-in;
 }
+
+.callout {
+  border-left: 4px solid;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.callout > :last-child { margin-bottom: 0; }
+
+.callout-note { border-color: #0969da; background: #ddf4ff; }
+.callout-warning { border-color: #d29922; background: #fff8c5; }
+.callout-tip { border-color: #1a7f37; background: #dafbe1; }
+
+.mermaid-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.mermaid-overlay-content {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.mermaid-overlay-content svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.mermaid-overlay-close {
+  position: fixed;
+  top: 1rem;
+  right: 1.5rem;
+  background: #333;
+  color: #fff;
+  border: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.25rem;
+  z-index: 10001;
+}
+
+.mermaid-overlay-close:hover { background: #555; }
 
 .page-nav {
   display: flex;
@@ -388,7 +534,19 @@ p code, li code {
 
 @media (max-width: 768px) {
   .sidebar { display: none; }
-  .content { margin-left: 0; padding: 1.5rem 1rem; }
+  .content {
+    margin-left: 0;
+    padding: 1.5rem 1rem;
+    grid-template-columns: 1fr;
+  }
+  .content > * { grid-column: auto; }
+  .content > .mermaid,
+  .content > pre,
+  .content > .wide {
+    grid-column: auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 .skip-link {

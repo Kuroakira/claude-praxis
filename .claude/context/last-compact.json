@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-03-03T06:36:49Z",
+  "timestamp": "2026-03-07T08:15:50Z",
   "compoundRun": false,
   "progressSummary": {
     "entryCount": 2,
     "recentHeadings": [
-      "2026-03-03 — /claude-praxis:design: Research complete — Competing Outlines Activation Fix",
-      "2026-03-03 — /claude-praxis:design: Design Doc written — Competing Outlines Activation Fix"
+      "2026-03-07 — /claude-praxis:design: Research complete (Guide HTML Book)",
+      "2026-03-07 — /claude-praxis:design: Design Doc written (Guide HTML Book)"
     ]
   },
   "confidenceSummary": {
-    "totalEntries": 20,
-    "avgConfirmed": 1.3,
+    "totalEntries": 25,
+    "avgConfirmed": 1.32,
     "unverifiedCount": 0
   }
 }
