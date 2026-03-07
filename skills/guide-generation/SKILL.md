@@ -16,6 +16,14 @@ DRILL TO SOURCE — EVERY EXPLANATION REFERENCES SPECIFIC FILE PATHS AND SYMBOLS
 
 No vague claims. Every code explanation must include a file path and symbol name so the reader can open the code and verify the explanation. The guide is a hypothesis document — explanations say "this appears to handle" rather than "this handles."
 
+## Semantic-First Approach
+
+Use Serena's semantic analysis tools as the primary source for structural data. Serena provides LSP-backed precision — symbol hierarchy from `get_symbols_overview`, cross-file reference chains from `find_referencing_symbols`. No guessing from grep patterns.
+
+Scout agents complement Serena with broader context that semantic tools don't capture: entry point identification, component responsibilities, data flow narrative, directory organization, and architectural intent.
+
+**Division of labor**: Serena (main agent) → structural facts (symbols, references). Scouts → contextual interpretation (what it means, how it flows, why it's designed this way).
+
 ## Parameters
 
 | Parameter | Required | Description |
@@ -26,15 +34,32 @@ No vague claims. Every code explanation must include a file path and symbol name
 
 ### Pass 1: Overview Scan
 
-Dispatch one overview agent (subagent_type: `claude-praxis:scout`) to scan the scope broadly. The agent identifies: entry points (CLI commands, API endpoints, UI routes), major components and their responsibilities, key data flows from entry points through the system, and public interface surfaces. Every finding must reference specific file paths.
+**Step 1a — Semantic Structure (Main Agent, Serena)**
 
-**Output**: A structured map of entry points, components, data flows, and their relationships.
+Use Serena's `get_symbols_overview` on key files/directories within the scope to get the precise symbol hierarchy (classes, functions, methods, and their nesting). This provides the structural map that scouts build upon.
+
+- Project-wide scope: scan each top-level module/directory
+- Module scope: scan all files in the module
+
+The output is a structured symbol map: what symbols exist, where, and how they nest.
+
+**Step 1b — Broad Context (Scout Agent)**
+
+Dispatch one scout agent (subagent_type: `claude-praxis:scout`) with the symbol map from Step 1a as context. The scout adds what Serena doesn't capture: entry point identification (CLI commands, API endpoints, UI routes), component responsibilities, key data flows from entry points through the system, directory organization, import patterns, and public interface surfaces. Every finding must reference specific file paths.
+
+**Output**: A structured map of entry points, components, data flows, and their relationships — enriched by both Serena symbols and scout observations.
 
 ### Pass 2: Targeted Deep Dives
 
-Based on Pass 1 findings, dispatch deep-dive agents for the most important data flow paths starting from identified entry points. One agent per path, up to a maximum of 3 (subagent_type: `claude-praxis:scout`). Prioritize by: (1) paths from the primary entry point, (2) paths that touch the most components.
+Based on Pass 1 findings, select the most important data flow paths starting from identified entry points. One path at a time, up to a maximum of 3. Prioritize by: (1) paths from the primary entry point, (2) paths that touch the most components.
 
-Each deep-dive agent traces the full data flow through the path, reading function bodies and noting: what each step does, why it exists, how it connects to the next step, and what design decisions are visible. Every finding must reference specific file paths and symbol names.
+**Step 2a — Reference Chain Analysis (Main Agent, Serena)**
+
+For each deep-dive path, use `find_referencing_symbols` on the key symbols along the path to trace precise cross-file reference chains. This gives exact data flow data: which files reference which symbols, how data moves between components, and the coupling direction.
+
+**Step 2b — Deep Dive (Scout Agent)**
+
+Dispatch one scout agent per path (subagent_type: `claude-praxis:scout`) with the reference chain data from Step 2a. Each agent reads function bodies, traces the full data flow through the path, and notes: what each step does, why it exists, how it connects to the next step, and what design decisions are visible. Every finding must reference specific file paths and symbol names.
 
 For "project" scope: deep dives cover only the top-level component interactions, not internal module details. Individual modules are covered by separate `/guide [module]` invocations.
 
@@ -107,5 +132,6 @@ What this guide covers and what it does not. List:
 
 ## Integration
 
-- **Agent type**: Uses `claude-praxis:scout` for overview and deep-dive agents (read-only, haiku). Main agent writes the guide
+- **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for precise symbol hierarchy and cross-file reference tracing — run by the main agent
+- **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only). Main agent writes the guide
 - **Invoked by**: `commands/guide.md`
