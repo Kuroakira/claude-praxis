@@ -25,7 +25,7 @@ Planning creates an implementation-specific plan distinct from the Design Doc's 
 ### Step 1: Gather Context
 
 1. **Read the Design Doc**: Understand the full scope and design decisions. If no Design Doc exists (direct implementation request), read the codebase to understand scope and create the plan from the user's intent
-2. **Analyze architecture**: Invoke `architecture-analysis` to understand current codebase structure before planning. Pass `scope` derived from the Design Doc's affected areas and `anticipated_changes` from the Design Doc's proposal. The analysis produces a durable report at `claudedocs/analysis/[scope-name].md` that informs the Implementation Axes Table — particularly whether to extend current structure or restructure first. Pass the analysis report path to the scout (Step 3) so it can focus on task-specific patterns rather than re-scanning architecture
+2. **Analyze architecture**: Invoke `architecture-analysis` with `scope` derived from the Design Doc's affected areas and `anticipated_changes` from the Design Doc's proposal. The skill handles registry lookup internally — if a recent analysis of the same scope exists in Serena memory, it returns the existing report without re-running the full analysis. The analysis produces a durable report at `claudedocs/analysis/[scope-name].md` that informs the Implementation Axes Table — particularly whether to extend current structure or restructure first. Pass the analysis report path to the scout (Step 3) so it can focus on task-specific patterns rather than re-scanning architecture
 3. **Scout the codebase**: Invoke `workflow-planner` for codebase exploration:
 
    Invoke `workflow-planner` with:
