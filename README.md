@@ -24,10 +24,10 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 
 | Workflow | What Happens | What You Do |
 |----------|-------------|-------------|
-| `/feature-spec` | AI-driven interview to capture requirements, then a parallel review team (4 independent perspectives) checks the draft before you see it | Answer interview questions, approve the FeatureSpec |
-| `/design` | Parallel research team (4 agents) investigates the space, writes the Design Doc, then a parallel review team checks it before you see it | Review and approve the final Design Doc |
-| `/implement` | Scout explores codebase, plans from Design Doc, TDD per task, then a parallel review team (Spec Compliance, Code Quality, Security+Perf, Devil's Advocate) runs final review | Approve the plan, make decisions at implementation choice points |
-| `/debug` | Reproduces, isolates, diagnoses the problem, documents findings as an Investigation Report | Provide context between phases, review the diagnosis |
+| `/feature-spec` | AI-driven interview to capture requirements, planner selects reviewers based on spec complexity (light → thorough) | Answer interview questions, approve the FeatureSpec |
+| `/design` | Planner-driven research + architecture analysis, writes the Design Doc, graduated review (light for outline, thorough for final) | Review and approve the final Design Doc |
+| `/implement` | Architecture analysis + planner-driven plan, TDD per task with per-task review selection, graduated final review (3+ reviewers) | Approve the plan, make decisions at implementation choice points |
+| `/debug` | Reproduces, isolates, diagnoses — for complex problems, planner dispatches parallel investigation agents | Provide context between phases, review the diagnosis |
 
 ### Supporting Commands
 
@@ -139,7 +139,7 @@ rm ~/.claude/skills/claude-praxis
 ## Contributing
 
 1. Fork
-2. Add/improve skills (follow `writing-skills` for TDD approach)
+2. Add/improve skills
 3. PR
 
 ## License
