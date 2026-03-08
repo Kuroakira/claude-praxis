@@ -20,6 +20,32 @@ Within each section: lead with context, follow with specifics, close with implic
 ✅ Context (why needed) → Specifics (JWT, RS256, 15min) → Implication (independent verification)
 ```
 
+## Diagram Complexity (Mermaid)
+
+One diagram, one abstraction level. A diagram that exceeds **15 nodes** is a signal that the section is mixing abstraction levels — trying to show both the forest and the trees in one picture.
+
+```
+❌ One diagram with 30 nodes covering the entire system at every level of detail
+✅ Overview diagram (5-8 nodes: high-level components) → each component has its own section with a focused diagram
+```
+
+**Why this matters**: Complex diagrams increase cognitive load more than they aid understanding. A reader cannot hold 20+ relationships in working memory. Splitting by abstraction level also improves document structure — if you need a complex diagram, the section itself is probably trying to cover too much.
+
+**When a diagram exceeds 15 nodes**:
+
+1. **Raise abstraction** — Group related nodes into a single high-level node. The grouped details become a separate diagram in a deeper section
+2. **Split into focused diagrams** — Each diagram explains one thing at one level. Connect them through the document's section hierarchy (overview section → detail section)
+3. **Mirror document structure** — The diagram hierarchy should match the document's abstract-to-concrete flow. Overview diagram in the overview section, component diagram in the component section
+
+```
+❌ Section "System Architecture" with a 40-node mermaid covering everything
+✅ Section "System Architecture" with 6-node overview diagram
+   → Section "Auth Module" with 8-node diagram of auth internals
+   → Section "Data Pipeline" with 7-node diagram of pipeline stages
+```
+
+**Subgraph is not a substitute for splitting**: Mermaid's `subgraph` groups nodes visually but does not reduce cognitive load — the reader still sees all nodes at once. Use subgraphs for logical grouping within a manageable diagram (under 15 nodes), not as a way to cram more nodes into one diagram.
+
 ## Terminology Consistency
 
 Define terms at first use. One term per concept. Never introduce synonyms without explicit bridging.
@@ -57,6 +83,11 @@ Terminology:
 - [ ] Every term defined at or before first use
 - [ ] Same term for same concept (no silent synonyms)
 - [ ] Scope changes explicitly bridged
+
+Diagrams:
+- [ ] Every mermaid diagram ≤15 nodes
+- [ ] One abstraction level per diagram
+- [ ] Diagram hierarchy mirrors document structure (overview → detail sections)
 
 Readability:
 - [ ] Sections self-contained (minimal backtracking)
