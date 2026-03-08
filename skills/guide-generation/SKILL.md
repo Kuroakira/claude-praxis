@@ -257,7 +257,7 @@ claudedocs/guides/[scope-name]/
 CSS and HTML `<head>` templates are maintained as static files in `assets/` to ensure deterministic output. Do not duplicate their content in this file.
 
 - `assets/style.css` — Complete guide stylesheet (grid layout, sidebar, mermaid overlay, callouts, responsive breakpoints, skip-link). Copy to output folder with bash `cp`
-- `assets/head.html` — HTML `<head>` block with CDN links (mermaid 11.4.1, Panzoom 4.5.1, highlight.js 11.11.1 with SRI), initialization scripts, and mermaid Panzoom zoom/pan controls with fullscreen modal. Contains `{{TITLE}}` placeholder — replace with the page title when embedding
+- `assets/head.html` — HTML `<head>` block with CDN links (mermaid 11.4.1, highlight.js 11.11.1 with SRI), initialization scripts, and mermaid click-to-zoom JavaScript. Contains `{{TITLE}}` placeholder — replace with the page title when embedding
 
 **Path discovery**: Use Glob `**/guide-generation/assets/style.css` to locate the assets directory. This works regardless of whether the skill runs from the project root or from a plugin installation path
 
@@ -280,6 +280,6 @@ At the start of Pass 3, use ToolSearch to check if any image generation MCP tool
 - **Static assets**: `assets/style.css` (bash `cp` to output) and `assets/head.html` (Read + `{{TITLE}}` substitution) ensure deterministic CSS and `<head>` output — no LLM generation of these critical templates
 - **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for precise symbol hierarchy and cross-file reference tracing — run by the main agent
 - **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only). Main agent writes the guide
-- **External libraries**: mermaid.js 11.4.1 (jsDelivr CDN) for diagram rendering, Panzoom 4.5.1 (jsDelivr CDN) for diagram zoom/pan controls, highlight.js 11.11.1 (cdnjs CDN, SRI verified) for syntax highlighting. All loaded client-side with version pinning. CDN URLs and SRI hashes are maintained in `assets/head.html`
+- **External libraries**: mermaid.js 11.4.1 (jsDelivr CDN) for diagram rendering, highlight.js 11.11.1 (cdnjs CDN, SRI verified) for syntax highlighting. Both loaded client-side with version pinning. CDN URLs and SRI hashes are maintained in `assets/head.html`
 - **Image generation**: Optional MCP-based concept visuals (ToolSearch detection, silent skip if unavailable)
 - **Invoked by**: `commands/guide.md`
