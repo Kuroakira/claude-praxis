@@ -36,7 +36,7 @@ Planning creates an implementation-specific plan distinct from the Design Doc's 
    | `domain` | implement |
    | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra → add error-resilience. Change that extends or modifies existing architecture → add structural-fitness to assess whether incremental modification or broader refactoring is appropriate. The mandatory Implementation Axes Table in Step 1 structurally prevents conflating Design Doc clarity with implementation approach clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
    | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. (5) Context gathering must produce an Implementation Axes Table — every implementation decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (6) If Implementation Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before plan creation. |
-   | `catalog_scope` | Reviewers: spec-compliance, code-quality, simplicity, security-perf, structural-fitness, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices, axis-evaluator. |
+   | `catalog_scope` | Reviewers: spec-compliance, code-quality, simplicity, security-perf, structural-fitness, axes-coherence, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices, axis-evaluator. |
 
    The planner will dispatch `codebase-scout` (and optionally `best-practices` for unfamiliar patterns) to explore the codebase.
 
@@ -89,7 +89,17 @@ By this point, all axes are resolved — either "Clear winner" from initial anal
 8. **Always include Final Review as the last task in the plan**: The plan must end with "Final Review (dispatch-reviewers, thorough)" as an explicit task. This ensures Phase 3 is visible in the plan and not skipped — especially when implementing phase-by-phase or when context is compacted during long implementations
 9. For axes that went through per-axis evaluation: reference the resolved decision and rationale in the relevant task descriptions
 
-**PAUSE**: Present the plan to the human for approval before proceeding. Include the planner's agent selection rationale (which reviewers selected for each task and why). If per-axis evaluation was executed, include the resolved axes and evaluation summary.
+### Step 3: Plan Review
+
+Save the plan to `claudedocs/plans/[name]-plan.md` and the resolved Axes Table to `claudedocs/plans/[name]-axes-table.md`. Invoke `dispatch-reviewers` with:
+
+- **Reviewers**: `axes-coherence`
+- **Tier**: light
+- **Target**: both file paths (plan + axes table)
+
+If the review flags axes whose concretization contradicts the resolved verdict, revise the plan (return to Step 2) and update the Axes Table if needed. Delete the axes table file after Phase 2 begins.
+
+**PAUSE**: Present the reviewed plan to the human for approval before proceeding. Include the planner's agent selection rationale (which reviewers selected for each task and why). If per-axis evaluation was executed, include the resolved axes and evaluation summary. If axes-coherence flagged issues, include what was revised and why.
 
 ## Phase 2: Task Execution (repeat per task)
 

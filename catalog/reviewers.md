@@ -98,6 +98,13 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 - **Applicable Domains**: design, implement
 - **Prompt**: Assess structural fitness. Is the proposed approach incrementally extending existing structure when broader refactoring would be more effective? Check: Does the change fight the existing architecture (working around limitations instead of fixing them)? Will it increase coupling or create structural friction for future changes? Are we patching around a design that no longer fits the requirements? Would restructuring first make this change — and future changes — simpler? Detect sunk-cost thinking: "we have this code, so we should build on it" when the code's structure doesn't fit the new need. If refactoring is warranted, describe the scope and expected benefit.
 
+### `axes-coherence`
+
+- **Focus**: Whether resolved Axes Table decisions hold up when concretized into an outline or plan
+- **Verification Source**: The resolved Axes Table file (verdicts + rationale) cross-referenced against the concretized outline/plan
+- **Applicable Domains**: design, implement
+- **Prompt**: Read the resolved Axes Table and the outline/plan together. For each resolved axis, check: (1) Does the concretized structure contradict the axis verdict? (e.g., the outline naturally gravitates toward the rejected alternative) (2) Does concretization reveal a missing axis — a decision that wasn't identified during abstract planning but becomes visible when writing specifics? (3) Are there axes whose rationale no longer holds in concrete context? (4) Does the outline/plan fight the resolved decisions — requiring workarounds, conditionals, or awkward structure to accommodate them? Flag any axis where the concrete expression suggests the abstract verdict should be reconsidered. For each flagged axis, state: what was resolved, what the outline/plan reveals, and what re-evaluation would look like.
+
 ### `simplicity`
 
 - **Focus**: Unnecessary complexity, over-abstraction, cognitive load reduction
@@ -118,3 +125,11 @@ AI-generated code tends to work perfectly on happy paths but break in production
 `simplicity` checks cognitive economy: Is this more complex than it needs to be? Could a simpler approach achieve the same result?
 
 AI-generated code tends to be correct but over-engineered — adding unnecessary abstraction layers, premature generalization (generic where concrete suffices), configuration objects for single-use cases, and wrapper functions that add indirection without value. `simplicity` detects these patterns. Their verification sources differ (rules compliance vs complexity metrics/cognitive load), making them independently valuable.
+
+## Distinction: `axes-coherence` vs `devils-advocate` vs `structural-fitness`
+
+`axes-coherence` checks decision validity: "Do the resolved Axes Table decisions still make sense when concretized?"
+`devils-advocate` challenges direction broadly: "Is this work fundamentally wrong? What assumptions are broken?"
+`structural-fitness` checks architecture fit: "Should we extend or restructure?"
+
+`axes-coherence` is uniquely positioned because it reads TWO artifacts — the Axes Table and the outline/plan — and cross-references them. Devils-advocate reads only the target and challenges from general principles. Structural-fitness evaluates architecture without reference to prior axis decisions. Their verification sources differ (resolved Axes Table vs failure patterns vs coupling/cohesion metrics).

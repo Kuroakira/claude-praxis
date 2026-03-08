@@ -27,7 +27,7 @@ Invoke `workflow-planner` with the following domain context:
 | `domain` | design |
 | `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. The mandatory Design Axes Table in Synthesis Rules structurally prevents conflating "What" clarity with "How" clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
 | `constraints` | (1) Research must produce a synthesis with findings and contradictions. (2) Synthesis must include a Design Axes Table — every design decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (3) If Design Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before outline creation. (4) Outline must be reviewed before full writing. (5) Final Design Doc must receive thorough review with 3+ reviewers including devils-advocate. (6) Design Doc format rules (rules/design-doc-format.md) must be followed. |
-| `catalog_scope` | Reviewers: architecture, document-quality, simplicity, feasibility, user-impact, security-perf, structural-fitness, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, axis-evaluator). |
+| `catalog_scope` | Reviewers: architecture, document-quality, simplicity, feasibility, user-impact, security-perf, structural-fitness, axes-coherence, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, axis-evaluator). |
 
 The planner will:
 1. Analyze the topic and select relevant researchers from the catalog
@@ -106,18 +106,20 @@ Create a single outline from the resolved axes:
 4. Ensure Alternatives Considered is included with at least the approaches from Phase 1
 5. For axes that went through per-axis evaluation: the resolved decision and rationale should inform the Proposal section's argument structure
 
+Save the resolved Axes Table to `claudedocs/design-docs/[name]-axes-table.md` for use by the outline review in Phase 4. This file is deleted after Phase 5.
+
 Do NOT present the outline to the human yet. Proceed to Phase 4.
 
 ## Phase 4: Outline Review
 
 The planner determines the review tier for the outline based on task analysis. Typical pattern:
 
-- **Light review** (default): `document-quality` + `devils-advocate` — catch structural issues and directional errors before full writing
-- **Thorough review** (for high-risk designs): adds `architecture` and/or `feasibility`
+- **Light review** (default): `document-quality` + `axes-coherence` — catch structural issues and axes that don't survive concretization
+- **Thorough review** (for high-risk designs): adds `architecture` and/or `feasibility` + `devils-advocate`
 
-Save the outline to `claudedocs/design-docs/[name]-outline.md` before dispatching, so reviewers can read it independently. Invoke `dispatch-reviewers` with the planner's selected reviewers, tier, and the **outline file path** as target.
+Save the outline to `claudedocs/design-docs/[name]-outline.md` before dispatching, so reviewers can read it independently. Invoke `dispatch-reviewers` with the planner's selected reviewers, tier, and the **outline file path** as target. For `axes-coherence`, additionally include the Axes Table file path (`claudedocs/design-docs/[name]-axes-table.md`) in the target list.
 
-If any check fails, revise the outline before proceeding. Do NOT ask the human — fix it internally. Delete the outline file after the full Design Doc is written in Phase 5 (it is superseded).
+If any check fails, revise the outline before proceeding. If `axes-coherence` flags an axis whose concretization contradicts the resolved verdict, re-evaluate the axis and update both the Axes Table file and the outline before proceeding. Do NOT ask the human — fix it internally. Delete the outline file and axes table file after the full Design Doc is written in Phase 5 (they are superseded).
 
 ## Phase 5: Write Full Design Doc
 
