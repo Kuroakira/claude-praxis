@@ -109,9 +109,15 @@ Guides must feel information-rich. Prose alone is thin — density comes from re
 
 **Cross-references with context**: When one component depends on another, show the specific integration point — the function call, the import, the shared type. Don't just say "A uses B"; show how.
 
+**Mermaid diagram structure** (mirrors document hierarchy):
+- **Big Picture (index.html)**: One overview diagram showing high-level components (5-8 nodes max). Each node represents a Focus Area or major component — no internal details
+- **Chapter pages**: Focused diagrams showing internals of that chapter's focus area (up to 15 nodes). These drill into the abstract nodes from the overview
+- **Never**: A single diagram trying to show the entire system at full detail. If a chapter's diagram exceeds 15 nodes, split the chapter or raise the abstraction level of the diagram
+- The diagram hierarchy matches the guide's zoom-in/zoom-out navigation: overview diagram → chapter diagram → code examples
+
 **Minimum density targets** (MUST — not aspirational):
 - Each chapter page must have at least 4 code examples, 2 tables, and 2 callouts
-- The Big Picture (index.html) must have at least 1 mermaid diagram, 1 comparison table, and 1 code example showing a representative interaction
+- The Big Picture (index.html) must have at least 1 mermaid diagram (high-level overview, ≤8 nodes), 1 comparison table, and 1 code example showing a representative interaction
 - No section of 2+ paragraphs without a code example, table, diagram, or callout breaking up the prose
 - Every chapter must include at least 1 "Design Decision" callout explaining why something is built the way it is
 - Every chapter must include at least 1 relationship table showing how the focus area connects to other components

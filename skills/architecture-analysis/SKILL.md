@@ -71,7 +71,7 @@ Combine overview and deep-dive findings into a single Markdown report following 
 
 Key synthesis responsibilities:
 - Reconcile findings from multiple deep-dive agents (do they agree? contradict?)
-- Produce mermaid diagrams from the raw component/dependency data
+- Produce mermaid diagrams from the raw component/dependency data, applying the Diagram Complexity rule (see `rules/document-quality.md`): each diagram ≤15 nodes, one abstraction level per diagram. If the system has more components, the Architecture Overview diagram shows high-level groups (≤8 nodes) and each group's internals appear as focused diagrams in the Structural Observations section
 - Write the mandatory Structural Observations section, including the refactoring assessment
 - Write the Confidence Boundary section — explicitly state what was NOT assessed
 
