@@ -34,6 +34,12 @@ Scout agents complement Serena with broader context that semantic tools don't ca
 
 ## Procedure
 
+### Pre-check: Registry Lookup
+
+Before running the full analysis, check Serena memory for a recent analysis of the same scope. Use `list_memories` and look for entries with key prefix `analysis-registry:`. For each matching entry, `read_memory` to get the value (`[timestamp]|[report-path]`). If an entry exists where the entry's normalized scope contains the current scope, the timestamp is within 24 hours, and the report file exists — read and return the existing report. Skip Pass 1-3.
+
+If no matching entry is found, if Serena memory is unavailable, or if the report file does not exist, proceed with the full analysis (Pass 1-3 + 3b).
+
 ### Pass 1: Overview Scan
 
 **Step 1a — Semantic Structure (Main Agent, Serena)**
@@ -74,6 +80,18 @@ Key synthesis responsibilities:
 - Produce mermaid diagrams from the raw component/dependency data, applying the Diagram Complexity rule (see `rules/document-quality.md`): each diagram ≤15 nodes, one abstraction level per diagram. If the system has more components, the Architecture Overview diagram shows high-level groups (≤8 nodes) and each group's internals appear as focused diagrams in the Structural Observations section
 - Write the mandatory Structural Observations section, including the refactoring assessment
 - Write the Confidence Boundary section — explicitly state what was NOT assessed
+
+### Pass 3b: Register Analysis
+
+After synthesis, register the completed analysis in Serena memory so downstream commands can discover it without re-running the full analysis.
+
+**Step 1 — Determine normalized scope**: Collect the list of directories and files actually analyzed in Pass 1-3 (not the original scope string from the command). Sort alphabetically and join with commas. Example: `commands/,skills/architecture-analysis/,skills/guide-generation/`
+
+**Step 2 — Write registry entry**: Use `write_memory` with:
+- **Key**: `analysis-registry:[normalized-scope]` (e.g., `analysis-registry:commands/,skills/architecture-analysis/`)
+- **Value**: `[ISO-8601-timestamp]|[report-file-path]` (e.g., `2026-03-08T14:30:00Z|claudedocs/analysis/analysis-reuse-pipeline.md`)
+
+If `write_memory` fails, proceed silently — registry is an optimization, not a requirement.
 
 ## Report Structure
 
@@ -125,5 +143,6 @@ Explicit "assessed / not assessed" scope. Each observation above includes a veri
 ## Integration
 
 - **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for precise symbol hierarchy and cross-file dependency tracing — run by the main agent
+- **Analysis registry**: Serena MCP (`list_memories`, `read_memory`, `write_memory`) for registry lookup (Pre-check) and registration (Pass 3b)
 - **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only)
 - **Invoked by**: `commands/analyze.md`, `commands/design.md`, `commands/implement.md`
