@@ -44,21 +44,19 @@ Narrow down to the smallest scope that still fails.
 
 ### Phase 3: Diagnose
 
-Form hypotheses and test them with evidence.
+Form hypotheses and test them with parallel adversarial investigation.
 
 ```
-1. List plausible hypotheses (minimum 2)
-2. For each hypothesis, define:
-   - What evidence would PROVE it
-   - What evidence would DISPROVE it
-3. Gather evidence (read code, add logging, inspect state)
-4. Eliminate hypotheses that contradict evidence
-5. The surviving hypothesis is your diagnosis
+1. List plausible hypotheses (minimum 2), each with prove/disprove criteria
+2. Dispatch one hypothesis-investigator per hypothesis (parallel Task tool calls)
+   - Each investigator gathers evidence FOR their hypothesis and AGAINST alternatives
+   - Uses reproduction info from Phase 1 and isolation findings from Phase 2
+3. Synthesize findings: score each hypothesis as supported/weakened/refuted
+4. The hypothesis with strongest evidence and least contradiction is the diagnosis
+5. If all hypotheses are refuted, reframe the problem and return to step 1
 ```
 
-**For complex bugs with 3+ plausible hypotheses**: Use `agent-team-execution` (Competing Hypothesis Debugging) to test hypotheses in parallel.
-
-**Exit criteria**: One hypothesis survives with supporting evidence.
+**Exit criteria**: One hypothesis survives with supporting evidence and documented elimination of alternatives.
 
 ## Red Flags
 
@@ -79,6 +77,6 @@ Form hypotheses and test them with evidence.
 
 ## Integration
 
-- **agent-team-execution**: Phase 3 escalation for competing hypothesis debugging
+- **Parallel hypothesis investigation**: Phase 3 dispatches `hypothesis-investigator` agents (see `catalog/researchers.md`) via Task tool — one per hypothesis, always parallel
 - **`/claude-praxis:debug` command**: Orchestrates this skill's 3 phases and produces an Investigation Report
 - **`/claude-praxis:implement` command**: After diagnosis, the fix is implemented via `/claude-praxis:implement` with TDD + review

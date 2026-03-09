@@ -38,29 +38,105 @@ Narrow down to the smallest scope that still fails.
 
 ## Phase 3: Diagnose
 
-Form hypotheses and test them with evidence.
+Form hypotheses, then test ALL of them in parallel with adversarial investigators.
+
+### Step 1: Hypothesis Formation
 
 1. **List plausible hypotheses** (minimum 2 — there are always at least two possible causes)
 2. For each hypothesis, define:
    - What evidence would PROVE it
    - What evidence would DISPROVE it
-3. **Gather evidence**: Read code, add logging, inspect state, check dependencies
-4. **Eliminate hypotheses** that contradict evidence
-5. The surviving hypothesis is the diagnosis
+3. Assign each hypothesis an identifier (H1, H2, H3...)
 
-For complex problems with 3+ plausible hypotheses, invoke `workflow-planner` to determine the investigation approach:
+### Step 2: Parallel Investigation Dispatch
 
-| Parameter | Value |
-|-----------|-------|
-| `task` | Investigate [problem description] — [N] competing hypotheses |
-| `domain` | debug |
-| `domain_context` | Reproduction strategy, hypothesis formation, evidence gathering. 3+ competing hypotheses → parallel investigation agents. Single clear hypothesis → sequential verification. Performance issue → add security-perf perspective. Intermittent failure → add error-resilience perspective. |
-| `constraints` | (1) Investigation report must receive thorough review before presenting to human. (2) Each hypothesis must have explicit prove/disprove criteria. |
-| `catalog_scope` | Reviewers: code-quality, security-perf, error-resilience, devils-advocate. Researchers: codebase-scout, oss-research, best-practices. |
+Dispatch one `hypothesis-investigator` (see `catalog/researchers.md`) per hypothesis using the Task tool. All investigators launch in **parallel** (single message with multiple Task tool calls).
 
-The planner will dispatch parallel investigation agents if warranted, or recommend sequential verification for simpler cases. For hypothesis review, save the investigation report to file first, then invoke `dispatch-reviewers` with the planner's selection and the **report file path** as target (typically `devils-advocate` at minimum to prevent confirmation bias).
+Each investigator receives:
 
-**PAUSE**: Present the diagnosis with supporting evidence. The human may have additional context that changes the diagnosis.
+| Field | Content |
+|-------|---------|
+| **Assigned hypothesis** | The hypothesis statement + its prove/disprove criteria |
+| **Alternative hypotheses** | The other hypotheses (for adversarial disproval) |
+| **Reproduction info** | Exact reproduction steps, commands, expected vs actual output from Phase 1 |
+| **Isolation findings** | Affected component, minimal reproduction case, recent changes from Phase 2 |
+
+**Investigator prompt template**:
+
+```
+You are Investigator [N] in a parallel bug investigation.
+
+## Your Hypothesis
+[H{N}]: [hypothesis statement]
+- Evidence that would PROVE this: [prove criteria]
+- Evidence that would DISPROVE this: [disprove criteria]
+
+## Alternative Hypotheses (gather evidence AGAINST these)
+[For each other hypothesis: identifier + statement]
+
+## Bug Reproduction (from Phase 1)
+[Exact reproduction steps, commands, expected vs actual output]
+
+## Isolation Findings (from Phase 2)
+[Affected component/module, minimal reproduction case, recent changes (git log/diff)]
+
+## Your Task
+1. Investigate your hypothesis. Read relevant code, inspect state, check logs, examine git history.
+2. Gather evidence that SUPPORTS your hypothesis — cite specific files, lines, commits.
+3. Gather evidence that DISPROVES your hypothesis — be honest if the evidence is weak.
+4. Gather evidence AGAINST each alternative hypothesis.
+5. Rate your confidence: strong (clear evidence), moderate (suggestive but not conclusive), weak (plausible but unsupported).
+
+## Report Format
+### Evidence FOR [H{N}]
+- [evidence with file:line or commit citation]
+
+### Evidence AGAINST [H{N}]
+- [evidence with citation, or "None found"]
+
+### Evidence AGAINST alternatives
+- [H{other}]: [evidence with citation, or "No contradicting evidence found"]
+
+### Confidence: [strong/moderate/weak]
+[Justification for confidence level]
+```
+
+**Dispatch rules**:
+- Investigator count = hypothesis count (one agent per hypothesis, no sharing)
+- All investigators launch in a single message (parallel Task tool calls)
+- No investigator sees another investigator's findings until synthesis
+- Agent type: `claude-praxis:researcher` (haiku, lightweight)
+
+### Step 3: Synthesis
+
+After all investigators return:
+
+1. **Collect evidence**: For each hypothesis, aggregate the evidence FOR (from its investigator) and evidence AGAINST (from other investigators)
+2. **Score hypotheses**:
+   - **Supported**: Strong evidence FOR, no contradicting evidence AGAINST
+   - **Weakened**: Some evidence FOR, but also evidence AGAINST
+   - **Refuted**: Clear evidence AGAINST, or investigator's own confidence is weak
+3. **Select diagnosis**: The hypothesis with the strongest support and least contradiction is the diagnosis. If multiple survive with similar strength, state the ambiguity explicitly
+4. **Document elimination**: For each refuted hypothesis, state what evidence eliminated it
+5. **Handle no-survivor case**: If all hypotheses are refuted, the problem needs reframing. Return to Step 1 with new information from the investigation
+
+**Synthesis output format**:
+
+```markdown
+## Hypothesis Investigation Results
+
+| Hypothesis | Evidence FOR | Evidence AGAINST | Verdict |
+|------------|-------------|-----------------|---------|
+| H1: [statement] | [summary] | [summary] | Supported / Weakened / Refuted |
+| H2: [statement] | [summary] | [summary] | Supported / Weakened / Refuted |
+
+## Diagnosis
+[The surviving hypothesis with strongest evidence]
+[Why the alternatives were eliminated]
+[Remaining uncertainties, if any]
+```
+
+**PAUSE**: Present the diagnosis with the full hypothesis investigation results to the human. The human may have additional context that changes the diagnosis.
 
 **Record to progress.md**: Append an entry with the root cause and why it was hard to find. Include hypothesis adoption/rejection decisions with evidence — these entries serve as comparison material for `/understanding-check`.
 
@@ -68,6 +144,7 @@ The planner will dispatch parallel investigation agents if warranted, or recomme
 ## [timestamp] — /claude-praxis:debug: Diagnosis complete
 - Decision: [root cause identified]
 - Rationale: [why this was hard to find, what made it non-obvious]
+- Hypotheses tested: [H1: verdict, H2: verdict, ...]
 - Domain: [topic tag for future matching]
 ```
 
