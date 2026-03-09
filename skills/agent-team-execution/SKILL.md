@@ -144,6 +144,8 @@ Report: surviving hypothesis with evidence, disproven hypotheses with reasons.
 
 Understand the surviving hypothesis. You should be able to explain: what caused the bug, why the other hypotheses were wrong, and what to watch for in the future. This understanding feeds into `/compound` as a learning.
 
+> **Note**: `/claude-praxis:debug` Phase 3 now dispatches `hypothesis-investigator` agents directly via Task tool, without requiring agent teams or `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`. This section documents the agent-team pattern for standalone use or manual invocation.
+
 ## 4. Parallel Review Teams
 
 > **Note**: The operational reviewer prompts and configurations live in `catalog/reviewers.md`. For dispatch, invoke `dispatch-reviewers` with catalog IDs and a review tier, or use `parallel-review-team` (backward-compatible wrapper with legacy type names). The `workflow-planner` skill handles agent selection when invoked by commands. This section explains the principles (why teams beat checklists, selection principle, Devil's Advocate rationale).
@@ -230,5 +232,6 @@ Start with 3 teammates. Only go to 5 for debugging with many plausible hypothese
 - Review teams are used at every workflow review point: `/feature-spec` Draft Review, `/design` Auto-Review, `/implement` Final Review
 - Review output follows `requesting-code-review` format (severity ratings)
 - Debugging output feeds into fix implementation via `subagent-driven-development`
+- **Note**: `/claude-praxis:debug` no longer depends on this skill for hypothesis investigation. It dispatches `hypothesis-investigator` agents directly via Task tool
 - All outputs feed into `/compound` — extract learnings from what agents discovered
 - **Never use for implementation** — use `subagent-driven-development` instead
