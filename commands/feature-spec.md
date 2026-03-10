@@ -102,7 +102,7 @@ The planner selects reviewers based on the draft's content:
 - **Light review** (for clear, well-scoped drafts): `requirements` + `devils-advocate`
 - **Thorough review** (for complex or ambiguous specs): `requirements` + `feasibility` + `document-quality` + `devils-advocate`
 
-Invoke `dispatch-reviewers` with the planner's selection, using the **FeatureSpec file path** as target (e.g., `feature-specs/auth-login.md`). Save the draft to file before dispatching so reviewers can read it independently.
+Invoke `dispatch-reviewers` with the planner's selection, using the **FeatureSpec file path** as target (e.g., `claudedocs/feature-specs/auth-login.md`). Save the draft to file before dispatching so reviewers can read it independently.
 
 ## Phase 5: Present and Iterate
 
@@ -110,7 +110,7 @@ Present the reviewed draft to the human and iterate until approved.
 
 1. **Present the full draft** to the user (with a brief note of any review findings worth flagging)
 2. **Iterate**: If the user provides feedback, revise and present again. This loop continues until the user approves
-3. **Save the approved FeatureSpec**: Write the final document to `feature-specs/[name].md` (kebab-case name derived from the feature title). Create the `feature-specs/` directory if it doesn't exist
+3. **Save the approved FeatureSpec**: Write the final document to `claudedocs/feature-specs/[name].md` (kebab-case name derived from the feature title). Create the `claudedocs/feature-specs/` directory if it doesn't exist
 
 **Record to progress.md**: Append an entry with the key decisions captured in the spec. Include scope decisions from Phase 2 (In/Out Scope choices and their reasoning) — these entries serve as comparison material for `/understanding-check`.
 
