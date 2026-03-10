@@ -131,7 +131,7 @@ Most tasks use these orchestrating commands:
 ```
 /claude-praxis:feature-spec → AI-driven interview + planner-driven review → FeatureSpec
 /claude-praxis:design       → Planner-driven research + Architecture analysis + Outline + Write + Graduated review → Design Doc
-/claude-praxis:implement    → Architecture analysis + Planner-driven plan + TDD per task + Graduated review → Verified code
+/claude-praxis:implement    → Phase Group Subagent orchestration (G0-G3) + TDD per task + Graduated review → Verified code
 /claude-praxis:debug        → Reproduce + Isolate + Planner-driven diagnosis + Document → Present
 ```
 
@@ -143,7 +143,7 @@ Review tiers are **graduated** — not all stages get the same treatment. Interm
 
 `/claude-praxis:design` invokes the planner for research, architecture analysis, and review. Research gathers external context, analysis captures current codebase state, and both inform the Design Axes Table. The planner reviews the outline (light), then runs thorough final review. The human's only input is final approval.
 
-`/claude-praxis:implement` invokes architecture analysis and the planner for codebase exploration, plan creation, per-task review selection, and final review. Analysis captures current structure before planning; each task gets a review plan based on its content (internal refactor → code-quality only; security-sensitive → code-quality + security-perf). The human approves the plan and makes decisions at implementation decision points.
+`/claude-praxis:implement` uses Phase Group Subagent orchestration to isolate planning and final review into clean context windows. Planning runs as a subagent pipeline; task execution stays in-context to preserve TDD human interaction; final review runs as a subagent with clean context. If a plan already exists and the user has pre-loaded it, planning is skipped. Each task gets a review plan based on its content (internal refactor → code-quality only; security-sensitive → code-quality + security-perf). The human approves the plan and makes decisions at implementation decision points.
 
 `/claude-praxis:debug` investigates problems systematically. For complex problems with multiple competing hypotheses, the planner dispatches parallel investigation agents. Produces an Investigation Report. The fix is done via `/claude-praxis:implement`.
 
