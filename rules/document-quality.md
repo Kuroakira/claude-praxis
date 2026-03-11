@@ -72,6 +72,23 @@ Each section understandable with minimal backtracking. Cross-references include 
 ✅ "Errors propagate through the middleware chain (the layered pipeline described in Architecture)."
 ```
 
+## Conciseness
+
+One idea per sentence. If removing a word doesn't change the meaning, remove it.
+
+```
+❌ "基本的に、このシステムは主にユーザー認証を行うためのものとなっています"
+✅ "このシステムはユーザー認証を行う"
+
+❌ "It should be noted that the service is responsible for handling authentication"
+✅ "The service handles authentication"
+```
+
+Verbosity signals (delete or rewrite on sight):
+- Modifiers removable without meaning change ("基本的に", "主に", "～となっています", "it should be noted that", "in order to")
+- Paraphrased repetition of the same point
+- Unnecessary insertions between subject and verb
+
 ## Document Checklist
 
 ```
@@ -89,6 +106,10 @@ Diagrams:
 - [ ] One abstraction level per diagram
 - [ ] Diagram hierarchy mirrors document structure (overview → detail sections)
 
+Conciseness:
+- [ ] No filler words or redundant modifiers
+- [ ] One idea per sentence
+
 Readability:
 - [ ] Sections self-contained (minimal backtracking)
 - [ ] Cross-references include inline context
@@ -102,6 +123,8 @@ Readability:
 | "It's obvious" | State it explicitly. |
 | "I'll clarify later in the doc" | Define before use. |
 | "Different words make it interesting" | Consistency beats variety. |
+| "It sounds more polished/professional" | Concise is professional. |
+| "More words make it clearer" | If removing words keeps meaning, they add noise. |
 
 **Following the letter of the rule IS following the spirit.**
 
