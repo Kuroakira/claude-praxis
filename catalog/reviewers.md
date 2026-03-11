@@ -37,10 +37,10 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 
 ### `document-quality`
 
-- **Focus**: Structure, terminology, abstract-to-concrete flow, conciseness
+- **Focus**: Structure, terminology, abstract-to-concrete flow, conciseness, plain language
 - **Verification Source**: Project document quality rules (`rules/document-quality.md`; additionally `rules/design-doc-format.md` for design domain only)
 - **Applicable Domains**: feature-spec, design, guide
-- **Prompt**: Review for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections, conciseness (no filler words, no redundant modifiers, one idea per sentence). Apply rules/document-quality.md for all domains. For design domain only, additionally apply rules/design-doc-format.md (WHY-over-HOW balance, no h4+ headings, no ASCII diagrams, no local file links). Would a newcomer understand the document without follow-up questions?
+- **Prompt**: Review for document quality. Check: abstract-to-concrete structure, terminology consistency, progressive detailing, self-contained sections, conciseness (no filler words, no redundant modifiers, one idea per sentence), plain language (no abstract jargon when a concrete expression conveys the same meaning). Apply rules/document-quality.md for all domains. For design domain only, additionally apply rules/design-doc-format.md (WHY-over-HOW balance, no h4+ headings, no ASCII diagrams, no local file links). Would a newcomer understand the document without follow-up questions?
 
 ### `code-quality`
 

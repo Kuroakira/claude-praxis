@@ -89,6 +89,20 @@ Verbosity signals (delete or rewrite on sight):
 - Paraphrased repetition of the same point
 - Unnecessary insertions between subject and verb
 
+## Plain Language
+
+Prefer concrete, direct expressions over abstract jargon. If a reader must decode a term to understand the sentence, rewrite it.
+
+```
+❌ "メンバーシップのセマンティクスを検証する"
+✅ "どのエレメントがセクションに属するかを検証する"
+
+❌ "The module encapsulates the lifecycle semantics of the entity"
+✅ "The module controls when the entity is created, updated, and deleted"
+```
+
+When a technical term is unavoidable, define it inline on first use. But if a plain expression conveys the same meaning, use the plain expression.
+
 ## Document Checklist
 
 ```
@@ -110,6 +124,10 @@ Conciseness:
 - [ ] No filler words or redundant modifiers
 - [ ] One idea per sentence
 
+Plain Language:
+- [ ] No abstract jargon when a concrete expression conveys the same meaning
+- [ ] Technical terms defined inline on first use if unavoidable
+
 Readability:
 - [ ] Sections self-contained (minimal backtracking)
 - [ ] Cross-references include inline context
@@ -125,6 +143,7 @@ Readability:
 | "Different words make it interesting" | Consistency beats variety. |
 | "It sounds more polished/professional" | Concise is professional. |
 | "More words make it clearer" | If removing words keeps meaning, they add noise. |
+| "It's the correct technical term" | If a plain expression conveys the same meaning, use it. |
 
 **Following the letter of the rule IS following the spirit.**
 
