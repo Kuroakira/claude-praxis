@@ -13,7 +13,8 @@ export function hasSkill(markerDir, sessionId, skillName) {
     if (!fs.existsSync(markerPath))
         return false;
     const content = fs.readFileSync(markerPath, "utf-8");
-    return content.includes(skillName);
+    const skills = content.split("\n").map((s) => s.trim()).filter(Boolean);
+    return skills.some((line) => line === skillName || line.endsWith(":" + skillName));
 }
 export function markerExists(markerPath) {
     return fs.existsSync(markerPath);

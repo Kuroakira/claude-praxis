@@ -1,0 +1,256 @@
+---
+name: implement-plan
+description: >-
+  Create a thorough implementation plan — Axes Table, per-axis evaluation,
+  architecture analysis, codebase scouting, and plan review.
+  Use when: a Design Doc exists (or scope is clear) and you want to plan
+  before implementing. Produces the same plan as /implement's G1 phase.
+  NOT the same as /plan — /plan is lightweight and skips Axes Table and
+  per-axis evaluation.
+  After approval, run /implement with the plan path to execute.
+disable-model-invocation: false
+---
+
+Orchestrate the **Implementation Planning Workflow** using Phase Group Subagents.
+
+This command extracts the planning phase from `/implement` into a standalone workflow. It produces a thorough implementation plan — with Axes Table, per-axis evaluation, architecture analysis, and plan review — then terminates after presenting the plan to the user. No code is written.
+
+The plan file produced here is directly consumable by `/implement`'s Plan Detection, which skips G1 and proceeds straight to implementation.
+
+## Phase Group Architecture
+
+The workflow splits into 2 groups (G0 and G1) and 1 in-context presentation step. G0 runs in the orchestrator's context. G1 runs as a Task subagent with an isolated context window.
+
+```mermaid
+graph TD
+    O[Orchestrator] -->|in-context| G0[G0: Init + Learnings]
+    G0 -->|learnings context| O
+    O -->|dispatch + learnings| G1[G1: Full Phase 1<br/>Planning Pipeline]
+    G1 -->|plan file, axes-table,<br/>analysis report,<br/>reasoning-log-g1| O
+    O -->|in-context| PRESENT[Present Plan +<br/>Cleanup]
+```
+
+**Orchestrator principles**:
+- Pass **file paths**, not file contents, between groups
+- Do NOT read full file contents — structural validation only (file existence + section headers). Exception: Plan Presentation reads the plan file to present to the human
+- Write progress.md entries after each group completes (subagents do not write progress.md)
+- All intermediate files (`reasoning-log-g1.md`) are written to `claudedocs/plans/wip/`. This directory is created at G0 and cleaned up at Plan Presentation. Permanent artifacts (plan file, axes-table, analysis report) go to their standard locations
+
+## G0: Check Past Learnings + Workspace Init (in-context)
+
+Runs in the orchestrator's context. Two responsibilities: initialize the workspace and check past learnings.
+
+**Workspace initialization**: Create the working directory `claudedocs/plans/wip/`. If it already exists (from a previous run), delete its contents to ensure a clean workspace.
+
+**Learnings check**: Invoke `check-past-learnings` (role: implementation). Carry relevant learnings forward into G1's dispatch prompt as constraints or starting points.
+
+## G1: Full Phase 1 Planning Pipeline (subagent)
+
+The most context-intensive group. Executes the entire planning pipeline — architecture analysis, codebase scouting, axes enumeration, plan creation, and plan review — within a single isolated subagent. This includes architecture-analysis internally because planning forms a tightly coupled pipeline: analysis->scout->axes->plan.
+
+### Dispatch
+
+Dispatch a `general-purpose` Task subagent with the following task prompt. The prompt must be **self-contained** — the subagent starts with a clean context and has no access to the orchestrator's conversation history.
+
+**Input** (embedded in task prompt):
+- Topic: The implementation topic from the user's request
+- Design Doc path: Path to the Design Doc (if exists)
+- Learnings context: Output from G0 (relevant past learnings, carried as text)
+- Rules constraints: Reference to `rules/code-quality.md` for code quality rules
+
+**Task prompt template**:
+
+> You are executing Phase Group G1 of the `/implement-plan` workflow: **Full Phase 1 Planning Pipeline**.
+>
+> **Topic**: [topic]
+>
+> **Design Doc**: [Design Doc path, or "No Design Doc — implement from user's intent"]
+>
+> **Past learnings context**: [learnings from G0, or "No relevant learnings found"]
+>
+> Execute the following steps:
+>
+> **Step 1: Read the Design Doc**
+>
+> If a Design Doc path is provided, read it to understand the full scope and design decisions. If no Design Doc exists, understand scope from the topic description and create the plan from the user's intent.
+>
+> **Step 2: Analyze Architecture**
+>
+> Invoke `architecture-analysis` with:
+> - `scope`: Derived from the Design Doc's affected areas (or from the topic if no Design Doc)
+> - `anticipated_changes`: From the Design Doc's proposal (or from the topic description)
+>
+> The skill handles registry lookup internally — if a recent analysis of the same scope exists in Serena memory, it returns the existing report without re-running the full analysis. The analysis produces a durable report at `claudedocs/analysis/[scope-name].md`.
+>
+> **Step 3: Scout the Codebase**
+>
+> Invoke `workflow-planner` for codebase exploration:
+>
+> | Parameter | Value |
+> |-----------|-------|
+> | `task` | Plan implementation of [topic] |
+> | `domain` | implement |
+> | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change -> add security-perf to per-task review. Internal refactor -> code-quality only. External dependency/infra -> add error-resilience. Change that extends or modifies existing architecture -> add structural-fitness. The mandatory Implementation Axes Table structurally prevents conflating Design Doc clarity with implementation approach clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
+> | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. (5) Context gathering must produce an Implementation Axes Table — every implementation decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (6) If Implementation Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before plan creation. |
+> | `catalog_scope` | Reviewers: spec-compliance, code-quality, simplicity, general-review, security-perf, structural-fitness, axes-coherence, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices, axis-evaluator. |
+>
+> The planner will dispatch `codebase-scout` (and optionally `best-practices` for unfamiliar patterns) to explore the codebase.
+>
+> **Skip criteria**: Scout may be skipped ONLY when: (a) the change targets a single file explicitly specified with no cross-module integration points, or (b) a Scout was dispatched in the immediately preceding task covering the same codebase area. When skipping, state the specific reason in the plan header. Generic reasons ("scope is clear", "straightforward change") are not sufficient — name the file and explain why no unknown patterns exist.
+>
+> **Step 4: Enumerate Implementation Axes (MANDATORY)**
+>
+> After context gathering, produce an Implementation Axes Table covering every implementation decision where multiple valid approaches exist. This step CANNOT be skipped.
+>
+> | Axis | Choices | Verdict | Rationale |
+> |------|---------|---------|-----------|
+> | [implementation decision] | A: [option] / B: [option] | Clear winner (A) / Requires exploration | [why A is clearly better, OR why both are viable] |
+>
+> Rules:
+> - Every implementation decision from the context gathering must appear as an axis
+> - "Requires exploration" = both choices have genuine trade-offs that affect the implementation approach
+> - "Clear winner" = one choice is objectively better with stated rationale
+> - A verdict of "0 axes require exploration" needs explicit justification
+> - Common axes: test strategy, implementation ordering, refactoring scope, dependency management, error handling approach
+>
+> If any axes require exploration, the planner will execute Independent Axis Evaluation (per-axis parallel agents) to resolve them.
+>
+> **Step 5: Create Plan**
+>
+> By this point, all axes are resolved. Create a single plan:
+>
+> 1. Break into steps sized for ~500-line PRs — each produces a reviewable, self-contained change
+> 2. For each step specify: exact file paths, existing patterns (cite Scout findings), tests to write FIRST (TDD), expected line count, verification steps, dependencies, per-task review plan
+> 3. Per-task review plan selection (all tasks get **thorough** tier):
+>    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
+>    - API change / auth -> add `security-perf`
+>    - External dependency / infra -> add `error-resilience`
+>    - `simplicity`, `general-review`, and `devils-advocate` are included in ALL per-task reviews
+> 4. TDD ordering: list test files before implementation files within each step
+> 5. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
+> 6. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
+>
+> **Step 6: Plan Review**
+>
+> Save the plan to `claudedocs/plans/[name]-plan.md` and the resolved Axes Table to `claudedocs/plans/[name]-axes-table.md`.
+>
+> Invoke `dispatch-reviewers` with:
+> - **Reviewers**: `axes-coherence` + `simplicity` + `devils-advocate` + `spec-compliance` (if Design Doc exists) + `structural-fitness` (if the plan involves extending or restructuring existing architecture)
+> - **Tier**: thorough
+> - **Target**: both file paths (plan + axes table)
+>
+> If the review flags critical or important issues — axes contradictions, over-engineered decomposition, missing Design Doc coverage, questionable fundamental direction, or structural fitness concerns — revise the plan and update the Axes Table before proceeding.
+>
+> **Write output files**:
+>
+> 1. Plan file at `claudedocs/plans/[name]-plan.md` — the reviewed and revised plan
+> 2. Axes Table file at `claudedocs/plans/[name]-axes-table.md` — the resolved axes
+> 3. Analysis report at `claudedocs/analysis/[scope-name].md` (saved by `architecture-analysis` skill)
+> 4. `reasoning-log-g1.md` at `claudedocs/plans/wip/` — Must contain:
+>    - `## Key Decisions` — What was decided during planning
+>    - `## Alternatives Considered` — Approaches rejected and why
+>    - `## Rationale` — The reasoning chain for the chosen plan structure
+>
+> Do NOT write to progress.md — the orchestrator handles that.
+
+### Orchestrator post-G1
+
+After G1 completes:
+1. **Validate** output per the Validation Protocol (check plan file, axes-table file, analysis report, and reasoning-log-g1.md)
+2. **Record to progress.md**:
+
+```markdown
+## [timestamp] — /claude-praxis:implement-plan: G1 complete — Planning Pipeline
+- Decision: [key plan structure decisions, from subagent return summary]
+- Rationale: [why certain approaches were selected]
+- Domain: [topic tag for future matching]
+```
+
+3. Proceed to Plan Presentation
+
+## Plan Presentation + Cleanup (in-context)
+
+This is the terminal step. The workflow ends here.
+
+Read the plan file — this is the one exception where the orchestrator reads full file content, because presentation to the human requires it. Present to the human with:
+
+1. The full implementation plan
+2. The planner's agent selection rationale (which reviewers selected for each task and why)
+3. If per-axis evaluation was executed, the resolved axes and evaluation summary
+4. If axes-coherence flagged issues, what was revised and why
+5. The axes-table file path (kept as a review artifact alongside the plan)
+
+**If the human requests changes**: Clean up G1's output files from `claudedocs/plans/wip/` (reasoning-log-g1.md) before re-dispatching. Re-dispatch G1 with revision context describing what to change. Validate and present the revised plan.
+
+**After the human acknowledges the plan**:
+
+1. **Record to progress.md**:
+
+```markdown
+## [timestamp] — /claude-praxis:implement-plan: Plan complete — [topic]
+- Decision: [key plan structure decisions]
+- Rationale: [why certain approaches were selected]
+- Domain: [topic tag for future matching]
+```
+
+2. **Cleanup**: Delete the `claudedocs/plans/wip/` directory and its contents (`reasoning-log-g1.md`). This directory has no downstream consumers.
+
+3. **Permanent artifacts** (kept):
+   - Plan file at `claudedocs/plans/[name]-plan.md`
+   - Axes Table at `claudedocs/plans/[name]-axes-table.md`
+   - Analysis report at `claudedocs/analysis/[scope-name].md`
+
+4. **Next step suggestion**:
+
+```
+Plan ready at `claudedocs/plans/[name]-plan.md`.
+Axes Table at `claudedocs/plans/[name]-axes-table.md`.
+
+To implement: run /claude-praxis:implement with this plan.
+```
+
+---
+
+## Data Contracts
+
+| Group | Required Input | Required Output | Reasoning-Log |
+|-------|---------------|-----------------|---------------|
+| G0 (in-context) | Topic from user, Design Doc path (optional) | Learnings context (stays in orchestrator), `claudedocs/plans/wip/` directory | None |
+| G1 (subagent) | Topic, learnings context, Design Doc path, rules constraints | Plan file (`claudedocs/plans/`), Axes Table file (`claudedocs/plans/`), analysis report (`claudedocs/analysis/`) | `reasoning-log-g1.md` |
+| Presentation (in-context) | Plan file path, axes-table path | progress.md entry, cleanup | None |
+
+Inputs are passed as **file paths** in the subagent's task description. Subagents read input files independently — the orchestrator does not embed file contents in dispatch prompts. Exception: G1 receives topic and learnings as text (G0 output is lightweight and stays in orchestrator context).
+
+## Orchestrator Validation Protocol
+
+After G1 completes, the orchestrator performs structural validation before proceeding. The orchestrator does NOT evaluate content quality — that is handled by review tiers within G1.
+
+### Validation checks
+
+1. **File existence** — All required output files exist
+2. **Section headers** — Output files contain required section headers (read only the first ~50 lines or use grep for `## ` headers, do NOT read full content)
+3. **Non-empty** — Files are not empty or truncated (check file size > 0)
+
+### Required outputs
+
+| Required Files | Required Sections |
+|---------------|-------------------|
+| Plan file in `claudedocs/plans/`, axes-table file in `claudedocs/plans/`, analysis report in `claudedocs/analysis/`, `reasoning-log-g1.md` in `claudedocs/plans/wip/` | Plan: task definitions with file paths. Axes Table: axis/choices/verdict/rationale columns |
+
+If validation fails, follow the Error Recovery Protocol.
+
+## Error Recovery Protocol
+
+When G1 produces invalid output (missing files, missing sections, empty files):
+
+1. **Clean up partial outputs**: Delete all output files from the failed group before re-dispatching. This prevents the new subagent instance from finding stale or partial files from the previous attempt
+2. **First failure**: Re-dispatch G1 with the original input PLUS error context describing what was missing and why validation failed. The new subagent instance uses the error context to avoid the same failure
+3. **Second failure** (G1 fails twice): Escalate to the human. Present: which group failed, what was expected, what was produced, and the error context from both attempts. Do NOT attempt a third re-dispatch
+
+The orchestrator cannot fix failures in-context — it lacks the phase-specific context that the subagent had. Re-dispatch is the only recovery mechanism.
+
+## Reasoning-Log Notes
+
+`reasoning-log-g1.md` is a temporary file recording the judgment chain within the G1 subagent. Format: `## Key Decisions`, `## Alternatives Considered`, `## Rationale`. Created by G1 in `claudedocs/plans/wip/`, deleted during Plan Presentation cleanup.
+
+**progress.md** entries are written by the orchestrator (not subagents) after G1 completes and after Plan Presentation. The format is shown in each section above.

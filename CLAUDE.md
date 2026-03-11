@@ -47,6 +47,7 @@ claude-praxis/
 │   ├── feature-spec.md          # /feature-spec — AI-driven interview to capture requirements
 │   ├── design.md                # /design — planner-driven research + outline + write Design Doc
 │   ├── implement.md             # /implement — planner-driven plan + TDD + graduated review
+│   ├── implement-plan.md        # /implement-plan — thorough planning (G0+G1 from /implement)
 │   ├── analyze.md               # /analyze — codebase architecture analysis + durable report
 │   ├── guide.md                 # /guide — codebase walkthrough guide for human understanding
 │   ├── debug.md                 # /debug — investigate + diagnose + document
@@ -143,7 +144,7 @@ Review tiers are **graduated** — not all stages get the same treatment. Interm
 
 `/claude-praxis:design` invokes the planner for research, architecture analysis, and review. Research gathers external context, analysis captures current codebase state, and both inform the Design Axes Table. The planner reviews the outline (light), then runs thorough final review. The human's only input is final approval.
 
-`/claude-praxis:implement` uses Phase Group Subagent orchestration to isolate planning and final review into clean context windows. Planning runs as a subagent pipeline; task execution stays in-context to preserve TDD human interaction; final review runs as a subagent with clean context. If a plan already exists and the user has pre-loaded it, planning is skipped. Each task gets a review plan based on its content (internal refactor → code-quality only; security-sensitive → code-quality + security-perf). The human approves the plan and makes decisions at implementation decision points.
+`/claude-praxis:implement` uses Phase Group Subagent orchestration to isolate planning and final review into clean context windows. Planning runs as a subagent pipeline; task execution stays in-context to preserve TDD human interaction; final review runs as a subagent with clean context. If a plan already exists (e.g., from a prior `/claude-praxis:implement-plan` run) and the user has pre-loaded it, planning is skipped via Plan Detection. Each task gets a review plan based on its content (internal refactor → code-quality only; security-sensitive → code-quality + security-perf). The human approves the plan and makes decisions at implementation decision points.
 
 `/claude-praxis:debug` investigates problems systematically. For complex problems with multiple competing hypotheses, the planner dispatches parallel investigation agents. Produces an Investigation Report. The fix is done via `/claude-praxis:implement`.
 
@@ -152,10 +153,11 @@ Review tiers are **graduated** — not all stages get the same treatment. Interm
 Available for direct invocation when the full workflow is not needed:
 
 ```
+/claude-praxis:implement-plan → Thorough implementation plan (Axes Table + architecture analysis + plan review)
 /claude-praxis:analyze   → Codebase architecture analysis (also invoked as workflow phase in /design and /implement)
 /claude-praxis:guide     → Codebase walkthrough guide (narrative document for human understanding)
 /claude-praxis:research  → Standalone research (when you just want to explore options)
-/claude-praxis:plan      → Standalone planning (when you already have a plan in mind)
+/claude-praxis:plan      → Standalone lightweight planning (when you already have a plan in mind)
 /claude-praxis:review    → Standalone code review (when you want feedback on existing code)
 /claude-praxis:compare   → Structured comparison of 2-4 options with axes evaluation + human selection
 /claude-praxis:compound             → Extract what you learned, carry it forward
