@@ -65,10 +65,10 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 
 ### `devils-advocate`
 
-- **Focus**: Counterarguments, edge cases, failure patterns
-- **Verification Source**: Failure case studies, anti-pattern literature
+- **Focus**: Fundamental skepticism — question the problem, the direction, and the claimed benefits
+- **Verification Source**: First-principles reasoning, analogous failures in other projects/domains
 - **Applicable Domains**: all (mandatory in final reviews)
-- **Prompt**: Challenge this work. What edge cases are missing? Where will this break first in production? What hidden technical debt is being introduced? What assumptions are wrong? Even if other reviews pass, what could still go wrong? Find similar failures in the field.
+- **Prompt**: Be unconditionally skeptical. Assume nothing is correct until proven. Challenge at every level: (1) Problem validity: Is the stated problem real? Are we solving a symptom instead of the root cause? Is this problem even worth solving? (2) Direction: Is this the right approach to the right problem? Are we building what users actually need, or what we assumed they need? (3) Assumptions: List every implicit assumption. Which ones are unverified? Which would invalidate the entire approach if wrong? (4) Claimed benefits: Are the stated advantages real or wishful thinking? What evidence supports them? Would the benefits survive contact with reality? (5) Scope: Are we doing too much or too little? Is the boundary drawn where it should be? (6) Trade-off honesty: What costs are being downplayed? What is sacrificed by this choice that no one wants to talk about? (7) Alternatives not taken seriously: Were rejected alternatives genuinely evaluated, or dismissed to confirm a pre-existing preference? Do not suggest fixes. Your job is to expose what others are reluctant to question.
 
 ### `requirements`
 
@@ -129,10 +129,10 @@ A function can pass `code-quality` (correct types, TDD followed, no rule violati
 
 ## Distinction: `error-resilience` vs `devils-advocate`
 
-`devils-advocate` challenges direction: "Is this design/implementation fundamentally wrong?"
-`error-resilience` challenges coverage assuming correct direction: "Are only happy paths implemented?"
+`devils-advocate` questions everything fundamentally: "Is the problem real? Is the direction right? Are the claimed benefits honest?" It operates from first-principles skepticism — challenging the validity of the work itself, not its technical execution.
+`error-resilience` assumes the direction is correct and challenges coverage: "Are only happy paths implemented? What happens when things fail at runtime?"
 
-AI-generated code tends to work perfectly on happy paths but break in production — returning "auth failed" on DB connection loss, no retry storm prevention, no circuit breakers, uniform error handling without distinction. `error-resilience` detects these patterns. Their verification sources differ (failure case studies vs production failure patterns/chaos engineering), making them independently valuable.
+They are complementary: devils-advocate may say "this feature shouldn't exist"; error-resilience says "if this feature exists, it needs to handle DB timeouts." Their verification sources differ (first-principles reasoning vs production failure patterns/chaos engineering), making them independently valuable.
 
 ## Distinction: `code-quality` vs `simplicity`
 
@@ -144,7 +144,7 @@ AI-generated code tends to be correct but over-engineered — adding unnecessary
 ## Distinction: `axes-coherence` vs `devils-advocate` vs `structural-fitness`
 
 `axes-coherence` checks decision validity: "Do the resolved Axes Table decisions still make sense when concretized?"
-`devils-advocate` challenges direction broadly: "Is this work fundamentally wrong? What assumptions are broken?"
+`devils-advocate` questions the foundations: "Is the problem real? Is the direction right? Are we honest about the trade-offs?"
 `structural-fitness` checks architecture fit: "Should we extend or restructure?"
 
-`axes-coherence` is uniquely positioned because it reads TWO artifacts — the Axes Table and the outline/plan — and cross-references them. Devils-advocate reads only the target and challenges from general principles. Structural-fitness evaluates architecture without reference to prior axis decisions. Their verification sources differ (resolved Axes Table vs failure patterns vs coupling/cohesion metrics).
+`axes-coherence` is uniquely positioned because it reads TWO artifacts — the Axes Table and the outline/plan — and cross-references them. Devils-advocate reads only the target and challenges from first-principles skepticism — questioning whether the problem, direction, and benefits are valid at all. Structural-fitness evaluates architecture without reference to prior axis decisions. Their verification sources differ (resolved Axes Table vs failure patterns vs coupling/cohesion metrics).
