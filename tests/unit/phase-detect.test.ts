@@ -7,6 +7,16 @@ describe("detectPhase", () => {
       expect(detectPhase("/implement")).toContain("Phase detected: implement");
     });
 
+    it("detects /implement-plan slash command", () => {
+      const result = detectPhase("/implement-plan");
+      expect(result).toContain("Phase detected: implement-plan");
+    });
+
+    it("does not confuse /implement-plan with /implement", () => {
+      const result = detectPhase("/implement-plan");
+      expect(result).not.toContain("Phase detected: implement.");
+    });
+
     it("detects /design slash command", () => {
       expect(detectPhase("/design")).toContain("Phase detected: design");
     });

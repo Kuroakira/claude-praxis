@@ -56,6 +56,12 @@ export const PHASE_PATTERNS: PhasePattern[] = [
       /要件/, /仕様/, /何を作/, /機能.*定義/,
     ],
   },
+  {
+    phase: "implement-plan",
+    command: "/claude-praxis:implement-plan",
+    description: "thorough implementation plan with Axes Table and architecture analysis",
+    patterns: [],
+  },
   // DD4: implement BEFORE design to reduce false design matches
   {
     phase: "implement",
@@ -114,7 +120,7 @@ export const PHASE_PATTERNS: PhasePattern[] = [
 ];
 
 const SLASH_COMMAND_RE =
-  /^\s*\/(design|implement|debug|feature-spec|research|plan|review|compound)\b/i;
+  /^\s*\/(design|implement-plan|implement|debug|feature-spec|research|plan|review|compound)\b/i;
 
 function formatOutput(phase: string, command: string, description: string): string {
   return description
