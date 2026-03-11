@@ -59,8 +59,9 @@ After G0 completes, check whether a plan file already exists:
 2. **Verify topic alignment**: Confirm the plan's topic matches the current implementation request. If the plan targets a different feature or Design Doc, the skip condition is NOT met — proceed to G1
 3. **Skip G1 entirely** — no architecture analysis, no scout, no axes enumeration, no plan review
 4. **Skip PAUSE** — the user has already seen and approved the plan
-5. If an axes-table file exists alongside the plan, delete it (it would normally be deleted after PAUSE approval)
-6. Proceed directly to **Phase 2**
+5. **Check per-task review plans**: Verify that each task in the plan contains a per-task review specification (e.g., `### Per-Task Review` with reviewer IDs and tier). If any tasks lack per-task review plans, warn the human: "Plan lacks per-task review specifications for [N] tasks. Phase 2 Step C will apply baseline reviewers (code-quality + simplicity + general-review + devils-advocate)." Proceed — the Step C fallback handles missing review specs
+6. If an axes-table file exists alongside the plan, delete it (it would normally be deleted after PAUSE approval)
+7. Proceed directly to **Phase 2**
 
 **Freshness note**: The skip path assumes the codebase has not changed significantly since the plan was created. If the plan references files that no longer exist or patterns that have changed, tasks will fail during Phase 2 — at which point the orchestrator should surface the failure and suggest re-planning (re-dispatch G1).
 
@@ -237,11 +238,17 @@ npm run build       # if applicable
 
 All four must pass before proceeding.
 
-### Step C: Per-Task Review
+### Step C: Per-Task Review (MANDATORY)
 
-After verification passes, execute the planner's per-task review plan:
+After verification passes, invoke the per-task review. This step cannot be skipped regardless of whether the plan specifies per-task reviewers.
 
-Invoke `dispatch-reviewers` with the planner's per-task reviewers, tier (**thorough** for all tasks), and the **changed file paths** as target (e.g., `[src/auth.ts, src/auth.test.ts]`). Do NOT include task descriptions or implementation rationale — reviewers read the files independently.
+**Determine reviewers**: Read the task's per-task review plan from the plan file (typically a `### Per-Task Review` section within each task). If the plan specifies reviewers, use them. If the plan does not specify per-task reviewers for this task, apply the baseline:
+
+- Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
+- API change / auth → add `security-perf`
+- External dependency / infra → add `error-resilience`
+
+Invoke `dispatch-reviewers` with the determined reviewers, tier (**thorough** for all tasks), and the **changed file paths** as target (e.g., `[src/auth.ts, src/auth.test.ts]`). Do NOT include task descriptions or implementation rationale — reviewers read the files independently.
 
 Self-review checklist (applies regardless of tier):
 
@@ -269,9 +276,10 @@ Present a brief task completion report:
 ### Key Decisions
 - [decision]: [choice] — because [reason]
 
-### Review
-- tier: [light | thorough]
+### Review (MANDATORY — Step C must have run)
+- tier: [thorough]
 - reviewers: [catalog IDs used]
+- source: [plan-specified | baseline-fallback]
 
 ### Verification
 - typecheck: PASS
@@ -279,6 +287,8 @@ Present a brief task completion report:
 - test: PASS (X tests)
 - build: PASS
 ```
+
+The `### Review` section is mandatory — it records which reviewers ran and at what tier. If Step C applied the baseline fallback (plan lacked per-task review specs), record `source: baseline-fallback`. If the plan specified reviewers, record `source: plan-specified`. A task completion report without a `### Review` section indicates Step C was skipped — this is a workflow violation.
 
 If issues are found during the auto-review, propose rule additions via `rule-evolution` skill.
 
