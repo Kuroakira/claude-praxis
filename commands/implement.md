@@ -159,11 +159,11 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > Save the plan to `claudedocs/plans/[name]-plan.md` and the resolved Axes Table to `claudedocs/plans/[name]-axes-table.md`.
 >
 > Invoke `dispatch-reviewers` with:
-> - **Reviewers**: `axes-coherence`
-> - **Tier**: light
+> - **Reviewers**: `axes-coherence` + `simplicity` + `devils-advocate` + `spec-compliance` (if Design Doc exists) + `structural-fitness` (if the plan involves extending or restructuring existing architecture)
+> - **Tier**: thorough
 > - **Target**: both file paths (plan + axes table)
 >
-> If the review flags axes whose concretization contradicts the resolved verdict, revise the plan and update the Axes Table.
+> If the review flags critical or important issues — axes contradictions, over-engineered decomposition, missing Design Doc coverage, questionable fundamental direction, or structural fitness concerns — revise the plan and update the Axes Table before proceeding.
 >
 > **Write output files**:
 >
