@@ -33,7 +33,7 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 - **Focus**: Specification-to-implementation alignment
 - **Verification Source**: Design Doc / FeatureSpec as source of truth
 - **Applicable Domains**: implement
-- **Prompt**: Review for spec compliance. Does the code match the Design Doc/Plan exactly? Are all requirements addressed? Are there deviations from the spec? Report any gaps or mismatches.
+- **Prompt**: Review for spec compliance. Does the target (code or implementation plan) match the Design Doc/FeatureSpec exactly? Are all requirements addressed? Are there deviations from the spec? Report any gaps or mismatches.
 
 ### `document-quality`
 
