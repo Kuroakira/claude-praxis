@@ -298,7 +298,17 @@ If issues are found during the auto-review, propose rule additions via `rule-evo
 - Domain: [topic tag for future matching]
 ```
 
-Proceed to the next task. Do NOT wait for human approval between tasks unless a decision point (Step A) requires input.
+**Update plan document**: Mark the completed task in the plan file (`claudedocs/plans/[name]-plan.md`). Prepend `[DONE]` to the task heading and append the completion timestamp. This keeps the plan as a living document that reflects actual progress:
+
+```markdown
+## [DONE] Task 1: Setup project structure (completed 2025-01-15T10:30)
+```
+
+**PAUSE after every task**: Present the task completion report and wait for the human to acknowledge before proceeding to the next task:
+
+> "Task [N] complete. Ready to continue to Task [N+1], or do you want to review the changes first?"
+
+Always wait for the human's response. Do NOT proceed to the next task automatically. This gate exists because large implementations benefit from incremental human review — the human can inspect changes while context is fresh, catch issues early, and steer direction before more code is built on top.
 
 ## G2: Final Review (subagent)
 
