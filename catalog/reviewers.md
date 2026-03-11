@@ -112,6 +112,21 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 - **Applicable Domains**: design, implement, debug
 - **Prompt**: Review for unnecessary complexity — especially the kind AI-generated code tends to introduce. Check: (1) Over-abstraction: Are there wrapper functions, utility classes, or abstraction layers that serve only one caller? Could the code be inlined without loss of clarity? (2) Conditional complexity: Can nested if/else chains be flattened with early returns, guard clauses, or lookup tables? Are there boolean parameters that split a function into two disguised functions? (3) Premature generalization: Are generic type parameters, configuration objects, or strategy patterns used where a simple concrete implementation would suffice? (4) Layer bloat: Are there unnecessary indirection layers (service → helper → util → actual logic)? Could the call chain be shortened? (5) Function size: Can functions over ~20 lines be split into named steps? Are there god functions that do too many things? (6) Design-level complexity (for design reviews): Is the proposed architecture more complex than the problem requires? Are there simpler alternatives that meet the same goals? For each finding, suggest the specific simplification and state what is lost (if anything). Severity-rate: high = complexity with no benefit, medium = justified complexity that could be simpler, low = stylistic simplification.
 
+### `general-review`
+
+- **Focus**: Broad code review — potential bugs, logic errors, readability, naming, idiomatic patterns, test coverage adequacy
+- **Verification Source**: Language/framework idiom guides, common bug pattern databases (CWE weakness patterns, language-specific gotchas), peer code review best practices
+- **Applicable Domains**: implement, debug
+- **Prompt**: Review as a senior developer doing a general code review. Check: (1) Potential bugs: null/undefined access, off-by-one errors, incorrect boolean logic, race conditions, unintended type coercion. (2) Readability: Are variable/function names clear and descriptive? Is the code's intent obvious without reading comments? Would a new team member understand the flow? (3) Idiomatic patterns: Does the code use language/framework idioms appropriately? Are there non-idiomatic constructs that could be simplified using standard patterns? (4) Edge cases in logic: Are boundary conditions in business logic handled? Are there implicit assumptions about input ranges, array lengths, or string formats? (5) Test coverage adequacy: Are the right scenarios tested — not just happy paths but meaningful edge cases? Are there untested code paths? This is NOT about test quality (assertion style, TDD compliance — that is code-quality's job) but about whether the test suite covers the important behaviors. For each finding, state the specific risk and suggest the fix. Severity-rate: high = likely bug or significant readability barrier, medium = non-idiomatic or missing edge case, low = minor naming or style improvement.
+
+## Distinction: `general-review` vs `code-quality` vs `simplicity`
+
+`code-quality` checks rule compliance and correctness standards: TDD, type safety, no lazy assertions, pattern adherence.
+`simplicity` checks cognitive economy: over-abstraction, unnecessary indirection, premature generalization.
+`general-review` checks what a senior developer's eye catches in a PR review: potential bugs, readability, idiomatic usage, logic edge cases, and test coverage adequacy.
+
+A function can pass `code-quality` (correct types, TDD followed, no rule violations), pass `simplicity` (no unnecessary abstraction, flat structure), and still have a subtle logic bug, a misleading variable name, or a missing edge case in its tests. `general-review` catches these "common sense" issues that fall between specialist cracks. Their verification sources differ (project rules vs complexity metrics vs language idiom guides and bug pattern databases), making them independently valuable.
+
 ## Distinction: `error-resilience` vs `devils-advocate`
 
 `devils-advocate` challenges direction: "Is this design/implementation fundamentally wrong?"

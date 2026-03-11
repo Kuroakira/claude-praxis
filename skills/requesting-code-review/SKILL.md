@@ -20,7 +20,7 @@ After completing implementation, suggest dispatching a code review before moving
 2. **Collect changed file paths** — these become the `target` for `dispatch-reviewers`
 3. **Assess scope** to determine tier and reviewer selection:
    - 1-3 files, single module → light: `code-quality` + `devils-advocate`
-   - 4+ files, cross-module, or security-sensitive → thorough: `code-quality` + `security-perf` + `devils-advocate`
+   - 4+ files, cross-module, or security-sensitive → thorough: `code-quality` + `simplicity` + `general-review` + `security-perf` + `devils-advocate`
 4. **Dispatch via `dispatch-reviewers`** with file paths only as target
 5. **Wait for the review** — do not proceed until review is complete
 6. **Address feedback** using `receiving-code-review` skill
