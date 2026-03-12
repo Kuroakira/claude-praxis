@@ -115,7 +115,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > |-----------|-------|
 > | `task` | Plan implementation of [topic] |
 > | `domain` | implement |
-> | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra → add error-resilience. Change that extends or modifies existing architecture → add structural-fitness. The mandatory Implementation Axes Table structurally prevents conflating Design Doc clarity with implementation approach clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
+> | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra OR recursive/graph data structures OR input parsing OR functions where malformed data could cause unbounded behavior → add error-resilience. Change that extends or modifies existing architecture → add structural-fitness. The mandatory Implementation Axes Table structurally prevents conflating Design Doc clarity with implementation approach clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
 > | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. (5) Context gathering must produce an Implementation Axes Table — every implementation decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (6) If Implementation Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before plan creation. |
 > | `catalog_scope` | Reviewers: spec-compliance, code-quality, simplicity, general-review, security-perf, structural-fitness, axes-coherence, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices, axis-evaluator. |
 >
@@ -149,7 +149,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > 3. Per-task review plan selection (all tasks get **thorough** tier):
 >    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
 >    - API change / auth → add `security-perf`
->    - External dependency / infra → add `error-resilience`
+>    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
 >    - `simplicity`, `general-review`, and `devils-advocate` are included in ALL per-task reviews
 > 4. TDD ordering: list test files before implementation files within each step
 > 5. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
@@ -246,7 +246,7 @@ After verification passes, invoke the per-task review. This step cannot be skipp
 
 - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
 - API change / auth → add `security-perf`
-- External dependency / infra → add `error-resilience`
+- External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
 
 Invoke `dispatch-reviewers` with the determined reviewers, tier (**thorough** for all tasks), and the **changed file paths** as target (e.g., `[src/auth.ts, src/auth.test.ts]`). Do NOT include task descriptions or implementation rationale — reviewers read the files independently.
 
@@ -357,7 +357,7 @@ Dispatch a `general-purpose` Task subagent.
 > This is a **thorough** review — structural floor applies (3+ reviewers including `devils-advocate`).
 >
 > Invoke `dispatch-reviewers` with:
-> - **Reviewers**: `spec-compliance` + `code-quality` + `simplicity` + `general-review` + `devils-advocate` (+ `security-perf` if the implementation touches auth/security, + `error-resilience` if external dependencies)
+> - **Reviewers**: `spec-compliance` + `code-quality` + `simplicity` + `general-review` + `devils-advocate` (+ `security-perf` if the implementation touches auth/security, + `error-resilience` if external dependencies or recursive-graph data or malformed-data risk)
 > - **Tier**: thorough
 > - **Target**: All changed file paths from the changed-files list
 >

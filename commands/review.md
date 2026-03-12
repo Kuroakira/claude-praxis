@@ -34,7 +34,7 @@ Apply the graduated tier model:
 | Condition | Tier | Typical Reviewers |
 |-----------|------|-------------------|
 | 1-3 files, single module, no security | **light** | `code-quality` + `devils-advocate` |
-| 4+ files, or cross-module, or new feature | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `devils-advocate` (+ `error-resilience` if external deps) |
+| 4+ files, or cross-module, or new feature | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `devils-advocate` (+ `error-resilience` if external deps or recursive-graph data or malformed-data risk) |
 | Security-sensitive (auth, input validation, secrets) | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `devils-advocate` |
 
 Adjust based on the specific changes:
