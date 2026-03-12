@@ -5,20 +5,6 @@
 @rules/design-doc-format.md
 @rules/verification.md
 
-## Core Concept
-
-**Bring "understanding" back to vibe coding. A development framework where engineers grow — even when AI writes the code.**
-
-AI-assisted development is fast. But speed alone leaves nothing inside the engineer.
-This plugin uses AI as a "mirror" — by articulating and accumulating the "why" behind design and implementation decisions, it compounds engineering judgment over time.
-
-## Why This Exists
-
-1. **Understand, Not Just Build** - Every phase forces you to articulate "why": why this design, why this approach, why not alternatives
-2. **You Own It** - AI implements and ensures quality. But the Design Doc, the code, the decisions — they're yours. You should be able to explain every choice to your team without saying "AI said so"
-3. **Compound Growth** - Knowledge from each project accumulates as learnings, making the next project's decisions sharper
-4. **Self-Evolving Rules** - Quality standards grow from real experience, not abstract best practices
-
 ## File Structure
 
 ```
@@ -37,12 +23,14 @@ claude-praxis/
 │   ├── researcher.md            # Research agent (haiku, lightweight)
 │   └── scout.md                 # Codebase exploration agent (haiku, read-only)
 ├── hooks/
-│   ├── hooks.json               # SessionStart + PreCompact + PreToolUse + PostToolUse + Stop hook config
-│   ├── session-start.sh         # Cleans markers + injects context
-│   ├── pre-compact.sh           # Trims Flow files before compact
-│   ├── check-skill-gate.sh     # File-type skill gate (warns if rules not loaded)
-│   ├── mark-skill-invoked.sh   # Records Skill invocations to session markers
-│   └── stop-verification-gate.sh  # Completion verification gate (warns if unchecked)
+│   ├── hooks.json               # SessionStart + PreCompact + PostToolUse + Stop + UserPromptSubmit hook config
+│   └── src/
+│       ├── session-start.ts     # Cleans markers + injects context
+│       ├── pre-compact.ts       # Trims Flow files before compact
+│       ├── mark-skill-invoked.ts  # Records Skill invocations to session markers
+│       ├── stop-verification-gate.ts  # Completion verification gate (warns if unchecked)
+│       ├── phase-detect.ts      # Semantic phase detection (UserPromptSubmit)
+│       └── context-pressure-check.ts  # Context usage monitoring (UserPromptSubmit)
 ├── commands/
 │   ├── feature-spec.md          # /feature-spec — AI-driven interview to capture requirements
 │   ├── design.md                # /design — planner-driven research + outline + write Design Doc
@@ -60,7 +48,6 @@ claude-praxis/
 ├── skills/
 │   ├── workflow-planner/        # Analyze task, select agents from catalogs, generate execution plan
 │   ├── dispatch-reviewers/      # Dispatch reviewers by catalog ID with graduated tiers
-│   ├── parallel-review-team/    # Backward-compatible wrapper → delegates to dispatch-reviewers
 │   ├── architecture-analysis/   # Multi-pass codebase analysis with durable reports
 │   ├── guide-generation/        # Multi-pass codebase exploration + single-narrator guide writing
 │   ├── check-past-learnings/    # Recall relevant learnings before starting work
@@ -70,11 +57,11 @@ claude-praxis/
 │   ├── agent-team-execution/    # Parallel exploration: research, review teams, debugging
 │   ├── systematic-debugging/    # 4-phase root cause analysis
 │   ├── context-persistence/     # Stock/Flow memory model for context survival
-│   ├── writing-skills/          # Meta-skill: TDD for skill creation
 │   ├── understanding-check/     # Explain-Compare-Discover for understanding verification
 │   ├── requesting-code-review/  # Dispatch reviewer after tasks
-│   ├── receiving-code-review/   # Handle feedback (no sycophancy)
-│   └── git-worktrees/           # Isolated feature development
+│   └── receiving-code-review/   # Handle feedback (no sycophancy)
+├── claudedocs/                  # Analysis reports, design docs, plans, implementation records
+├── tests/                       # Unit and integration tests for hooks
 ├── README.md
 └── CLAUDE.md                    # This file
 ```
@@ -104,7 +91,7 @@ Always-on (session start, every session):
 On-demand (when invoked):
   Skill full content        →  loaded on invoke (~2000+ tokens/skill)
   Command content           →  loaded on slash command
-  Hooks                     →  fire on events (PreToolUse, Stop, etc.)
+  Hooks                     →  fire on events (UserPromptSubmit, Stop, etc.)
 ```
 
 ### Boundary Rule
@@ -121,67 +108,9 @@ When adding or moving information, ask: "Which layer's question does this answer
 
 If the same fact appears in 2+ places, one must become a reference ("see X") not a copy.
 
-## Core Workflow
+## Workflows
 
-Each phase exists to deepen understanding, not just to produce output.
-
-### Four Main Workflows
-
-Most tasks use these orchestrating commands:
-
-```
-/claude-praxis:feature-spec → AI-driven interview + planner-driven review → FeatureSpec
-/claude-praxis:design       → Planner-driven research + Architecture analysis + Outline + Write + Graduated review → Design Doc
-/claude-praxis:implement    → Phase Group Subagent orchestration (G0-G3) + TDD per task + Graduated review → Verified code
-/claude-praxis:debug        → Reproduce + Isolate + Planner-driven diagnosis + Document → Present
-```
-
-All four workflows use a **planner-driven adaptive model**: the `workflow-planner` skill analyzes task content and selects agents from shared catalogs (`catalog/reviewers.md`, `catalog/researchers.md`) based on what the specific task needs. Commands define phase structure and constraints (what must happen); the planner provides judgment (which agents, how many reviewers, what research depth).
-
-Review tiers are **graduated** — not all stages get the same treatment. Intermediate artifacts get light or no review; final outputs get thorough review (3+ reviewers including Devil's Advocate). The planner selects the tier and states the reasoning.
-
-`/claude-praxis:feature-spec` captures "what to build and why" through an AI-driven interview. The planner selects reviewers for the draft based on spec complexity — from light (requirements + devils-advocate) to thorough (all 4 spec reviewers).
-
-`/claude-praxis:design` invokes the planner for research, architecture analysis, and review. Research gathers external context, analysis captures current codebase state, and both inform the Design Axes Table. The planner reviews the outline (light), then runs thorough final review. The human's only input is final approval.
-
-`/claude-praxis:implement` uses Phase Group Subagent orchestration to isolate planning and final review into clean context windows. Planning runs as a subagent pipeline; task execution stays in-context to preserve TDD human interaction; final review runs as a subagent with clean context. If a plan already exists (e.g., from a prior `/claude-praxis:implement-plan` run) and the user has pre-loaded it, planning is skipped via Plan Detection. Each task gets a review plan based on its content (internal refactor → code-quality only; security-sensitive → code-quality + security-perf). The human approves the plan and makes decisions at implementation decision points.
-
-`/claude-praxis:debug` investigates problems systematically. For complex problems with multiple competing hypotheses, the planner dispatches parallel investigation agents. Produces an Investigation Report. The fix is done via `/claude-praxis:implement`.
-
-### Supporting Commands
-
-Available for direct invocation when the full workflow is not needed:
-
-```
-/claude-praxis:implement-plan → Thorough implementation plan (Axes Table + architecture analysis + plan review)
-/claude-praxis:analyze   → Codebase architecture analysis (also invoked as workflow phase in /design and /implement)
-/claude-praxis:guide     → Codebase walkthrough guide (narrative document for human understanding)
-/claude-praxis:research  → Standalone research (when you just want to explore options)
-/claude-praxis:plan      → Standalone lightweight planning (when you already have a plan in mind)
-/claude-praxis:review    → Standalone code review (when you want feedback on existing code)
-/claude-praxis:compare   → Structured comparison of 2-4 options with axes evaluation + human selection
-/claude-praxis:compound             → Extract what you learned, carry it forward
-/claude-praxis:understanding-check  → Verify you can explain key decisions (recommended: separate session)
-```
-
-## Quality Rules (defined in rules/)
-
-Rules are always-on constraints loaded via `@import` — no skill invocation needed.
-
-- **Code quality** (`rules/code-quality.md`) - TDD, type safety, no `as`, no eslint-disable, no lazy assertions, security rules
-- **Document quality** (`rules/document-quality.md`) - Abstract-to-concrete structure, terminology consistency, progressive detailing
-- **Design Doc format** (`rules/design-doc-format.md`) - WHY over HOW, Notion format, outline-first process (builds on document-quality)
-- **Verification** (`rules/verification.md`) - No success claims without fresh evidence, completion report template, next phase lookup
-
-## Next Tasks
-
-1. **incremental-review** skill - Show small changes with reasoning
-   - No bulk implementations, explain "what" and "why" per change
-
-## References
-
-- obra/superpowers: https://github.com/obra/superpowers
-- Jesse Vincent's blog: https://blog.fsck.com/2025/10/09/superpowers/
+See `README.md` for workflow details, installation, and feature list. Commands are loaded on-demand when invoked. Quality rules are loaded via `@import` above.
 
 ## Research Policy
 
@@ -211,4 +140,4 @@ Rules are always-on constraints loaded via `@import` — no skill invocation nee
 - Contextual recall uses judgment prompts, not quizzes — "same rationale applies here?" not "do you remember?"
 - Four orchestrating workflows (`/claude-praxis:feature-spec`, `/claude-praxis:design`, `/claude-praxis:implement`, and `/claude-praxis:debug`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. Supporting commands remain for direct invocation when the full workflow is not needed
 - FeatureSpec owns "What and Why," Design Doc owns "How" — this boundary prevents requirements ambiguity from propagating into design. Phase detection automatically suggests FeatureSpec when requirements are vague
-- Planner-driven adaptive workflow: commands define phase structure and constraints, `workflow-planner` skill provides judgment on agent selection. Catalogs (`catalog/`) define the selection pool with independent verification sources per entry. Review tiers are graduated (none/light/thorough) based on stage and content. `parallel-review-team` remains as backward-compatible wrapper delegating to `dispatch-reviewers`
+- Planner-driven adaptive workflow: commands define phase structure and constraints, `workflow-planner` skill provides judgment on agent selection. Catalogs (`catalog/`) define the selection pool with independent verification sources per entry. Review tiers are graduated (none/light/thorough) based on stage and content. `dispatch-reviewers` is the canonical reviewer dispatch mechanism

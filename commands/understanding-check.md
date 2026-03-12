@@ -33,7 +33,7 @@ Restore the context of the completed work:
 1. **Read progress.md** — identify Decision/Rationale entries from the preceding workflow. These are the pre-recorded rationale that Understanding Check will use for comparison
 2. **Read the artifact** — the primary output of the workflow:
    - `/design` → Design Doc (`claudedocs/design-docs/[name].md`)
-   - `/feature-spec` → FeatureSpec (`feature-specs/[name].md`)
+   - `/feature-spec` → FeatureSpec (`claudedocs/feature-specs/[name].md`)
    - `/debug` → Investigation Report (`.claude/context/investigation-[name].md`)
    - `/implement` → `git diff` of the implementation changes
 3. **Assess material sufficiency** — if progress.md lacks sufficient Decision/Rationale entries, inform the human and skip (do not generate degraded questions)

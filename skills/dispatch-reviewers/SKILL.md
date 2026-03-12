@@ -76,5 +76,5 @@ After all reviewers return:
 
 - **Invoked by**: `workflow-planner` skill, commands (directly or via planner)
 - **Catalog**: `catalog/reviewers.md` (source of reviewer definitions)
-- **Replaces**: Direct reviewer dispatch in commands. `parallel-review-team` delegates to this skill during migration
+- **Replaces**: Direct reviewer dispatch in commands
 - **Reviewer agent**: All reviewers use subagent_type `claude-praxis:reviewer` (read-only)

@@ -4,7 +4,7 @@ description: >-
   Create a complete Design Doc — research, per-axis evaluation, review.
   TRIGGER when: user asks to create or write a Design Doc, design a system/feature/API,
   or produce an architectural document.
-  BLOCKING REQUIREMENT: invoke this skill BEFORE drafting any design document or claudedocs file.
+  BLOCKING REQUIREMENT: invoke this command BEFORE drafting any design document or claudedocs file.
   Do NOT write Design Doc content directly.
 disable-model-invocation: false
 ---
@@ -34,10 +34,7 @@ graph TD
     O -->|in-context| G6[G6: Present to Human]
 ```
 
-**Orchestrator principles**:
-- Pass **file paths**, not file contents, between groups
-- Do NOT read full file contents — structural validation only (file existence + section headers)
-- Write progress.md entries after each group completes (subagents do not write progress.md)
+**Orchestrator principles**: Follow the orchestrator principles defined in `commands/implement.md` (file paths not contents, structural validation only, progress.md by orchestrator). Additionally:
 - Delete reasoning-logs after their downstream group succeeds
 - All intermediate files (`synthesis.md`, `outline.md`, `axes-table.md`, `reasoning-log-g*.md`, `review-findings.md`) are written to `claudedocs/design-docs/wip/`. This directory is created at workflow start and cleaned up after G6 approval. Permanent artifacts (Design Doc, analysis report) go to their standard locations
 
@@ -443,13 +440,7 @@ Present to the human with:
 
 ## Orchestrator Validation Protocol
 
-After each subagent group (G1-G5) completes, the orchestrator performs structural validation before dispatching the next group. The orchestrator does NOT evaluate content quality — that is handled by review tiers within each group.
-
-### Validation checks
-
-1. **File existence** — All required output files exist
-2. **Section headers** — Output files contain required section headers (read only the first ~50 lines or use grep for `## ` headers, do NOT read full content)
-3. **Non-empty** — Files are not empty or truncated (check file size > 0)
+Apply the Orchestrator Validation Protocol defined in `commands/implement.md`. The validation checks (file existence, section headers, non-empty) and error recovery (cleanup → re-dispatch → escalate) are identical across all orchestrating commands.
 
 ### Per-group required outputs
 
@@ -460,18 +451,6 @@ After each subagent group (G1-G5) completes, the orchestrator performs structura
 | G3 | `outline.md`, `axes-table.md`, `reasoning-log-g3.md` | outline.md: section headers matching Design Doc format |
 | G4 | Design Doc in `claudedocs/design-docs/`, `reasoning-log-g4.md` | Design Doc: `## Overview`, `## Context and Scope`, `## Proposal`, `## Alternatives Considered` |
 | G5 | `review-findings.md` | review-findings.md: reviewer results |
-
-If validation fails, follow the Error Recovery Protocol.
-
-## Error Recovery Protocol
-
-When a subagent group produces invalid output (missing files, missing sections, empty files):
-
-1. **Clean up partial outputs**: Delete all output files from the failed group before re-dispatching. This prevents the new subagent instance from finding stale or partial files from the previous attempt
-2. **First failure**: Re-dispatch the same group with the original input PLUS error context describing what was missing and why validation failed. The new subagent instance uses the error context to avoid the same failure
-3. **Second failure** (same group fails twice): Escalate to the human. Present: which group failed, what was expected, what was produced, and the error context from both attempts. Do NOT attempt a third re-dispatch
-
-The orchestrator cannot fix failures in-context — it lacks the phase-specific context that the subagent had. Re-dispatch is the only recovery mechanism.
 
 ## Data Contracts
 

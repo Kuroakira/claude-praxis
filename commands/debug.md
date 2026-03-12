@@ -50,6 +50,8 @@ Form hypotheses, then test ALL of them in parallel with adversarial investigator
 
 ### Step 2: Parallel Investigation Dispatch
 
+> **Note**: The investigator dispatch procedure below is defined inline because `debug.md` dispatches investigators directly via Task tool without invoking `systematic-debugging` for Phase 3. The skill handles Phases 1-2 procedure definition; the command adds the parallel dispatch model.
+
 Dispatch one `hypothesis-investigator` (see `catalog/researchers.md`) per hypothesis using the Task tool. All investigators launch in **parallel** (single message with multiple Task tool calls).
 
 Each investigator receives:

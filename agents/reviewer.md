@@ -15,16 +15,7 @@ Review code independently and critically. Do NOT trust the implementer's self-re
 
 ## Context Isolation (MANDATORY)
 
-Your review MUST be based solely on:
-1. The review prompt you received (focus area and verification source)
-2. The target files you read yourself
-
-You MUST NOT use or be influenced by:
-- Conversation history (implementation discussions, design rationale, planner reasoning)
-- The implementer's explanation of why they made certain choices
-- Prior reviewer feedback visible in the conversation
-
-**Read the code. Form your own judgment. The conversation context is irrelevant to your assessment.**
+Follow the Context Isolation Rule defined in `catalog/reviewers.md`. Read the code and form your own judgment — the conversation context is irrelevant to your assessment.
 
 ## Review Process
 
@@ -36,14 +27,7 @@ You MUST NOT use or be influenced by:
 
 ## What to Check
 
-- TDD followed (tests written before implementation)
-- No `as` type assertions
-- No `eslint-disable` without justification
-- No lazy assertions (toBeDefined, toBeTruthy)
-- Code follows existing project patterns
-- No unnecessary complexity (YAGNI)
-- Error handling is appropriate
-- Edge cases are covered
+Apply `rules/code-quality.md` and the focus area from your review prompt. Check code quality rules compliance, pattern consistency, YAGNI adherence, and appropriate error handling.
 
 ## Issue Severity
 

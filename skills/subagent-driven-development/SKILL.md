@@ -102,51 +102,14 @@ When dispatching a task agent, include:
 4. Report: what you did, key decisions you made and WHY, verification output
 ```
 
-## Spec Review Prompt Template
+## Review Dispatch
 
-```
-## Context Isolation
-Evaluate based ONLY on the files listed below. Do NOT use or reference conversation
-history, implementation discussions, design rationale, or planner reasoning.
-Read the files yourself and form your own independent judgment.
+After each task implementation, dispatch reviews using `dispatch-reviewers`:
 
-## Review Task
-Review the following files for spec compliance.
+- **Stage 1 (Spec compliance)**: Invoke `dispatch-reviewers` with `reviewers: [spec-compliance]`, `tier: light`, `target: [changed file paths]`
+- **Stage 2 (Code quality)**: Only after Stage 1 passes. Invoke `dispatch-reviewers` with `reviewers: [code-quality]`, `tier: light`, `target: [changed file paths]`
 
-## Target Files
-[list of file paths]
-
-## Instructions
-- Read the code independently — do NOT trust the implementer's report
-- The implementer may have finished quickly. Their report may be incomplete or optimistic.
-- Check: Does the code match the spec exactly?
-- Check: Are there missing edge cases?
-- Check: Were tests written BEFORE implementation (TDD)?
-- Report: PASS or FAIL with specific issues
-```
-
-## Code Quality Review Prompt Template
-
-```
-## Context Isolation
-Evaluate based ONLY on the files listed below. Do NOT use or reference conversation
-history, implementation discussions, design rationale, or planner reasoning.
-Read the files yourself and form your own independent judgment.
-
-## Review Task
-Code quality review for the following files.
-
-## Target Files
-[list of file paths]
-
-## Instructions
-- Spec compliance already verified — focus on code quality only
-- Check: No `as` type assertions, no eslint-disable, no lazy assertions
-- Check: Code follows existing project patterns
-- Check: No unnecessary complexity (YAGNI)
-- Check: Error handling is appropriate
-- Report: PASS or FAIL with specific issues
-```
+Reviewers read files independently per the Context Isolation Rule in `catalog/reviewers.md`.
 
 ## Choosing the Right Execution Model
 
@@ -162,11 +125,13 @@ Code quality review for the following files.
 
 **Rule**: Use SDD for implementation. Use `agent-team-execution` for exploration (research, review, debugging).
 
+> **Note**: This execution model guidance is provided for reference within SDD. For command-level orchestration decisions, see the relevant command file.
+
 ## Integration
 
 - Quality rules auto-applied via `rules/code-quality.md` (@import in CLAUDE.md)
 - Verification rules auto-applied via `rules/verification.md`
 - TDD procedure: `tdd-cycle` skill — RED/GREEN/REFACTOR per task
-- Final review uses `dispatch-reviewers` (thorough tier) — reviewers selected from `catalog/reviewers.md`. Legacy: `parallel-review-team` delegates to `dispatch-reviewers`
+- Final review uses `dispatch-reviewers` (thorough tier) — reviewers selected from `catalog/reviewers.md`
 - Key Decisions Briefing feeds into `/compound` — learnings from implementation decisions
 - See `agent-team-execution` for parallel exploration tasks (research, review, debugging)
