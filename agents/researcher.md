@@ -44,7 +44,4 @@ Investigate topics efficiently and return structured findings. You do not write 
 
 ## Constraints
 
-- Always cite sources — no hallucinated references
-- Prefer official documentation over blog posts
-- Flag when information may be outdated
-- Do not write or modify any files
+Follow the Research Policy in `CLAUDE.md`. Always cite sources, prefer official documentation, flag outdated information. Do not write or modify any files.

@@ -21,10 +21,6 @@ export interface StopInput extends BaseHookInput {
     hook_event_name: "Stop";
     stop_hook_active: boolean;
 }
-export interface TaskCompletedInput extends BaseHookInput {
-    hook_event_name: "TaskCompleted";
-    task_subject: string;
-}
 export interface PreCompactInput extends BaseHookInput {
     hook_event_name: "PreCompact";
 }

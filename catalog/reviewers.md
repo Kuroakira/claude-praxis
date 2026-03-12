@@ -119,6 +119,8 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 - **Applicable Domains**: implement, debug
 - **Prompt**: Review as a senior developer doing a general code review. Check: (1) Potential bugs: null/undefined access, off-by-one errors, incorrect boolean logic, race conditions, unintended type coercion. (2) Readability: Are variable/function names clear and descriptive? Is the code's intent obvious without reading comments? Would a new team member understand the flow? (3) Idiomatic patterns: Does the code use language/framework idioms appropriately? Are there non-idiomatic constructs that could be simplified using standard patterns? (4) Edge cases in logic: Are boundary conditions in business logic handled? Are there implicit assumptions about input ranges, array lengths, or string formats? (5) Test coverage adequacy: Are the right scenarios tested — not just happy paths but meaningful edge cases? Are there untested code paths? This is NOT about test quality (assertion style, TDD compliance — that is code-quality's job) but about whether the test suite covers the important behaviors. For each finding, state the specific risk and suggest the fix. Severity-rate: high = likely bug or significant readability barrier, medium = non-idiomatic or missing edge case, low = minor naming or style improvement.
 
+> **Note**: The distinction sections below clarify boundaries for human readers and planner agents. Selection logic (which reviewers to pick for a given task) is determined by `skills/workflow-planner/SKILL.md`.
+
 ## Distinction: `general-review` vs `code-quality` vs `simplicity`
 
 `code-quality` checks rule compliance and correctness standards: TDD, type safety, no lazy assertions, pattern adherence.

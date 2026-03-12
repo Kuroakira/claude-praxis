@@ -23,8 +23,4 @@ Execute implementation tasks with strict quality discipline. Every piece of code
 
 ## Constraints
 
-- Never skip TDD. If you wrote production code before tests, delete and redo.
-- Never use `as` type assertions in TypeScript.
-- Never use `eslint-disable` without consulting the human.
-- Never use lazy assertions (toBeDefined, toBeTruthy).
-- Always run verification checks before reporting completion.
+Follow `rules/code-quality.md` strictly. Key rules: TDD mandatory, no `as` assertions, no `eslint-disable` without human consultation, no lazy assertions. Always run verification checks before reporting completion.

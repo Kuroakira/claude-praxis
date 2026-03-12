@@ -4,8 +4,8 @@ description: >-
   Implement from Design Doc — Axes Table, per-axis evaluation, TDD per task, graduated review.
   TRIGGER when: (1) user asks to implement or build a feature, (2) user asks to create an
   implementation plan from a Design Doc, (3) user asks to work through or execute a Design Doc.
-  BLOCKING REQUIREMENT: invoke this skill BEFORE writing any plan document, analysis, or code.
-  Do NOT create plan documents or claudedocs files directly — Phase 1 of this skill generates
+  BLOCKING REQUIREMENT: invoke this command BEFORE writing any plan document, analysis, or code.
+  Do NOT create plan documents or claudedocs files directly — Phase 1 of this command generates
   the plan with mandatory Axes Table and per-axis evaluation.
   NOT the same as /plan — /plan is lightweight and skips Axes Table and per-axis evaluation.
 disable-model-invocation: false
@@ -105,7 +105,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > - `scope`: Derived from the Design Doc's affected areas (or from the topic if no Design Doc)
 > - `anticipated_changes`: From the Design Doc's proposal (or from the topic description)
 >
-> The skill handles registry lookup internally — if a recent analysis of the same scope exists in Serena memory, it returns the existing report without re-running the full analysis. The analysis produces a durable report at `claudedocs/analysis/[scope-name].md`.
+> The skill handles registry lookup internally — if a recent analysis of the same scope exists, it returns the existing report without re-running the full analysis. The analysis produces a durable report at `claudedocs/analysis/[scope-name].md`.
 >
 > **Step 3: Scout the Codebase**
 >
