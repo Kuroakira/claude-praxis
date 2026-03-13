@@ -31,12 +31,20 @@ Scout agents complement Serena with broader context that semantic tools don't ca
 | `scope` | Yes | What to analyze: a module path, directory, cross-cutting concern name, or "project" for whole-project analysis |
 | `anticipated_changes` | No | What changes are planned (from Design Doc or task description). Enables the structural fitness assessment to evaluate whether the current structure supports these changes |
 | `research_context` | No | Findings from prior research phase (in `/design` workflow). When absent (e.g., in `/implement`), analysis relies solely on codebase scanning without external research context |
+| `mode` | No | `normal` (default) or `thorough`. Controls analysis depth and report structure. When absent or unrecognized, defaults to `normal` with a warning for unrecognized values |
+| `thorough_config` | No | Configuration for thorough mode (present only when `mode=thorough`). Contains: `registry_prefix` (string, e.g. `analysis-thorough-registry:`), `phase` (`1` or `2`), `selected_items` (list of debt items, Phase 2 only) |
+
+### Mode Fallback
+
+If `mode` is provided but not `normal` or `thorough`, emit a warning and proceed with `normal` mode:
+
+> ⚠️ Unrecognized mode '[value]'. Falling back to normal mode.
 
 ## Procedure
 
 ### Pre-check: Registry Lookup
 
-Before running the full analysis, check Serena memory for a recent analysis of the same scope. Use `list_memories` and look for entries with key prefix `analysis-registry:`. For each matching entry, `read_memory` to get the value (`[timestamp]|[report-path]`). If an entry exists where the entry's normalized scope contains the current scope, the timestamp is within 24 hours, and the report file exists — read and return the existing report. Skip Pass 1-3.
+Before running the full analysis, check Serena memory for a recent analysis of the same scope. Determine the registry prefix: use `thorough_config.registry_prefix` when provided, otherwise use `analysis-registry:`. Use `list_memories` and look for entries with this prefix. For each matching entry, `read_memory` to get the value (`[timestamp]|[report-path]`). If an entry exists where the entry's normalized scope contains the current scope, the timestamp is within 24 hours, and the report file exists — read and return the existing report. Skip Pass 1-3.
 
 If no matching entry is found, if Serena memory is unavailable, or if the report file does not exist, proceed with the full analysis (Pass 1-3 + 3b).
 
@@ -57,11 +65,28 @@ Dispatch one scout agent (subagent_type: `claude-praxis:scout`) with the symbol 
 
 **Output**: A structured list of components (enriched by both Serena symbols and scout observations), their dependencies, and flagged friction areas with severity ratings.
 
+**Step 1c — Debt Inventory (Thorough Mode, Phase 1 only)**
+
+When `mode=thorough` and `thorough_config.phase=1`, generate a comprehensive debt inventory after Steps 1a and 1b. This step runs in the same agent context as Steps 1a/1b (shared Serena data avoids re-reading).
+
+For each friction area identified (no 3-area limit in thorough mode), use Serena's `find_referencing_symbols` to collect preliminary impact metrics:
+
+- Affected file count
+- Reference count (callers)
+- Coupled module count
+
+Output a fixed-column Markdown table (the Debt Inventory Table):
+
+| Item | Description | Affected Files | Reference Count | Coupled Modules | Refactoring Direction |
+|------|-------------|---------------|-----------------|-----------------|----------------------|
+
+After the Debt Inventory Table is complete, skip Pass 2, Pass 3, and Pass 3b. Phase 1 produces an incomplete report (inventory only, no synthesis) — registering it would serve a partial report to downstream consumers expecting a full analysis. The command will PAUSE for user selection, then re-invoke with Phase 2.
+
 ### Pass 2: Targeted Deep Dives
 
-If Pass 1 identifies friction areas, analyze them in depth. One friction area at a time, up to a maximum of 3. Prioritize by severity (highest coupling/complexity first).
+**Normal mode**: If Pass 1 identifies friction areas, analyze them in depth. One friction area at a time, up to a maximum of 3. Prioritize by severity (highest coupling/complexity first). If Pass 1 identifies no friction areas, skip Pass 2 entirely. State in the report that no friction areas were detected and proceed to synthesis.
 
-If Pass 1 identifies no friction areas, skip Pass 2 entirely. State in the report that no friction areas were detected and proceed to synthesis.
+**Thorough mode (Phase 2)**: When `mode=thorough` and `thorough_config.phase=2`, analyze the items specified in `thorough_config.selected_items` instead of friction areas. No cap on number of items — scope is controlled by the human's selection. If the Phase 1 report file does not exist, emit a warning and proceed with a fresh Pass 1 (normal overview scan) before deep dives. The fresh scan provides background context — the selected items are analyzed regardless of whether the fresh scan identifies them as friction areas.
 
 **Step 2a — Reference Chain Analysis (Main Agent, Serena)**
 
@@ -87,8 +112,8 @@ After synthesis, register the completed analysis in Serena memory so downstream 
 
 **Step 1 — Determine normalized scope**: Collect the list of directories and files actually analyzed in Pass 1-3 (not the original scope string from the command). Sort alphabetically and join with commas. Example: `commands/,skills/architecture-analysis/,skills/guide-generation/`
 
-**Step 2 — Write registry entry**: Use `write_memory` with:
-- **Key**: `analysis-registry:[normalized-scope]` (e.g., `analysis-registry:commands/,skills/architecture-analysis/`)
+**Step 2 — Write registry entry**: Determine the registry prefix: use `thorough_config.registry_prefix` when provided, otherwise use `analysis-registry:`. Use `write_memory` with:
+- **Key**: `[registry-prefix][normalized-scope]` (e.g., `analysis-registry:commands/,skills/architecture-analysis/` or `analysis-thorough-registry:commands/,skills/architecture-analysis/`)
 - **Value**: `[ISO-8601-timestamp]|[report-file-path]` (e.g., `2026-03-08T14:30:00Z|claudedocs/analysis/analysis-reuse-pipeline.md`)
 
 If `write_memory` fails, proceed silently — registry is an optimization, not a requirement.
@@ -129,6 +154,21 @@ Friction signals with specific file references. For each observation:
 
 **Structural Fitness Assessment** (mandatory when `anticipated_changes` is provided):
 Does the current structure naturally support the anticipated changes, or would restructuring first make the changes simpler? If restructuring is recommended, describe the scope and expected benefit.
+
+## Debt Inventory (Thorough Mode)
+
+_This section is present only in thorough-mode reports._
+
+[Debt Inventory Table from Phase 1]
+
+## Impact Assessment (Thorough Mode)
+
+_This section is present only when Phase 2 deep dives have been completed._
+
+For each selected item:
+- Detailed reference chain analysis
+- Coupling depth assessment (beyond Phase 1's "breadth" metrics)
+- Specific refactoring recommendations with scope estimate
 
 ## Confidence Boundary
 

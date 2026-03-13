@@ -3,6 +3,7 @@ name: analyze
 description: >-
   Analyze codebase architecture — produces a durable Markdown+mermaid report with structural
   friction detection and refactoring opportunities.
+  Supports --thorough mode for comprehensive debt inventory with staged interaction.
   TRIGGER when: user asks to analyze, understand, or examine the architecture of code —
   a module, directory, concern, or the whole project.
   Also invoked as a workflow phase within /design and /implement (see those commands).
@@ -22,9 +23,13 @@ Ask the user what to analyze if not already specified. Scope can be:
 
 If the user has already specified the scope (e.g., `/analyze hooks`), proceed directly.
 
+Check for `--thorough` flag. If present, set mode to `thorough`. If an unrecognized flag is provided, warn and proceed with normal mode:
+
+> ⚠️ Unrecognized flag '[value]'. Proceeding with normal mode.
+
 ## Step 2: Run Analysis
 
-Invoke `architecture-analysis` skill with:
+**Normal mode**: Invoke `architecture-analysis` skill with:
 
 | Parameter | Value |
 |-----------|-------|
@@ -32,9 +37,47 @@ Invoke `architecture-analysis` skill with:
 | `anticipated_changes` | If the user mentioned planned changes, include them. Otherwise omit |
 | `research_context` | Omit (standalone mode has no prior research phase) |
 
-The skill executes the multi-pass analysis (overview → targeted deep dives → synthesis) and produces the report.
+The skill executes the multi-pass analysis (overview → targeted deep dives → synthesis) and produces the report. Proceed to Step 3.
+
+**Thorough mode (Phase 1)**: Invoke `architecture-analysis` skill with:
+
+| Parameter | Value |
+|-----------|-------|
+| `scope` | The scope from Step 1 |
+| `anticipated_changes` | Same as normal mode |
+| `mode` | `thorough` |
+| `thorough_config` | `{ registry_prefix: "analysis-thorough-registry:", phase: 1 }` |
+
+The skill runs Pass 1 (overview scan + Debt Inventory) and returns without Pass 2/3. Proceed to Step 2b.
+
+## Step 2b: Select Items for Deep Dive (Thorough Mode Only)
+
+After Phase 1 completes:
+
+1. Save the Phase 1 report to `claudedocs/analysis/[scope-name]-thorough.md`
+2. Present the Debt Inventory Table to the user
+3. **PAUSE** — ask the user to select which items to deep-dive:
+
+> "Debt inventory generated with [N] items. Select items for detailed analysis (by number or name), or 'all' for comprehensive analysis."
+
+Wait for user selection before proceeding.
+
+## Step 2c: Run Deep Dives (Thorough Mode Only)
+
+After user selection, invoke `architecture-analysis` skill again with:
+
+| Parameter | Value |
+|-----------|-------|
+| `scope` | Same as Phase 1 |
+| `anticipated_changes` | Same as Phase 1 |
+| `mode` | `thorough` |
+| `thorough_config` | `{ registry_prefix: "analysis-thorough-registry:", phase: 2, selected_items: [user selection] }` |
+
+The skill runs Pass 2 (deep dives on selected items), Pass 3 (synthesis), and Pass 3b (registry). The skill appends Phase 2 results to the existing report.
 
 ## Step 3: Save and Present
+
+**Normal mode**:
 
 1. Save the report to `claudedocs/analysis/[scope-name].md` (kebab-case derived from scope)
 2. If a report already exists at that path, overwrite it (no versioning — latest analysis only)
@@ -42,6 +85,14 @@ The skill executes the multi-pass analysis (overview → targeted deep dives →
    - Number of components identified
    - Friction areas found (if any)
    - Refactoring opportunities (if any)
+   - What was NOT assessed (from Confidence Boundary)
+
+**Thorough mode**:
+
+The report at `claudedocs/analysis/[scope-name]-thorough.md` is already assembled by the skill (Phase 1 saved in Step 2b, Phase 2 appended in Step 2c). Present the report to the user with a summary:
+   - Number of debt items identified (from Phase 1 inventory)
+   - Number of items analyzed in detail (from Phase 2 deep dives)
+   - Key findings from deep dives
    - What was NOT assessed (from Confidence Boundary)
 
 The report is now available for the user to read and for subsequent `/design` or `/implement` workflows to consume as input.
