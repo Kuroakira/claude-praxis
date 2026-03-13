@@ -32,6 +32,10 @@ Scout agents complement Serena with broader context that semantic tools don't ca
 
 ## Procedure
 
+### Pre-step: Session Cache (Optional)
+
+If the `session-cache:session-cache-protocol` skill is available, invoke it before starting file reads. This reduces redundant file reads when the same scope has been partially read earlier in the session. If unavailable, proceed without — this step is an optimization, not a requirement.
+
 ### Pass 1: Overview Scan
 
 **Step 1a — Semantic Structure (Main Agent, Serena)**
@@ -288,4 +292,5 @@ At the start of Pass 3, use ToolSearch to check if any image generation MCP tool
 - **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only). Main agent writes the guide
 - **External libraries**: mermaid.js 11.4.1 (jsDelivr CDN) for diagram rendering, highlight.js 11.11.1 (cdnjs CDN, SRI verified) for syntax highlighting. Both loaded client-side with version pinning. CDN URLs and SRI hashes are maintained in `assets/head.html`
 - **Image generation**: Optional MCP-based concept visuals (ToolSearch detection, silent skip if unavailable)
+- **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across agents when available
 - **Invoked by**: `commands/guide.md`

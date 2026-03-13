@@ -16,6 +16,10 @@ Dispatch a fresh subagent per task, review in two stages for quality, then recei
 - **Parallel execution** — independent tasks can run simultaneously
 - **Focused attention** — one task, one agent, full context budget
 
+## Pre-step: Session Cache (Optional)
+
+If the `session-cache:session-cache-protocol` skill is available, invoke it before reading shared files. This reduces redundant file reads when the same files have been read earlier in the session. If unavailable, proceed without — this step is an optimization, not a requirement.
+
 ## The Pipeline
 
 ```
@@ -154,4 +158,5 @@ Reviewers read files independently per the Context Isolation Rule in `catalog/re
 - TDD procedure: `tdd-cycle` skill — RED/GREEN/REFACTOR per task
 - Final review uses `dispatch-reviewers` (thorough tier) — reviewers selected from `catalog/reviewers.md`
 - Key Decisions Briefing feeds into `/compound` — learnings from implementation decisions
+- **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across agents when available
 - See `agent-team-execution` for parallel exploration tasks (research, review, debugging)
