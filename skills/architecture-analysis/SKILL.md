@@ -42,6 +42,10 @@ If `mode` is provided but not `normal` or `thorough`, emit a warning and proceed
 
 ## Procedure
 
+### Pre-step: Session Cache (Optional)
+
+If the `session-cache:session-cache-protocol` skill is available, invoke it before starting file reads. This reduces redundant file reads when the same scope has been partially read earlier in the session. If unavailable, proceed without — this step is an optimization, not a requirement.
+
 ### Pre-check: Registry Lookup
 
 Before running the full analysis, check Serena memory for a recent analysis of the same scope. Determine the registry prefix: use `thorough_config.registry_prefix` when provided, otherwise use `analysis-registry:`. Use `list_memories` and look for entries with this prefix. For each matching entry, `read_memory` to get the value (`[timestamp]|[report-path]`). If an entry exists where the entry's normalized scope contains the current scope, the timestamp is within 24 hours, and the report file exists — read and return the existing report. Skip Pass 1-3.
@@ -185,4 +189,5 @@ Explicit "assessed / not assessed" scope. Each observation above includes a veri
 - **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for precise symbol hierarchy and cross-file dependency tracing — run by the main agent
 - **Analysis registry**: Serena MCP (`list_memories`, `read_memory`, `write_memory`) for registry lookup (Pre-check) and registration (Pass 3b)
 - **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only)
+- **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across agents when available
 - **Invoked by**: `commands/analyze.md`, `commands/design.md`, `commands/implement.md`

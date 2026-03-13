@@ -10,6 +10,10 @@ Multiple perspectives, your synthesis. Agent teams explore in parallel — you i
 
 Requires: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` enabled in settings.json.
 
+## Pre-step: Session Cache (Optional)
+
+If the `session-cache:session-cache-protocol` skill is available, invoke it before dispatching agents. This reduces redundant file reads when parallel agents explore overlapping files. If unavailable, proceed without — this step is an optimization, not a requirement.
+
 ## When to Use Agent Teams
 
 | Use Case | Agent Teams? | Why |
@@ -184,4 +188,5 @@ Start with 3 teammates. Only go to 5 for debugging with many plausible hypothese
 - Debugging output feeds into fix implementation via `subagent-driven-development`
 - **Note**: `/claude-praxis:debug` no longer depends on this skill for hypothesis investigation. It dispatches `hypothesis-investigator` agents directly via Task tool
 - All outputs feed into `/compound` — extract learnings from what agents discovered
+- **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across parallel agents when available
 - **Never use for implementation** — use `subagent-driven-development` instead
