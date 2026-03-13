@@ -24,21 +24,21 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 
 | Workflow | What Happens | What You Do |
 |----------|-------------|-------------|
-| `/feature-spec` | AI-driven interview to capture requirements, planner selects reviewers based on spec complexity (light → thorough) | Answer interview questions, approve the FeatureSpec |
-| `/design` | Planner-driven research + architecture analysis, writes the Design Doc, graduated review (light for outline, thorough for final) | Review and approve the final Design Doc |
-| `/implement` | TDD per task with per-task review selection, graduated final review (3+ reviewers). Accepts plan from `/plan` or performs inline breakdown | Approve inline breakdown (or provide plan), make decisions at implementation choice points |
-| `/debug` | Reproduces, isolates, diagnoses — for complex problems, planner dispatches parallel investigation agents | Provide context between phases, review the diagnosis |
+| `/feature-spec [feature]` | AI-driven interview to capture requirements, planner selects reviewers based on spec complexity (light → thorough) | Answer interview questions, approve the FeatureSpec |
+| `/design [topic]` | Planner-driven research + architecture analysis, writes the Design Doc, graduated review (light for outline, thorough for final) | Review and approve the final Design Doc |
+| `/implement [plan-path]` | TDD per task with per-task review selection, graduated final review (3+ reviewers). Accepts plan from `/plan` or performs inline breakdown | Approve inline breakdown (or provide plan), make decisions at implementation choice points |
+| `/debug [problem]` | Reproduces, isolates, diagnoses — for complex problems, planner dispatches parallel investigation agents | Provide context between phases, review the diagnosis |
 
 ### Supporting Commands
 
 | Command | When to Use Directly |
 |---------|---------------------|
-| `/analyze` | Analyze codebase architecture — produces a Markdown+mermaid report with structural friction detection |
-| `/guide` | Generate a codebase walkthrough guide as a multi-page HTML book |
-| `/compare` | Structured comparison of 2-4 options with axes evaluation — when facing a decision with multiple viable approaches |
-| `/research` | Explore a problem space without committing to a Design Doc |
-| `/plan` | Create a thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
-| `/review` | Code review on existing code outside the implementation flow |
+| `/analyze [scope] [--thorough]` | Analyze codebase architecture — produces a Markdown+mermaid report with structural friction detection |
+| `/guide [scope]` | Generate a codebase walkthrough guide as a multi-page HTML book |
+| `/compare [topic]` | Structured comparison of 2-4 options with axes evaluation — when facing a decision with multiple viable approaches |
+| `/research [topic]` | Explore a problem space without committing to a Design Doc |
+| `/plan [topic] [design-doc-path]` | Create a thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
+| `/review` | Code review on existing code outside the implementation flow (scope auto-detected from git diff) |
 | `/compound` | Extract and classify learnings from completed work |
 | `/understanding-check` | Verify you can explain key decisions in AI-generated work (recommended: separate session) |
 
@@ -107,18 +107,30 @@ rm ~/.claude/skills/claude-praxis
 
 | Command | Purpose |
 |---------|---------|
-| `/feature-spec` | **Main workflow**: AI-driven interview + parallel draft review → FeatureSpec |
-| `/design` | **Main workflow**: Parallel research team + outline + write + parallel review team → Design Doc |
-| `/implement` | **Main workflow**: TDD per task + parallel review team → verified code (accepts plan from `/plan`) |
-| `/debug` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
-| `/analyze` | Standalone: codebase architecture analysis → Markdown+mermaid report |
-| `/guide` | Standalone: codebase walkthrough guide → multi-page HTML book |
-| `/compare` | Standalone: structured comparison of 2-4 options with axes evaluation |
-| `/research` | Standalone: explore a problem space without committing to a Design Doc |
-| `/plan` | Standalone: thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
-| `/review` | Standalone: code review on existing code |
+| `/feature-spec [feature]` | **Main workflow**: AI-driven interview + parallel draft review → FeatureSpec |
+| `/design [topic]` | **Main workflow**: Parallel research team + outline + write + parallel review team → Design Doc |
+| `/implement [plan-path]` | **Main workflow**: TDD per task + parallel review team → verified code. Without plan path, performs inline breakdown |
+| `/debug [problem]` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
+| `/analyze [scope] [--thorough]` | Standalone: codebase architecture analysis → Markdown+mermaid report |
+| `/guide [scope]` | Standalone: codebase walkthrough guide → multi-page HTML book |
+| `/compare [topic]` | Standalone: structured comparison of 2-4 options with axes evaluation |
+| `/research [topic]` | Standalone: explore a problem space without committing to a Design Doc |
+| `/plan [topic] [design-doc-path]` | Standalone: thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
+| `/review` | Standalone: code review on existing code (scope auto-detected from git diff) |
 | `/compound` | Extract learnings and carry them to the next project |
 | `/understanding-check` | Standalone: verify understanding of AI-generated work |
+
+### Command Options Reference
+
+| Option | Commands | Description |
+|--------|----------|-------------|
+| `[scope]` | `/analyze`, `/guide` | Target: module name, directory, cross-cutting concern, or `project` |
+| `[topic]` | `/design`, `/compare`, `/research`, `/plan` | Subject to design, compare, research, or plan |
+| `[feature]` | `/feature-spec` | Feature name or description (clarified interactively if omitted) |
+| `[problem]` | `/debug` | Problem description (clarified in Phase 1 if omitted) |
+| `[plan-path]` | `/implement` | Path to plan from `/plan` (e.g., `claudedocs/plans/feature-plan.md`). Omit for inline breakdown |
+| `[design-doc-path]` | `/plan` | Path to existing Design Doc to plan against |
+| `--thorough` | `/analyze` | Two-phase analysis: generates debt inventory, then user selects items for deep dive |
 
 ## Quality Rules (Defaults)
 
