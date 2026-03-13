@@ -26,7 +26,7 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 |----------|-------------|-------------|
 | `/feature-spec` | AI-driven interview to capture requirements, planner selects reviewers based on spec complexity (light → thorough) | Answer interview questions, approve the FeatureSpec |
 | `/design` | Planner-driven research + architecture analysis, writes the Design Doc, graduated review (light for outline, thorough for final) | Review and approve the final Design Doc |
-| `/implement` | Architecture analysis + planner-driven plan, TDD per task with per-task review selection, graduated final review (3+ reviewers) | Approve the plan, make decisions at implementation choice points |
+| `/implement` | TDD per task with per-task review selection, graduated final review (3+ reviewers). Accepts plan from `/plan` or performs inline breakdown | Approve inline breakdown (or provide plan), make decisions at implementation choice points |
 | `/debug` | Reproduces, isolates, diagnoses — for complex problems, planner dispatches parallel investigation agents | Provide context between phases, review the diagnosis |
 
 ### Supporting Commands
@@ -37,7 +37,7 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 | `/guide` | Generate a codebase walkthrough guide as a multi-page HTML book |
 | `/compare` | Structured comparison of 2-4 options with axes evaluation — when facing a decision with multiple viable approaches |
 | `/research` | Explore a problem space without committing to a Design Doc |
-| `/plan` | Create just an implementation plan, not the full implementation |
+| `/plan` | Create a thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
 | `/review` | Code review on existing code outside the implementation flow |
 | `/compound` | Extract and classify learnings from completed work |
 | `/understanding-check` | Verify you can explain key decisions in AI-generated work (recommended: separate session) |
@@ -109,13 +109,13 @@ rm ~/.claude/skills/claude-praxis
 |---------|---------|
 | `/feature-spec` | **Main workflow**: AI-driven interview + parallel draft review → FeatureSpec |
 | `/design` | **Main workflow**: Parallel research team + outline + write + parallel review team → Design Doc |
-| `/implement` | **Main workflow**: Scout + plan + TDD per task + parallel review team → verified code |
+| `/implement` | **Main workflow**: TDD per task + parallel review team → verified code (accepts plan from `/plan`) |
 | `/debug` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
 | `/analyze` | Standalone: codebase architecture analysis → Markdown+mermaid report |
 | `/guide` | Standalone: codebase walkthrough guide → multi-page HTML book |
 | `/compare` | Standalone: structured comparison of 2-4 options with axes evaluation |
 | `/research` | Standalone: explore a problem space without committing to a Design Doc |
-| `/plan` | Standalone: create an implementation plan without starting implementation |
+| `/plan` | Standalone: thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
 | `/review` | Standalone: code review on existing code |
 | `/compound` | Extract learnings and carry them to the next project |
 | `/understanding-check` | Standalone: verify understanding of AI-generated work |

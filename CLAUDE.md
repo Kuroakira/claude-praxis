@@ -34,13 +34,12 @@ claude-praxis/
 ├── commands/
 │   ├── feature-spec.md          # /feature-spec — AI-driven interview to capture requirements
 │   ├── design.md                # /design — planner-driven research + outline + write Design Doc
-│   ├── implement.md             # /implement — planner-driven plan + TDD + graduated review
-│   ├── implement-plan.md        # /implement-plan — thorough planning (G0+G1 from /implement)
+│   ├── implement.md             # /implement — TDD per task + graduated review (accepts plan from /plan)
 │   ├── analyze.md               # /analyze — codebase architecture analysis + durable report
 │   ├── guide.md                 # /guide — codebase walkthrough guide for human understanding
 │   ├── debug.md                 # /debug — investigate + diagnose + document
 │   ├── research.md              # /research — standalone research
-│   ├── plan.md                  # /plan — standalone planning
+│   ├── plan.md                  # /plan — thorough planning with Axes Table and architecture analysis
 │   ├── review.md                # /review — standalone code review
 │   ├── compare.md               # /compare — structured multi-option comparison + selection
 │   ├── compound.md              # /compound — extract and accumulate learnings

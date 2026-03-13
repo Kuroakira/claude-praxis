@@ -94,20 +94,20 @@ describe("markers", () => {
     });
 
     it("does not match when skill name is a prefix of another skill", () => {
-      appendSkillMarker(testMarkerDir, "session1", "implement-plan");
-      expect(hasSkill(testMarkerDir, "session1", "implement")).toBe(false);
+      appendSkillMarker(testMarkerDir, "session1", "context-persistence");
+      expect(hasSkill(testMarkerDir, "session1", "context")).toBe(false);
     });
 
     it("does not match when colon-prefixed skill name is a prefix of another", () => {
-      appendSkillMarker(testMarkerDir, "session1", "claude-praxis:implement-plan");
-      expect(hasSkill(testMarkerDir, "session1", "implement")).toBe(false);
+      appendSkillMarker(testMarkerDir, "session1", "claude-praxis:context-persistence");
+      expect(hasSkill(testMarkerDir, "session1", "context")).toBe(false);
     });
 
     it("matches exact skill name alongside similar names", () => {
-      appendSkillMarker(testMarkerDir, "session1", "implement-plan");
+      appendSkillMarker(testMarkerDir, "session1", "context-persistence");
       appendSkillMarker(testMarkerDir, "session1", "claude-praxis:implement");
       expect(hasSkill(testMarkerDir, "session1", "implement")).toBe(true);
-      expect(hasSkill(testMarkerDir, "session1", "implement-plan")).toBe(true);
+      expect(hasSkill(testMarkerDir, "session1", "context-persistence")).toBe(true);
     });
   });
 
