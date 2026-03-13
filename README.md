@@ -132,6 +132,12 @@ rm ~/.claude/skills/claude-praxis
 - **No Dynamic Code Execution** - No eval(), Function(), exec()
 - **Dependency Awareness** - Check before adding dependencies
 
+## Recommended MCP Servers
+
+| MCP Server | Purpose | Install |
+|------------|---------|---------|
+| [session-cache-mcp](https://www.npmjs.com/package/session-cache-mcp) | Eliminates redundant file reads across subagents via shared in-memory cache. Provides `check_cache`, `record_read`, `get_session_map` tools. | `claude mcp add session-cache -s user -- npx -y session-cache-mcp` |
+
 ## Planned
 
 - `incremental-review` - Show small changes with reasoning
