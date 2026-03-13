@@ -7,16 +7,6 @@ describe("detectPhase", () => {
       expect(detectPhase("/implement")).toContain("Phase detected: implement");
     });
 
-    it("detects /implement-plan slash command", () => {
-      const result = detectPhase("/implement-plan");
-      expect(result).toContain("Phase detected: implement-plan");
-    });
-
-    it("does not confuse /implement-plan with /implement", () => {
-      const result = detectPhase("/implement-plan");
-      expect(result).not.toContain("Phase detected: implement.");
-    });
-
     it("detects /design slash command", () => {
       expect(detectPhase("/design")).toContain("Phase detected: design");
     });
@@ -125,7 +115,7 @@ describe("detectPhase", () => {
     it("includes description for implement phase", () => {
       const result = detectPhase("実装して");
       expect(result).toContain(" — ");
-      expect(result).toContain("Phase 1 creates the implementation plan");
+      expect(result).toContain("TDD-driven development with graduated review");
     });
 
     it("includes description for design phase", () => {
@@ -140,7 +130,7 @@ describe("detectPhase", () => {
 
     it("includes description in slash command output", () => {
       const result = detectPhase("/implement");
-      expect(result).toContain("Phase 1 creates the implementation plan");
+      expect(result).toContain("TDD-driven development with graduated review");
     });
   });
 });
