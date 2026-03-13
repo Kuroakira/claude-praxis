@@ -75,11 +75,12 @@ The human reads the briefing, reviews the code, and asks questions if anything i
 ## Controller Responsibilities
 
 1. **Read the plan once** — extract every task with full text
-2. **Dispatch one agent per task** — provide complete context in the prompt
-3. **Never let subagents read the plan file** — you provide the task text
-4. **Run reviews after each task** — not at the end
-5. **Present briefing to human** — key decisions and rationale
-6. **Track progress** — use TodoWrite to show status
+2. **Identify shared files** — extract file lists from each task, compute set intersection to find files referenced by 2+ tasks. These are shared files. Read them once (subject to the 30,000-token budget in Shared Context Token Budget below) and embed their content in each relevant subagent's prompt via the `## Shared Context` section
+3. **Dispatch one agent per task** — provide complete context in the prompt
+4. **Never let subagents read the plan file** — you provide the task text
+5. **Run reviews after each task** — not at the end
+6. **Present briefing to human** — key decisions and rationale
+7. **Track progress** — use TodoWrite to show status
 
 ## Implementer Prompt Template
 
@@ -89,9 +90,18 @@ When dispatching a task agent, include:
 ## Task
 [Full task description from plan]
 
+## Shared Context
+Files referenced by multiple tasks, pre-read by the Controller.
+
+### [file path]
+[full file content]
+
+### [file path]
+[full file content]
+
 ## Context
 - Project: [project description]
-- Relevant files: [file paths]
+- Relevant files: [task-specific file paths only — shared files are already in Shared Context above]
 - Dependencies: [what this task depends on]
 - Constraints: [quality rules, patterns to follow]
 
@@ -101,6 +111,16 @@ When dispatching a task agent, include:
 3. Do a self-review before reporting back
 4. Report: what you did, key decisions you made and WHY, verification output
 ```
+
+## Shared Context Token Budget
+
+Upper limit: **30,000 tokens** for all shared file content combined.
+
+**Priority ordering**: Files referenced by more tasks have higher priority.
+
+**When total shared content exceeds the budget**: Include highest-priority files that fit within the 30,000 token budget. Remaining shared files fall back to path references listed alongside task-specific files in the `## Context` section.
+
+This budget is a safety valve for edge cases (e.g., a plan where many large files overlap). In most plans, total shared content stays well under the limit and all shared files are embedded in full.
 
 ## Review Dispatch
 
