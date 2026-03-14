@@ -57,11 +57,13 @@ Rules:
 
 - **What to evaluate**: "Does the existing structure naturally support this change, or would restructuring first make the implementation simpler?"
 - **Axis format**: Choices like "A: Extend current structure / B: Restructure [specific area] first, then add feature"
+- **Quantitative assessment**: When Serena is available, use `get_symbols_overview` on the affected scope to get the precise symbol hierarchy. Use `find_referencing_symbols` on key symbols to measure coupling (reference count, coupled module count). These metrics inform the verdict — high reference counts across many modules signal structural friction. When Serena is unavailable, rely on scout findings and Grep-based reference counting
 - **Friction signals that trigger "Requires exploration"**:
   - Feature touches many files relative to its conceptual complexity
   - Implementation requires adding conditionals to accommodate the new behavior
   - Patterns need to be duplicated because the structure doesn't allow reuse
-- **Default**: Do not default to incremental addition. Evaluate structural fitness based on scout findings.
+  - Reference data (Serena or Grep) shows high cross-module coupling on symbols that would need modification
+- **Default**: Do not default to incremental addition. Evaluate structural fitness based on quantitative data and scout findings.
 
 The Axes Table structure (columns, verdict options) is defined by the calling command. The planner's responsibility is to generate the table content — analyzing the task and populating each axis with informed verdicts based on the context gathered.
 
@@ -247,5 +249,6 @@ The planner operates within the command's guardrails. It adds judgment to agent 
 
 - **Invoked by**: `commands/design.md`, `commands/implement.md`, `commands/feature-spec.md`, `commands/debug.md`
 - **Catalogs**: `catalog/reviewers.md`, `catalog/researchers.md` (including `axis-evaluator` for per-axis evaluation)
+- **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for quantitative structural fitness evaluation in Step 1
 - **Dispatches**: `dispatch-reviewers` for review steps, Task tool for researcher/scout/axis-evaluator dispatch
 - **Principle**: Constrained dynamic — commands define structure, planner provides judgment

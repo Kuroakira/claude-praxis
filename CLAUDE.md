@@ -54,7 +54,7 @@ claude-praxis/
 │   ├── rule-evolution/          # Propose and add new rules from discovered issues
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
 │   ├── agent-team-execution/    # Parallel exploration: research, review teams, debugging
-│   ├── systematic-debugging/    # 4-phase root cause analysis
+│   ├── systematic-debugging/    # 3-phase root cause analysis (reproduce, isolate, diagnose)
 │   ├── context-persistence/     # Stock/Flow memory model for context survival
 │   ├── understanding-check/     # Explain-Compare-Discover for understanding verification
 │   ├── requesting-code-review/  # Dispatch reviewer after tasks

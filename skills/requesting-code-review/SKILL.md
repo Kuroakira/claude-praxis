@@ -19,8 +19,9 @@ After completing implementation, suggest dispatching a code review before moving
 1. **Verify your work first** (follow `rules/verification.md`)
 2. **Collect changed file paths** — these become the `target` for `dispatch-reviewers`
 3. **Assess scope** to determine tier and reviewer selection:
-   - 1-3 files, single module → light: `code-quality` + `devils-advocate`
-   - 4+ files, cross-module, or security-sensitive → thorough: `code-quality` + `simplicity` + `general-review` + `security-perf` + `devils-advocate`
+   - When Serena is available, use `find_referencing_symbols` on key changed symbols to measure blast radius (reference count, coupled module count). When unavailable, estimate from file count and Grep-based reference search
+   - Low blast radius (few references, single module) → light: `code-quality` + `devils-advocate`
+   - High blast radius (many references, cross-module coupling), or security-sensitive → thorough: `code-quality` + `simplicity` + `general-review` + `security-perf` + `devils-advocate`
 4. **Dispatch via `dispatch-reviewers`** with file paths only as target
 5. **Wait for the review** — do not proceed until review is complete
 6. **Address feedback** using `receiving-code-review` skill
@@ -42,6 +43,7 @@ Before dispatching, note internally:
 
 ## Integration
 
+- **Semantic tools**: Serena MCP (`find_referencing_symbols`) for quantitative blast radius assessment in Step 3
 - Requires `rules/verification.md` — verify before requesting review
 - Dispatches via `dispatch-reviewers` — graduated tier with context isolation
 - Pairs with `receiving-code-review` — how to handle the feedback

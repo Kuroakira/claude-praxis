@@ -39,12 +39,15 @@ Improve the code while keeping all tests green.
 
 After REFACTOR, before committing, evaluate whether the implementation is fighting the existing structure. This recreates the feedback loop that hand-coding naturally provides — where friction signals "the architecture needs rethinking."
 
+**Quantitative friction check**: When Serena is available, use `find_referencing_symbols` on the key symbols you changed to measure coupling metrics — reference count (callers), coupled module count. When unavailable, use Grep to count references. High numbers relative to the feature's conceptual complexity confirm structural friction objectively.
+
 **Friction signals** (any one warrants a PAUSE):
 - This task touched more files than the feature's complexity warrants
 - You added conditionals or branches to accommodate the new behavior instead of the structure naturally supporting it
 - Tests required extensive mocking or setup because components are tightly coupled
 - You duplicated a pattern that already exists elsewhere (the structure doesn't allow reuse)
 - The "simplest implementation" still feels complex
+- Reference data (Serena or Grep) shows high cross-module coupling on the changed symbols
 
 **When friction is detected**: PAUSE and present to the human:
 
@@ -75,6 +78,7 @@ The human decides. This is where engineering judgment grows.
 
 ## Integration
 
+- **Semantic tools**: Serena MCP (`find_referencing_symbols`) for quantitative coupling metrics in Structural Friction Check
 - **Constraint**: `rules/code-quality.md` — "TDD Required. Delete and redo."
 - **Invoked by**: `commands/implement.md` Phase 2 Step A
 - **Referenced by**: `subagent-driven-development` Implementer Prompt Template
