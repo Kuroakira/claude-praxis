@@ -1,6 +1,6 @@
 ---
 name: architecture-analysis
-description: Use when analyzing codebase architecture — produces durable Markdown+mermaid reports with structural friction detection. Invoked by /analyze command and as a workflow phase in /design and /implement.
+description: Use when analyzing codebase architecture — produces durable Markdown+mermaid reports with structural friction detection. Supports code-centric, document-centric, and mixed projects via auto-detection. Invoked by /analyze command and as a workflow phase in /design and /implement.
 user-invokable: false
 ---
 
@@ -16,13 +16,15 @@ DRILL TO SOURCE — EVERY FINDING REFERENCES SPECIFIC FILE PATHS AND SYMBOLS
 
 No vague claims. Every observation in the report must include a file path (and symbol name where applicable) so the human can verify it by reading the code. The report is a hypothesis document — findings say "this appears to be" rather than "this is."
 
-## Semantic-First Approach
+## Analysis Methods
 
-Use Serena's semantic analysis tools as the primary source for structural data. Serena provides LSP-backed precision — symbol hierarchy from `get_symbols_overview`, cross-file reference chains from `find_referencing_symbols`. No guessing from grep patterns.
+Three methods, each with scope-appropriate strengths. The content-type detection in Step 1a determines which methods apply.
 
-Scout agents complement Serena with broader context that semantic tools don't capture: directory organization, import conventions, documentation patterns, and architectural intent.
+- **Serena** (code scopes): LSP-backed precision — symbol hierarchy from `get_symbols_overview`, cross-file reference chains from `find_referencing_symbols`. The primary structural data source for code.
+- **Grep patterns** (document scopes): Deterministic cross-reference scanning — 9 validated regex patterns detect typed relationships between Markdown files. The primary structural data source for documents.
+- **Scouts** (all scopes): Broad context that structural tools don't capture — directory organization, naming conventions, architectural intent. Scouts receive structural data (Serena symbols or Grep references) as context to enrich their exploration.
 
-**Division of labor**: Serena (main agent) → structural facts. Scouts → contextual interpretation.
+Each method operates on different content types. Grep does not replace Serena — code scopes use Serena, document scopes use Grep, mixed scopes use both.
 
 ## Parameters
 
@@ -54,20 +56,70 @@ If no matching entry is found, if Serena memory is unavailable, or if the report
 
 ### Pass 1: Overview Scan
 
-**Step 1a — Semantic Structure (Main Agent, Serena)**
+**Step 1a — Semantic Structure + Content-Type Detection (Main Agent)**
 
 Use Serena's `get_symbols_overview` on key files/directories within the scope to get the precise symbol hierarchy (classes, functions, methods, and their nesting). This provides the structural map.
 
 - Project-wide scope: scan each top-level module/directory
 - Module scope: scan all files in the module
 
-The output is a structured symbol map: what symbols exist, where, and how they nest.
+After the Serena probe, classify each directory in the scope by content type. Two binary checks per directory:
+
+1. Did Serena return code symbols (classes, functions, methods — not headers)?
+2. Do `.md` files exist in this directory (check via Glob)?
+
+Classification:
+
+| Code symbols? | `.md` files? | Content type |
+|---|---|---|
+| Yes | No | `code` |
+| No | Yes | `document` |
+| Yes | Yes | `mixed` |
+| No | No | `code` (fallback) |
+
+Record the per-directory classification. It determines which downstream steps execute: `code` scopes follow the existing analysis path unchanged. `document` and `mixed` scopes activate additional steps (Step 1d, extended Step 1c, adapted Step 2a).
+
+The output is a structured symbol map (from Serena) and a content-type classification per directory.
 
 **Step 1b — Broad Context (Scout Agent)**
 
 Dispatch one scout agent (subagent_type: `claude-praxis:scout`) with the symbol map from Step 1a as context. The scout adds what Serena doesn't capture: directory organization, import patterns, documentation, config files, and architectural conventions. For each component: note responsibility, key dependencies, and public interface surface. Flag friction signals: high coupling, scattered responsibility, excessive complexity. Every finding must reference specific file paths.
 
 **Output**: A structured list of components (enriched by both Serena symbols and scout observations), their dependencies, and flagged friction areas with severity ratings.
+
+**Step 1d — Document Reference Scan (Main Agent, Grep)**
+
+Runs only when Step 1a classified any directory as `document` or `mixed`. Skipped entirely for `code`-only scopes.
+
+Step 1d executes before Step 1c (non-alphabetical order) because Step 1c's document debt assessment requires the reference graph produced here. Without this data, orphaned files and broken references cannot be detected.
+
+Scan all `.md` files in `document` and `mixed` directories using these 9 validated Grep patterns:
+
+| Pattern | Regex | Detects |
+|---|---|---|
+| @import rules | `^@rules/` | Rule imports in CLAUDE.md |
+| Skill invocations | ``Invoke\s+`[a-z-]+` `` | Skill calls in commands/skills |
+| Agent type references | `claude-praxis:[a-z]+` | Agent dispatch references |
+| Catalog references | `catalog/[a-z]+\.md` | Catalog file references |
+| Skill-to-skill deps | `Invoked by` | Explicit invocation metadata |
+| Rule references | `rules/[a-z-]+\.md` | Rule file references |
+| File path references | `claudedocs/` | Output/analysis path references |
+| Progress references | `progress\.md` | Progress file data flow |
+| Analysis registry | `analysis-registry:` | Registry key references |
+
+For each match, extract a triple: (source file, target entity, pattern type). Map each pattern type to one of 5 semantic relationship types:
+
+| Relationship type | Meaning | Included patterns |
+|---|---|---|
+| **invokes** | A triggers B's execution | Skill invocations, skill-to-skill deps |
+| **dispatches** | A delegates execution to B | Agent type references |
+| **constrains** | A limits B's behavior | @import rules, rule references |
+| **selects-from** | A picks from B's entries | Catalog references |
+| **records/reads** | A writes to / reads from B | File path references, progress references, analysis registry |
+
+After scanning, validate each target: does the referenced file or section exist? Flag unresolvable targets as broken references.
+
+**Output**: A set of typed reference triples, relationship counts per type, and a list of broken references. This data feeds Step 1c (document debt) and Pass 3 (synthesis).
 
 **Step 1c — Debt Inventory (Thorough Mode, Phase 1 only)**
 
@@ -84,6 +136,15 @@ Output a fixed-column Markdown table (the Debt Inventory Table):
 | Item | Description | Affected Files | Reference Count | Coupled Modules | Refactoring Direction |
 |------|-------------|---------------|-----------------|-----------------|----------------------|
 
+When the scope includes `document` or `mixed` directories, add document-specific debt items to the Debt Inventory Table using Step 1d's reference data:
+
+- **Orphaned files**: `.md` files with zero incoming references in the relationship graph — no other file invokes, dispatches, constrains, selects-from, or records/reads them
+- **Metadata gaps**: Files missing expected metadata (e.g., skills without `Invoked by`, commands without skill invocation patterns)
+- **Broken references**: Targets in Step 1d output that could not be resolved to existing files or sections
+- **Circular reference chains**: Cycles detected in the typed relationship graph (e.g., skill A invokes skill B which invokes skill A)
+
+These categories appear alongside code debt items in the same Debt Inventory Table. For document debt, use reference count from the relationship graph as the impact metric.
+
 After the Debt Inventory Table is complete, skip Pass 2, Pass 3, and Pass 3b. Phase 1 produces an incomplete report (inventory only, no synthesis) — registering it would serve a partial report to downstream consumers expecting a full analysis. The command will PAUSE for user selection, then re-invoke with Phase 2.
 
 ### Pass 2: Targeted Deep Dives
@@ -92,9 +153,11 @@ After the Debt Inventory Table is complete, skip Pass 2, Pass 3, and Pass 3b. Ph
 
 **Thorough mode (Phase 2)**: When `mode=thorough` and `thorough_config.phase=2`, analyze the items specified in `thorough_config.selected_items` instead of friction areas. No cap on number of items — scope is controlled by the human's selection. If the Phase 1 report file does not exist, emit a warning and proceed with a fresh Pass 1 (normal overview scan) before deep dives. The fresh scan provides background context — the selected items are analyzed regardless of whether the fresh scan identifies them as friction areas.
 
-**Step 2a — Reference Chain Analysis (Main Agent, Serena)**
+**Step 2a — Reference Chain Analysis (Main Agent)**
 
-For each friction area, use `find_referencing_symbols` on the relevant symbols to trace precise cross-file dependency chains. This gives exact coupling data: which files reference which symbols, how many callers, and the coupling direction.
+For `code` scopes: use Serena's `find_referencing_symbols` on the relevant symbols to trace precise cross-file dependency chains. This gives exact coupling data: which files reference which symbols, how many callers, and the coupling direction.
+
+For `document` and `mixed` scopes: use Grep-based reference chain tracing from Step 1d data. Starting from a file identified as a friction point, trace all incoming and outgoing references by relationship type. Follow typed edges (invokes, dispatches, constrains, selects-from, records/reads) to build the dependency chain. This provides the equivalent of Serena's cross-file chains but for document content.
 
 **Step 2b — Deep Dive (Scout Agent)**
 
@@ -107,6 +170,7 @@ Combine overview and deep-dive findings into a single Markdown report following 
 Key synthesis responsibilities:
 - Reconcile findings from multiple deep-dive agents (do they agree? contradict?)
 - Produce mermaid diagrams from the raw component/dependency data, applying the Diagram Complexity rule (see `rules/document-quality.md`): each diagram ≤15 nodes, one abstraction level per diagram. If the system has more components, the Architecture Overview diagram shows high-level groups (≤8 nodes) and each group's internals appear as focused diagrams in the Structural Observations section
+- When Step 1d ran: construct the "Document Relationships" report section from the reference data. Build a Mermaid relationship graph with files as nodes and typed edges. Apply the diagram complexity rule — if the graph exceeds 15 nodes, split into focused diagrams by abstraction level (e.g., one per layer or per relationship type). Graph construction belongs here (not in Step 1d) because grouping decisions require the full picture from all passes
 - Write the mandatory Structural Observations section, including the refactoring assessment
 - Write the Confidence Boundary section — explicitly state what was NOT assessed
 
@@ -149,6 +213,32 @@ How components depend on each other. Highlight circular dependencies if any.
 
 [mermaid flowchart diagram]
 
+## Document Relationships
+
+_This section is present only when Step 1d (Document Reference Scan) was executed._
+
+How documents reference each other through typed relationships.
+
+### Reference Summary
+
+| Relationship Type | Count | Description |
+|---|---|---|
+| invokes | N | Command/skill procedural triggers |
+| dispatches | N | Agent delegation |
+| constrains | N | Rule enforcement |
+| selects-from | N | Catalog lookups |
+| records/reads | N | Data flow through shared files |
+
+### Relationship Graph
+
+[mermaid flowchart: files as nodes, typed edges, ≤15 nodes per diagram]
+
+### Consistency Findings
+
+- Broken references: [targets that could not be resolved]
+- Orphaned files: [.md files with zero incoming references]
+- Metadata gaps: [files missing expected metadata]
+
 ## Structural Observations
 
 Friction signals with specific file references. For each observation:
@@ -186,7 +276,8 @@ Explicit "assessed / not assessed" scope. Each observation above includes a veri
 
 ## Integration
 
-- **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for precise symbol hierarchy and cross-file dependency tracing — run by the main agent
+- **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for precise symbol hierarchy and cross-file dependency tracing — code scopes, run by the main agent
+- **Grep patterns**: 9 validated regex patterns for document cross-reference detection — document/mixed scopes, used in Step 1d
 - **Analysis registry**: Serena MCP (`list_memories`, `read_memory`, `write_memory`) for registry lookup (Pre-check) and registration (Pass 3b)
 - **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only)
 - **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across agents when available
