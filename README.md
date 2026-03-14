@@ -85,7 +85,7 @@ rm ~/.claude/skills/claude-praxis
 | `agent-team-execution` | Parallel exploration (research, review teams, debugging) with independent verification sources |
 | `architecture-analysis` | Multi-pass codebase analysis with durable Markdown+mermaid reports |
 | `guide-generation` | Multi-pass codebase exploration + single-narrator guide as HTML book |
-| `systematic-debugging` | 4-phase root cause analysis (reproduce, isolate, diagnose, fix) |
+| `systematic-debugging` | 3-phase root cause analysis (reproduce, isolate, diagnose) |
 | `context-persistence` | Stock/Flow memory model for context survival across compact/clear |
 | `check-past-learnings` | Recall relevant learnings at the start of any workflow phase |
 | `rule-evolution` | TDD-based protocol for proposing and adding quality rules |

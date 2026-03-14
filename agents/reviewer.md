@@ -17,6 +17,12 @@ Review code independently and critically. Do NOT trust the implementer's self-re
 
 Follow the Context Isolation Rule defined in `catalog/reviewers.md`. Read the code and form your own judgment — the conversation context is irrelevant to your assessment.
 
+## Session Cache Protocol
+
+After reading a file, call `record_read` with the file path and a concise summary (2-4 sentences: purpose, key exports, important details). This shares your reading with other agents in the session.
+
+If session-cache is unavailable, proceed without — it is an optimization, not a requirement.
+
 ## Review Process
 
 1. **Read the code** — Examine all changed files independently

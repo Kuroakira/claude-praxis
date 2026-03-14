@@ -14,6 +14,10 @@ Diagnose root causes through evidence, not guesswork. Never jump to a fix withou
 NO FIX WITHOUT A PROVEN DIAGNOSIS
 ```
 
+## Pre-step: Session Cache (Optional)
+
+If the `session-cache:session-cache-protocol` skill is available, invoke it before starting file reads. This reduces redundant file reads when the same files have been read during earlier investigation in the session. If unavailable, proceed without — this step is an optimization, not a requirement.
+
 ## 3-Phase Process
 
 ### Phase 1: Reproduce
@@ -33,14 +37,23 @@ Establish a reliable way to trigger the bug.
 
 Narrow down to the smallest scope that still fails.
 
-```
-1. Remove unrelated code/config changes
-2. Simplify the input
-3. Identify the last known good state (git log, git bisect)
-4. Find the minimal reproduction case
-```
+**Semantic tracing (when Serena is available)**:
 
-**Exit criteria**: You know which component/function/line is responsible.
+1. Use `find_symbol` to locate the suspected function/class/method by name
+2. Use `find_referencing_symbols` on the located symbol to trace the call chain — who calls it, what it calls
+3. Follow the reference chain to narrow the scope: from module → file → function → line
+4. If the error involves multiple interacting components, use `get_symbols_overview` on the relevant directory to see the full symbol hierarchy
+
+If Serena is unavailable, use Grep to search for function/class definitions and their references across the codebase.
+
+**Supplementary isolation**:
+
+5. Remove unrelated code/config changes
+6. Simplify the input
+7. Identify the last known good state (git log, git bisect)
+8. Find the minimal reproduction case
+
+**Exit criteria**: You know which component/function/line is responsible, with reference chain evidence (from Serena or Grep).
 
 ### Phase 3: Diagnose
 
@@ -51,6 +64,7 @@ Form hypotheses and test them with parallel adversarial investigation.
 2. Dispatch one hypothesis-investigator per hypothesis (parallel Task tool calls)
    - Each investigator gathers evidence FOR their hypothesis and AGAINST alternatives
    - Uses reproduction info from Phase 1 and isolation findings from Phase 2
+   - Investigators use Serena semantic tools for precise symbol tracing (via scout agent capabilities)
 3. Synthesize findings: score each hypothesis as supported/weakened/refuted
 4. The hypothesis with strongest evidence and least contradiction is the diagnosis
 5. If all hypotheses are refuted, reframe the problem and return to step 1
@@ -77,6 +91,8 @@ Form hypotheses and test them with parallel adversarial investigation.
 
 ## Integration
 
+- **Semantic tools**: Serena MCP (`find_symbol`, `find_referencing_symbols`, `get_symbols_overview`) for precise call chain tracing and scope isolation in Phase 2
+- **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads during investigation
 - **Parallel hypothesis investigation**: Phase 3 dispatches `hypothesis-investigator` agents (see `catalog/researchers.md`) via Task tool — one per hypothesis, always parallel
 - **`/claude-praxis:debug` command**: Orchestrates this skill's 3 phases and produces an Investigation Report
 - **`/claude-praxis:implement` command**: After diagnosis, the fix is implemented via `/claude-praxis:implement` with TDD + review
