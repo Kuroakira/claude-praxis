@@ -9,13 +9,14 @@ Invoke skill `context-persistence`, then execute both phases sequentially.
 ## Phase 1: Flow → Stock Promotion
 
 1. Read `.claude/context/progress.md` (recent work log)
-2. For each entry, evaluate: does this contain reusable knowledge?
-3. **Present a routing proposal to the human** — do NOT write directly:
+2. **Review the current conversation context**: Scan the conversation history for valuable knowledge (decisions, discoveries, trade-offs, debugging insights, etc.) that was NOT captured in `progress.md`. This is critical — important learnings often emerge during discussion but are never written to progress. Include any such findings alongside progress.md entries in the promotion proposal.
+3. For each entry (from both progress.md and conversation context), evaluate: does this contain reusable knowledge?
+4. **Present a routing proposal to the human** — do NOT write directly:
 
 ```
 📋 /compound — Knowledge Promotion Proposal
 
-From progress.md, I found the following promotable learnings:
+From progress.md and conversation context, I found the following promotable learnings:
 
 | # | Learning | Context / Rationale | Proposed Destination | Level | Initial Confidence |
 |---|----------|--------------------|--------------------|-------|--------------------|
@@ -38,11 +39,11 @@ Adjust any routing? (or "OK" to proceed)
 
 **Initial Confidence column**: Only for `project learnings` destination. All new entries start at `1回 | {today's date} | {source phase}`. The promotion itself is the first confirmation. Replace `today` with the actual date (YYYY-MM-DD) and the source phase with the phase where the learning was discovered (e.g., implement, design, debug).
 
-4. Wait for human confirmation or adjustments before writing
-5. For quality rule candidates, invoke the `rule-evolution` skill:
+5. Wait for human confirmation or adjustments before writing
+6. For quality rule candidates, invoke the `rule-evolution` skill:
    - Propose the rule to the human
    - If approved, add to the appropriate rules/ file with examples
-6. After confirmation, write to destinations with the `- **Confirmed**:` field and clean up promoted entries from `progress.md`
+7. After confirmation, write to destinations with the `- **Confirmed**:` field and clean up promoted entries from `progress.md`
 
 **Writing format**: Each promoted entry is written with four fields:
 ```markdown
@@ -53,15 +54,15 @@ Adjust any routing? (or "OK" to proceed)
 - **Confirmed**: 1回 | 2026-02-20 | implement
 ```
 
-7. **Write execution marker**: After writing promoted entries, write `.claude/context/compound-last-run.json`:
+8. **Write execution marker**: After writing promoted entries, write `.claude/context/compound-last-run.json`:
    ```json
    { "timestamp": "<current ISO timestamp>", "promotedCount": <number of entries promoted> }
    ```
    This marker is read by PreCompact and Stop hooks to determine if /compound was executed before compact.
 
-8. **Reset context pressure**: If `.claude/context/context-pressure.json` exists, delete it. Knowledge preservation is complete, so the urgency signal is no longer relevant. The next StatusLine update will recreate it if usage is still high.
+9. **Reset context pressure**: If `.claude/context/context-pressure.json` exists, delete it. Knowledge preservation is complete, so the urgency signal is no longer relevant. The next StatusLine update will recreate it if usage is still high.
 
-9. Report final results
+10. Report final results
 
 | Destination | Level | Target File | Criteria |
 |-------------|-------|-------------|----------|

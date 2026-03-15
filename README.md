@@ -33,7 +33,7 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 
 | Command | When to Use Directly |
 |---------|---------------------|
-| `/analyze [scope] [--thorough]` | Analyze codebase architecture — produces a Markdown+mermaid report with structural friction detection |
+| `/analyze [scope] [--thorough]` | Analyze codebase architecture — produces a Markdown+mermaid report with structural friction detection and quantitative health scoring |
 | `/guide [scope]` | Generate a codebase walkthrough guide as a multi-page HTML book |
 | `/compare [topic]` | Structured comparison of 2-4 options with axes evaluation — when facing a decision with multiple viable approaches |
 | `/research [topic]` | Explore a problem space without committing to a Design Doc |
@@ -83,7 +83,7 @@ rm ~/.claude/skills/claude-praxis
 | `dispatch-reviewers` | Dispatch reviewers by catalog ID with graduated tiers |
 | `subagent-driven-development` | Fresh agent per task + two-stage review (implementation) |
 | `agent-team-execution` | Parallel exploration (research, review teams, debugging) with independent verification sources |
-| `architecture-analysis` | Multi-pass codebase analysis with durable Markdown+mermaid reports |
+| `architecture-analysis` | Multi-pass codebase analysis with durable Markdown+mermaid reports and quantitative health scoring (TypeScript) |
 | `guide-generation` | Multi-pass codebase exploration + single-narrator guide as HTML book |
 | `systematic-debugging` | 3-phase root cause analysis (reproduce, isolate, diagnose) |
 | `context-persistence` | Stock/Flow memory model for context survival across compact/clear |
@@ -111,7 +111,7 @@ rm ~/.claude/skills/claude-praxis
 | `/design [topic]` | **Main workflow**: Parallel research team + outline + write + parallel review team → Design Doc |
 | `/implement [plan-path]` | **Main workflow**: TDD per task + parallel review team → verified code. Without plan path, performs inline breakdown |
 | `/debug [problem]` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
-| `/analyze [scope] [--thorough]` | Standalone: codebase architecture analysis → Markdown+mermaid report |
+| `/analyze [scope] [--thorough]` | Standalone: codebase architecture analysis → Markdown+mermaid report with quantitative health scoring |
 | `/guide [scope]` | Standalone: codebase walkthrough guide → multi-page HTML book |
 | `/compare [topic]` | Standalone: structured comparison of 2-4 options with axes evaluation |
 | `/research [topic]` | Standalone: explore a problem space without committing to a Design Doc |
@@ -149,6 +149,7 @@ rm ~/.claude/skills/claude-praxis
 | MCP Server | Purpose | Install |
 |------------|---------|---------|
 | [session-cache-mcp](https://www.npmjs.com/package/session-cache-mcp) | Eliminates redundant file reads across subagents via shared in-memory cache. Provides `check_cache`, `record_read`, `get_session_map` tools. | `claude mcp add session-cache -s user -- npx -y session-cache-mcp` |
+| [sekko-arch](https://www.npmjs.com/package/sekko-arch) | Quantitative architecture health scoring across 24 dimensions for TypeScript projects. Used by `/analyze` and `/implement` for health grades and degradation detection. | `claude mcp add sekko-arch -s user -- npx -y sekko-arch` |
 
 ## Planned
 

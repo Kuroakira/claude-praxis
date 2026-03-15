@@ -47,7 +47,7 @@ claude-praxis/
 ├── skills/
 │   ├── workflow-planner/        # Analyze task, select agents from catalogs, generate execution plan
 │   ├── dispatch-reviewers/      # Dispatch reviewers by catalog ID with graduated tiers
-│   ├── architecture-analysis/   # Multi-pass codebase analysis with durable reports
+│   ├── architecture-analysis/   # Multi-pass codebase analysis with durable reports + quantitative health scoring
 │   ├── guide-generation/        # Multi-pass codebase exploration + single-narrator guide writing
 │   ├── check-past-learnings/    # Recall relevant learnings before starting work
 │   ├── tdd-cycle/               # RED-GREEN-REFACTOR procedure + decision points

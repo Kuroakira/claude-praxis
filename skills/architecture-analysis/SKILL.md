@@ -1,6 +1,6 @@
 ---
 name: architecture-analysis
-description: Use when analyzing codebase architecture — produces durable Markdown+mermaid reports with structural friction detection. Supports code-centric, document-centric, and mixed projects via auto-detection. Invoked by /analyze command and as a workflow phase in /design and /implement.
+description: Use when analyzing codebase architecture — produces durable Markdown+mermaid reports with structural friction detection and quantitative health scoring for TypeScript projects. Supports code-centric, document-centric, and mixed projects via auto-detection. Invoked by /analyze command and as a workflow phase in /design and /implement.
 user-invokable: false
 ---
 
@@ -121,6 +121,15 @@ After scanning, validate each target: does the referenced file or section exist?
 
 **Output**: A set of typed reference triples, relationship counts per type, and a list of broken references. This data feeds Step 1c (document debt) and Pass 3 (synthesis).
 
+**Step 1e — Quantitative Health Scan (Main Agent, sekko-arch)**
+
+Runs only when a `tsconfig.json` exists at the project root of the analyzed scope. Skipped for non-TypeScript projects (noted in Confidence Boundary).
+
+- In normal mode: call sekko-arch `health` with the project root path and optional `include` filter matching the analysis scope directories.
+- In thorough mode: call sekko-arch `scan` with the same path and include filter, to get file-level dimension scores for the Debt Inventory.
+- Output: composite grade, per-dimension grades, and (thorough mode) file-level detail.
+- Dimensions scoring D or F are flagged as quantitative friction signals and become candidate targets for Pass 2 deep dives alongside qualitative friction from Steps 1a-1b.
+
 **Step 1c — Debt Inventory (Thorough Mode, Phase 1 only)**
 
 When `mode=thorough` and `thorough_config.phase=1`, generate a comprehensive debt inventory after Steps 1a and 1b. This step runs in the same agent context as Steps 1a/1b (shared Serena data avoids re-reading).
@@ -145,11 +154,13 @@ When the scope includes `document` or `mixed` directories, add document-specific
 
 These categories appear alongside code debt items in the same Debt Inventory Table. For document debt, use reference count from the relationship graph as the impact metric.
 
+When Step 1e produced scan results (thorough mode), dimensions scoring D or F are added as debt items to the Debt Inventory Table with the dimension name as the item, file-level scores as affected files, and the dimension's meaning as the refactoring direction.
+
 After the Debt Inventory Table is complete, skip Pass 2, Pass 3, and Pass 3b. Phase 1 produces an incomplete report (inventory only, no synthesis) — registering it would serve a partial report to downstream consumers expecting a full analysis. The command will PAUSE for user selection, then re-invoke with Phase 2.
 
 ### Pass 2: Targeted Deep Dives
 
-**Normal mode**: If Pass 1 identifies friction areas, analyze them in depth. One friction area at a time, up to a maximum of 3. Prioritize by severity (highest coupling/complexity first). If Pass 1 identifies no friction areas, skip Pass 2 entirely. State in the report that no friction areas were detected and proceed to synthesis.
+**Normal mode**: If Pass 1 identifies friction areas, analyze them in depth. One friction area at a time, up to a maximum of 3. Prioritize by severity (highest coupling/complexity first), considering both qualitative signals (from Steps 1a-1b) and quantitative signals (from Step 1e, dimensions scoring D or F). If Pass 1 identifies no friction areas, skip Pass 2 entirely. State in the report that no friction areas were detected and proceed to synthesis.
 
 **Thorough mode (Phase 2)**: When `mode=thorough` and `thorough_config.phase=2`, analyze the items specified in `thorough_config.selected_items` instead of friction areas. No cap on number of items — scope is controlled by the human's selection. If the Phase 1 report file does not exist, emit a warning and proceed with a fresh Pass 1 (normal overview scan) before deep dives. The fresh scan provides background context — the selected items are analyzed regardless of whether the fresh scan identifies them as friction areas.
 
@@ -213,6 +224,22 @@ How components depend on each other. Highlight circular dependencies if any.
 
 [mermaid flowchart diagram]
 
+## Architecture Health Scores
+
+_This section is present only when Step 1e (Quantitative Health Scan) was executed._
+
+**Composite Grade**: [grade]
+
+### Per-Dimension Grades
+
+| Dimension | Grade | Notes |
+|-----------|-------|-------|
+| [dimension] | [grade] | [friction signal if D or F] |
+
+### Correlation with Structural Observations
+
+[How quantitative scores relate to qualitative friction findings from Steps 1a-1b. Agreement or disagreement between the two signals.]
+
 ## Document Relationships
 
 _This section is present only when Step 1d (Document Reference Scan) was executed._
@@ -266,7 +293,7 @@ For each selected item:
 
 ## Confidence Boundary
 
-Explicit "assessed / not assessed" scope. Each observation above includes a verifiable reference (file path + symbol) so the human can check. List areas that were out of scope or could not be reliably assessed.
+Explicit "assessed / not assessed" scope. Each observation above includes a verifiable reference (file path + symbol) so the human can check. List areas that were out of scope or could not be reliably assessed. When Step 1e was skipped (non-TypeScript project), state: "Quantitative architecture health scoring was not assessed (project does not use TypeScript)."
 ```
 
 ## Document Lifecycle
@@ -281,4 +308,5 @@ Explicit "assessed / not assessed" scope. Each observation above includes a veri
 - **Analysis registry**: Serena MCP (`list_memories`, `read_memory`, `write_memory`) for registry lookup (Pre-check) and registration (Pass 3b)
 - **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only)
 - **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across agents when available
+- **Quantitative health**: sekko-arch MCP (`health`, `scan`) for 24-dimension architecture scoring — TypeScript projects only, used in Step 1e
 - **Invoked by**: `commands/analyze.md`, `commands/design.md`, `commands/implement.md`

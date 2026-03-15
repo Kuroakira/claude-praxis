@@ -38,6 +38,8 @@ Runs in the orchestrator's context. Three responsibilities: initialize the works
 
 **Workspace initialization**: Create the working directory `claudedocs/plans/wip/`. If it already exists (from a previous run), delete its contents to ensure a clean workspace.
 
+**Architecture baseline** (optional): If a `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__session_start` with the project path. Do not pass an `include` filter — capture the full project baseline so that session_end comparison uses a consistent reference. If tsconfig.json is absent, skip silently — session monitoring is TypeScript-only.
+
 **Learnings check**: Invoke `check-past-learnings` (role: implementation). Carry relevant learnings forward as constraints or context for implementation.
 
 **Plan Resolution**: Determine how to proceed based on whether a plan file exists.
@@ -255,7 +257,12 @@ After G2 completes:
 - Domain: [topic tag]
 ```
 
-3. Proceed to G3
+3. **Architecture degradation check** (optional): If session_start was called in G0, call `mcp__plugin_sekko-arch_sekko-arch__session_end` with the project path (no `include` filter — matching session_start's full-project scope for consistent comparison). Present the comparison to the human:
+
+   - If degradation is detected (any structural dimension grade decreased — cycles, coupling, depth, godFiles, complexFn, cohesion, etc.): present the degraded dimensions with before/after grades. Suggest reviewing the affected areas before proceeding to G3. This is a soft warning — the human decides whether to address it or proceed. Note: process-oriented dimensions (busFactor, codeChurn, changeCoupling, codeAge) may fluctuate based on git history rather than code quality — flag these separately as informational rather than actionable.
+   - If no degradation (grades stable or improved): note in the progress.md entry and proceed to G3.
+
+4. Proceed to G3
 
 ## G3: Present + Completion Report (in-context)
 
@@ -285,6 +292,11 @@ npm run build       # if applicable
 - lint: [PASS/FAIL + key output]
 - test: [PASS/FAIL + count]
 - build: [PASS/FAIL or N/A]
+
+### Architecture Health (optional — only when session_end was called in post-G2)
+- Baseline: [composite grade at session_start]
+- Final: [composite grade at session_end]
+- Degraded dimensions: [list or "none"]
 
 ### Summary
 [What was changed and why]
@@ -318,7 +330,7 @@ where `${sessionId}` is the current session ID. This marker signals that Phase 3
 
 | Group | Required Input | Required Output | Reasoning-Log |
 |-------|---------------|-----------------|---------------|
-| G0 (in-context) | Topic from user, Design Doc path (optional), plan file path (optional) | Learnings context (stays in orchestrator), `claudedocs/plans/wip/` directory, resolved plan | None |
+| G0 (in-context) | Topic from user, Design Doc path (optional), plan file path (optional) | Learnings context (stays in orchestrator), `claudedocs/plans/wip/` directory, resolved plan, architecture baseline session (if TypeScript project) | None |
 | Phase 2 (in-context) | Resolved plan | Changed files (filesystem), progress.md entries, changed-files list (`claudedocs/plans/wip/changed-files.md`) | None |
 | G2 (subagent) | Changed-files list path | `review-findings.md` | `reasoning-log-g2.md` |
 | G3 (in-context) | `review-findings.md` path, plan file path (optional) | Completion Report, Final Review marker | None |
