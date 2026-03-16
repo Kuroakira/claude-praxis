@@ -27,7 +27,22 @@ Check for `--thorough` flag. If present, set mode to `thorough`. If an unrecogni
 
 > ⚠️ Unrecognized flag '[value]'. Proceeding with normal mode.
 
+## Step 1b: Architecture Health Scan (TypeScript only — mandatory when tsconfig.json exists)
+
+If `tsconfig.json` exists at the project root, run a quantitative health scan before the qualitative analysis:
+
+- **Normal mode**: Call `mcp__plugin_sekko-arch_sekko-arch__health` with the project path. If the scope from Step 1 targets specific directories, pass the `include` filter matching those directories.
+- **Thorough mode**: Call `mcp__plugin_sekko-arch_sekko-arch__scan` with the same path and include filter, to get file-level dimension scores.
+
+Extract the results:
+- Dimensions scoring D or F are quantitative friction signals — carry these into Step 2 as `health_scores` context
+- If no D/F dimensions: note `health_scores: no issues detected`
+
+If `tsconfig.json` is absent, skip silently and note in the report's Confidence Boundary: "Quantitative architecture health scoring was not assessed (project does not use TypeScript)."
+
 ## Step 2: Run Analysis
+
+Pass the `health_scores` from Step 1b to the skill so the report includes the "Architecture Health Scores" section. If the skill's Step 1e produces its own health scan, the command-level results take precedence (avoid redundant calls).
 
 **Normal mode**: Invoke `architecture-analysis` skill with:
 
@@ -36,6 +51,7 @@ Check for `--thorough` flag. If present, set mode to `thorough`. If an unrecogni
 | `scope` | The scope from Step 1 |
 | `anticipated_changes` | If the user mentioned planned changes, include them. Otherwise omit |
 | `research_context` | Omit (standalone mode has no prior research phase) |
+| `health_scores` | Results from Step 1b (D/F dimensions, grades, and file-level detail in thorough mode). Omit if Step 1b was skipped |
 
 The skill executes the multi-pass analysis (overview → targeted deep dives → synthesis) and produces the report. Proceed to Step 3.
 
@@ -47,6 +63,7 @@ The skill executes the multi-pass analysis (overview → targeted deep dives →
 | `anticipated_changes` | Same as normal mode |
 | `mode` | `thorough` |
 | `thorough_config` | `{ registry_prefix: "analysis-thorough-registry:", phase: 1 }` |
+| `health_scores` | Results from Step 1b. Omit if Step 1b was skipped |
 
 The skill runs Pass 1 (overview scan + Debt Inventory) and returns without Pass 2/3. Proceed to Step 2b.
 
