@@ -1,7 +1,7 @@
 ---
 name: systematic-debugging
 description: Use when investigating bugs, errors, unexpected behavior, reviewing or analyzing bug investigations, re-investigating causes, or when asked "why doesn't this work?"
-user-invokable: false
+user-invocable: false
 ---
 
 # Systematic Debugging

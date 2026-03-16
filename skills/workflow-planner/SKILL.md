@@ -1,7 +1,7 @@
 ---
 name: workflow-planner
 description: Analyze task content, select agents from shared catalogs, and generate an execution plan with explicit rationale. Invoked by commands with domain context injection.
-user-invokable: false
+user-invocable: false
 ---
 
 # Workflow Planner

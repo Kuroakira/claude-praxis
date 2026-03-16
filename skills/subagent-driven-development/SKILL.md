@@ -1,7 +1,7 @@
 ---
 name: subagent-driven-development
 description: Use when executing an implementation plan with multiple independent tasks that benefit from isolated context per task.
-user-invokable: false
+user-invocable: false
 ---
 
 # Subagent-Driven Development

@@ -1,7 +1,7 @@
 ---
 name: agent-team-execution
 description: Use when a task benefits from parallel exploration with multiple independent perspectives — research, code review, or debugging.
-user-invokable: false
+user-invocable: false
 ---
 
 # Agent Team Execution

@@ -1,7 +1,7 @@
 ---
 name: architecture-analysis
 description: Use when analyzing codebase architecture — produces durable Markdown+mermaid reports with structural friction detection and quantitative health scoring for TypeScript projects. Supports code-centric, document-centric, and mixed projects via auto-detection. Invoked by /analyze command and as a workflow phase in /design and /implement.
-user-invokable: false
+user-invocable: false
 ---
 
 # Architecture Analysis

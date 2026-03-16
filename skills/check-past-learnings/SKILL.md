@@ -1,7 +1,7 @@
 ---
 name: check-past-learnings
 description: Use when a task needs to recall and evaluate past project decisions before starting work — invoked by commands with a role parameter.
-user-invokable: false
+user-invocable: false
 ---
 
 # Check Past Learnings

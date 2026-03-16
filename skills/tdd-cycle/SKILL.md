@@ -1,7 +1,7 @@
 ---
 name: tdd-cycle
 description: Use when implementing code within a task — provides the RED-GREEN-REFACTOR procedure and decision point consultation pattern.
-user-invokable: false
+user-invocable: false
 ---
 
 # TDD Cycle

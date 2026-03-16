@@ -1,7 +1,7 @@
 ---
 name: guide-generation
 description: Use when generating codebase walkthrough guides — produces durable HTML book output (multi-page folder with navigation) for human understanding. Invoked by /guide command.
-user-invokable: false
+user-invocable: false
 ---
 
 # Guide Generation

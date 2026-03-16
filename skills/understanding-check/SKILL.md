@@ -1,7 +1,7 @@
 ---
 name: understanding-check
 description: Use when verifying understanding of AI-generated artifacts — provides Explain-Compare-Discover procedure with pre-recorded rationale comparison.
-user-invokable: false
+user-invocable: false
 ---
 
 # Understanding Check

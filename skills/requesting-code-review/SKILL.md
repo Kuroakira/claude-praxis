@@ -1,7 +1,7 @@
 ---
 name: requesting-code-review
 description: Use after completing any coding task — implementation, bug fix, refactor. Always suggest a code review before moving on.
-user-invokable: false
+user-invocable: false
 ---
 
 # Requesting Code Review
