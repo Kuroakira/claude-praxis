@@ -163,6 +163,8 @@ Dispatch a `general-purpose` Task subagent.
 >
 > **Execute**:
 >
+> **Architecture health scan** (TypeScript only — mandatory when tsconfig.json exists): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__health` with the project path. If the synthesis identifies specific directories as affected areas, pass the `include` filter matching those directories. Extract dimensions scoring D or F as quantitative friction signals. If tsconfig.json is absent, skip silently.
+>
 > Invoke `architecture-analysis` to capture the current codebase state:
 >
 > 1. **Determine scope**: Narrow to modules, directories, or layers named in the synthesis. If the synthesis identified specific integration points or affected areas, those become the analysis scope
@@ -170,6 +172,7 @@ Dispatch a `general-purpose` Task subagent.
 >    - `scope`: Task-relevant area identified from synthesis findings
 >    - `anticipated_changes`: The design topic and candidate approaches from the synthesis
 >    - `research_context`: Key findings from the synthesis
+>    - `health_scores`: Results from the health scan above (D/F dimensions and grades). Omit if health scan was skipped
 > 3. **Output**: The analysis skill saves a durable report to `claudedocs/analysis/[scope-name].md`
 >
 > If the analysis detects structural friction (existing architecture doesn't naturally support the proposed changes), note this in the reasoning-log — it should inform the Outline phase (G3) about whether "extend current structure" vs "restructure first" is a relevant axis.

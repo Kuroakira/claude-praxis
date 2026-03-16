@@ -35,6 +35,7 @@ Each method operates on different content types. Grep does not replace Serena �
 | `research_context` | No | Findings from prior research phase (in `/design` workflow). When absent (e.g., in `/implement`), analysis relies solely on codebase scanning without external research context |
 | `mode` | No | `normal` (default) or `thorough`. Controls analysis depth and report structure. When absent or unrecognized, defaults to `normal` with a warning for unrecognized values |
 | `thorough_config` | No | Configuration for thorough mode (present only when `mode=thorough`). Contains: `registry_prefix` (string, e.g. `analysis-thorough-registry:`), `phase` (`1` or `2`), `selected_items` (list of debt items, Phase 2 only) |
+| `health_scores` | No | Pre-computed sekko-arch health/scan results from the calling command. When present, Step 1e uses these results instead of calling sekko-arch again (avoids redundant calls). When absent, Step 1e runs its own health/scan call as before |
 
 ### Mode Fallback
 
@@ -125,10 +126,13 @@ After scanning, validate each target: does the referenced file or section exist?
 
 Runs only when a `tsconfig.json` exists at the project root of the analyzed scope. Skipped for non-TypeScript projects (noted in Confidence Boundary).
 
+If `health_scores` parameter was provided by the calling command, use those results directly — do not call sekko-arch again. Otherwise:
+
 - In normal mode: call sekko-arch `health` with the project root path and optional `include` filter matching the analysis scope directories.
 - In thorough mode: call sekko-arch `scan` with the same path and include filter, to get file-level dimension scores for the Debt Inventory.
-- Output: composite grade, per-dimension grades, and (thorough mode) file-level detail.
-- Dimensions scoring D or F are flagged as quantitative friction signals and become candidate targets for Pass 2 deep dives alongside qualitative friction from Steps 1a-1b.
+
+Output (from either source): composite grade, per-dimension grades, and (thorough mode) file-level detail.
+Dimensions scoring D or F are flagged as quantitative friction signals and become candidate targets for Pass 2 deep dives alongside qualitative friction from Steps 1a-1b.
 
 **Step 1c — Debt Inventory (Thorough Mode, Phase 1 only)**
 
