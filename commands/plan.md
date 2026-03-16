@@ -32,13 +32,20 @@ graph TD
 - Plan Presentation reads the plan file to present to the human (exception to structural-only validation)
 - All intermediate files (`reasoning-log-g1.md`) are written to `claudedocs/plans/wip/`. This directory is created at G0 and cleaned up at Plan Presentation. Permanent artifacts (plan file, axes-table, analysis report) go to their standard locations
 
-## G0: Check Past Learnings + Workspace Init (in-context)
+## G0: Check Past Learnings + Workspace Init + Health Baseline (in-context)
 
-Runs in the orchestrator's context. Two responsibilities: initialize the workspace and check past learnings.
+Runs in the orchestrator's context. Three responsibilities: initialize the workspace, check past learnings, and capture architecture health baseline.
 
 **Workspace initialization**: Create the working directory `claudedocs/plans/wip/`. If it already exists (from a previous run), delete its contents to ensure a clean workspace.
 
 **Learnings check**: Invoke `check-past-learnings` (role: implementation). Carry relevant learnings forward into G1's dispatch prompt as constraints or starting points.
+
+**Architecture health baseline** (TypeScript only): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__health` with the project path. If the implementation scope is known (from Design Doc or user request), pass the `include` filter matching the scope directories. This uses `health` (scoped, point-in-time assessment for planning) — distinct from `/implement` G0's `session_start` (full-project baseline for before/after comparison). Extract dimensions scoring D or F — these are refactoring candidates. Pass the results to G1 as `health_baseline` context:
+
+- If D/F dimensions exist: include dimension names, grades, and affected scope as refactoring context for G1
+- If no D/F dimensions: pass `health_baseline: no issues detected` to G1
+
+If `tsconfig.json` is absent, skip silently — health baseline is TypeScript-only.
 
 ## G1: Full Planning Pipeline (subagent)
 
@@ -50,6 +57,7 @@ Dispatch a `general-purpose` Task subagent with a self-contained task prompt. Th
 
 - Workflow identifier: `/plan` instead of `/implement`
 - Topic, Design Doc path, learnings context, and rules constraints are provided as input (same as implement.md)
+- **Health baseline context**: Pass the `health_baseline` from G0 (D/F dimensions and affected scope, or "no issues detected"). G1's Step 5 uses this to decide whether refactoring-first tasks are needed
 
 The implement.md G1 template is the canonical source. When the template is updated, plan.md inherits the changes.
 
@@ -115,8 +123,8 @@ To implement: run /claude-praxis:implement with this plan.
 
 | Group | Required Input | Required Output | Reasoning-Log |
 |-------|---------------|-----------------|---------------|
-| G0 (in-context) | Topic from user, Design Doc path (optional) | Learnings context (stays in orchestrator), `claudedocs/plans/wip/` directory | None |
-| G1 (subagent) | Topic, learnings context, Design Doc path, rules constraints | Plan file (`claudedocs/plans/`), Axes Table file (`claudedocs/plans/`), analysis report (`claudedocs/analysis/`) | `reasoning-log-g1.md` |
+| G0 (in-context) | Topic from user, Design Doc path (optional) | Learnings context (stays in orchestrator), `claudedocs/plans/wip/` directory, health baseline (D/F dimensions or "no issues") | None |
+| G1 (subagent) | Topic, learnings context, health baseline, Design Doc path, rules constraints | Plan file (`claudedocs/plans/`), Axes Table file (`claudedocs/plans/`), analysis report (`claudedocs/analysis/`) | `reasoning-log-g1.md` |
 | Presentation (in-context) | Plan file path, axes-table path | progress.md entry, cleanup | None |
 
 Inputs are passed as **file paths** in the subagent's task description. Subagents read input files independently — the orchestrator does not embed file contents in dispatch prompts. Exception: G1 receives topic and learnings as text (G0 output is lightweight and stays in orchestrator context).

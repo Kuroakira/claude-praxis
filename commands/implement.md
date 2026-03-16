@@ -259,7 +259,16 @@ After G2 completes:
 
 3. **Architecture degradation check** (optional): If session_start was called in G0, call `mcp__plugin_sekko-arch_sekko-arch__session_end` with the project path (no `include` filter — matching session_start's full-project scope for consistent comparison). Present the comparison to the human:
 
-   - If degradation is detected (any structural dimension grade decreased — cycles, coupling, depth, godFiles, complexFn, cohesion, etc.): present the degraded dimensions with before/after grades. Suggest reviewing the affected areas before proceeding to G3. This is a soft warning — the human decides whether to address it or proceed. Note: process-oriented dimensions (busFactor, codeChurn, changeCoupling, codeAge) may fluctuate based on git history rather than code quality — flag these separately as informational rather than actionable.
+   - If degradation is detected in **structural dimensions** (cycles, coupling, depth, godFiles, complexFn, cohesion — these reflect code quality):
+     1. Present the degraded structural dimensions with before/after grades
+     2. For each degraded structural dimension, drill into specifics:
+        - `coupling` or `cohesion` degraded → call `mcp__plugin_sekko-arch_sekko-arch__coupling_detail` with the project path to identify the files and modules contributing to increased coupling
+        - `cycles` degraded → call `mcp__plugin_sekko-arch_sekko-arch__cycles_detail` with the project path to identify the circular dependency chains introduced
+        - Other structural dimensions (depth, godFiles, complexFn) → list the changed files (from `changed-files.md`) that overlap with the degraded dimension's scope
+     3. For each degraded dimension, propose a concrete fix direction: which files to refactor, what structural change would restore the grade (e.g., "extract module X from Y to break the cycle", "split god file Z into A and B")
+     4. **PAUSE** — present the degradation report with fix directions and ask: "Architecture degradation detected. Fix before proceeding, or continue to G3?"
+     5. If the human chooses to fix: return to Phase 2 with fix tasks (each targeting one degraded dimension), then re-run session_end to verify improvement
+   - If **process-oriented dimensions** only changed (busFactor, codeChurn, changeCoupling, codeAge): these fluctuate based on git history rather than code quality. Present as informational in the progress.md entry but do NOT trigger the PAUSE gate. Proceed to G3
    - If no degradation (grades stable or improved): note in the progress.md entry and proceed to G3.
 
 4. Proceed to G3
@@ -297,6 +306,7 @@ npm run build       # if applicable
 - Baseline: [composite grade at session_start]
 - Final: [composite grade at session_end]
 - Degraded dimensions: [list or "none"]
+- Fixes applied: [list of fix tasks executed in post-G2, or "none" or "degradation accepted by human"]
 
 ### Summary
 [What was changed and why]
@@ -385,6 +395,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 - Topic: The implementation topic from the user's request
 - Design Doc path: Path to the Design Doc (if exists)
 - Learnings context: Output from G0 (relevant past learnings, carried as text)
+- Health baseline: D/F dimensions and affected scope from G0's sekko-arch health scan (or "no issues detected" or "not available — non-TypeScript project")
 - Rules constraints: Reference to `rules/code-quality.md` for code quality rules
 
 **Task prompt template**:
@@ -396,6 +407,8 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > **Design Doc**: [Design Doc path, or "No Design Doc — implement from user's intent"]
 >
 > **Past learnings context**: [learnings from G0, or "No relevant learnings found"]
+>
+> **Health baseline**: [D/F dimensions with grades and affected scope from G0, or "no issues detected", or "not available — non-TypeScript project"]
 >
 > Execute the following steps:
 >
@@ -449,15 +462,16 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > By this point, all axes are resolved. Create a single plan:
 >
 > 1. Break into steps sized for ~500-line PRs — each produces a reviewable, self-contained change
-> 2. For each step specify: exact file paths, existing patterns (cite Scout findings), tests to write FIRST (TDD), expected line count, verification steps, dependencies, per-task review plan
-> 3. Per-task review plan selection (all tasks get **thorough** tier):
+> 2. **Refactoring-first tasks** (when `health_baseline` contains D/F dimensions): If D/F dimensions overlap with the implementation scope, create refactoring tasks targeting those areas BEFORE feature tasks. Each refactoring task should: (a) target a specific D/F dimension and its affected files, (b) include verification that `mcp__plugin_sekko-arch_sekko-arch__health` shows improvement after the refactoring, (c) be self-contained — the codebase should be in a better state even if feature implementation is deferred. Present these as "Refactoring (pre-implementation)" in the plan. If D/F dimensions do not overlap with the implementation scope, note "health baseline reviewed — no pre-implementation refactoring needed" in the plan header
+> 3. For each step specify: exact file paths, existing patterns (cite Scout findings), tests to write FIRST (TDD), expected line count, verification steps, dependencies, per-task review plan
+> 4. Per-task review plan selection (all tasks get **thorough** tier):
 >    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
 >    - API change / auth → add `security-perf`
 >    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
 >    - `simplicity`, `general-review`, and `devils-advocate` are included in ALL per-task reviews
-> 4. TDD ordering: list test files before implementation files within each step
-> 5. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
-> 6. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
+> 5. TDD ordering: list test files before implementation files within each step
+> 6. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
+> 7. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
 >
 > **Step 6: Plan Review**
 >
