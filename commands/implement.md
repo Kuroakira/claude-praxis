@@ -70,6 +70,7 @@ Perform a lightweight task breakdown in-context:
 5. Always include "Final Review" as the last task
 6. **Per-task review**: Apply baseline reviewers for all tasks:
    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
+   - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
    - API change / auth → add `security-perf`
    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
 7. Present the breakdown to the human for acknowledgment before proceeding to Phase 2
@@ -222,7 +223,7 @@ Dispatch a `general-purpose` Task subagent.
 > This is a **thorough** review — structural floor applies (3+ reviewers including `devils-advocate`).
 >
 > Invoke `dispatch-reviewers` with:
-> - **Reviewers**: `spec-compliance` + `code-quality` + `simplicity` + `general-review` + `devils-advocate` (+ `security-perf` if the implementation touches auth/security, + `error-resilience` if external dependencies or recursive-graph data or malformed-data risk)
+> - **Reviewers**: `spec-compliance` + `code-quality` + `simplicity` + `general-review` + `devils-advocate` (+ `ts-patterns` if tsconfig.json exists, + `security-perf` if the implementation touches auth/security, + `error-resilience` if external dependencies or recursive-graph data or malformed-data risk)
 > - **Tier**: thorough
 > - **Target**: All changed file paths from the changed-files list
 >
@@ -468,6 +469,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
 >    - API change / auth → add `security-perf`
 >    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
+>    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns` to ALL per-task reviews
 >    - `simplicity`, `general-review`, and `devils-advocate` are included in ALL per-task reviews
 > 5. TDD ordering: list test files before implementation files within each step
 > 6. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"

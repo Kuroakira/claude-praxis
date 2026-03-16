@@ -30,7 +30,7 @@ This skill is invoked with:
 | Tier | Reviewers | Devil's Advocate | Use When |
 |------|-----------|-----------------|----------|
 | **light** | 1-2 | Optional | Drafts, outlines, low-risk intermediate steps |
-| **thorough** | 3-6 | **Mandatory** | Final outputs, high-risk decisions, human-facing deliverables |
+| **thorough** | 3-8 | **Mandatory** | Final outputs, high-risk decisions, human-facing deliverables |
 
 ### Structural Floor (thorough tier)
 
@@ -43,7 +43,7 @@ If the `reviewers` list for a thorough review has fewer than 3 entries or omits 
 ## Dispatch Procedure
 
 1. **Validate reviewer IDs**: Check each ID against `catalog/reviewers.md`. If an ID is not found, warn:
-   > ⚠️ Unknown reviewer ID '[id]' — skipping. Available: architecture, spec-compliance, document-quality, code-quality, general-review, simplicity, security-perf, error-resilience, devils-advocate, requirements, feasibility, user-impact, structural-fitness, axes-coherence
+   > ⚠️ Unknown reviewer ID '[id]' — skipping. Available: architecture, spec-compliance, document-quality, code-quality, ts-patterns, general-review, simplicity, security-perf, error-resilience, devils-advocate, requirements, feasibility, user-impact, structural-fitness, axes-coherence
 
 2. **Enforce structural floor**: For thorough tier, ensure 3+ reviewers and devils-advocate presence
 
