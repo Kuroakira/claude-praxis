@@ -40,7 +40,7 @@ Runs in the orchestrator's context. Three responsibilities: initialize the works
 
 **Learnings check**: Invoke `check-past-learnings` (role: implementation). Carry relevant learnings forward into G1's dispatch prompt as constraints or starting points.
 
-**Architecture health baseline** (TypeScript only): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__health` with the project path. If the implementation scope is known (from Design Doc or user request), pass the `include` filter matching the scope directories. This uses `health` (scoped, point-in-time assessment for planning) — distinct from `/implement` G0's `session_start` (full-project baseline for before/after comparison). Extract dimensions scoring D or F — these are refactoring candidates. Pass the results to G1 as `health_baseline` context:
+**Architecture health baseline** (TypeScript only): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__scan` with the project path. If the implementation scope is known (from Design Doc or user request), pass the `include` filter matching the scope directories. This is a scoped, point-in-time assessment for planning — distinct from `/implement` G0's `session_start` (full-project baseline for before/after comparison). Extract dimensions scoring D or F — these are refactoring candidates. Pass the results to G1 as `health_baseline` context:
 
 - If D/F dimensions exist: include dimension names, grades, and affected scope as refactoring context for G1
 - If no D/F dimensions: pass `health_baseline: no issues detected` to G1

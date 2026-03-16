@@ -35,7 +35,7 @@ Each method operates on different content types. Grep does not replace Serena �
 | `research_context` | No | Findings from prior research phase (in `/design` workflow). When absent (e.g., in `/implement`), analysis relies solely on codebase scanning without external research context |
 | `mode` | No | `normal` (default) or `thorough`. Controls analysis depth and report structure. When absent or unrecognized, defaults to `normal` with a warning for unrecognized values |
 | `thorough_config` | No | Configuration for thorough mode (present only when `mode=thorough`). Contains: `registry_prefix` (string, e.g. `analysis-thorough-registry:`), `phase` (`1` or `2`), `selected_items` (list of debt items, Phase 2 only) |
-| `health_scores` | No | Pre-computed sekko-arch health/scan results from the calling command. When present, Step 1e uses these results instead of calling sekko-arch again (avoids redundant calls). When absent, Step 1e runs its own health/scan call as before |
+| `health_scores` | No | Pre-computed sekko-arch scan results from the calling command. When present, Step 1e uses these results instead of calling sekko-arch again (avoids redundant calls). When absent, Step 1e runs its own scan call as before |
 
 ### Mode Fallback
 
@@ -128,8 +128,7 @@ Runs only when a `tsconfig.json` exists at the project root of the analyzed scop
 
 If `health_scores` parameter was provided by the calling command, use those results directly — do not call sekko-arch again. Otherwise:
 
-- In normal mode: call sekko-arch `health` with the project root path and optional `include` filter matching the analysis scope directories.
-- In thorough mode: call sekko-arch `scan` with the same path and include filter, to get file-level dimension scores for the Debt Inventory.
+Call sekko-arch `scan` with the project root path and optional `include` filter matching the analysis scope directories. This returns per-dimension grades with file-level detail in both normal and thorough modes. In thorough mode, the file-level detail additionally feeds into the Debt Inventory.
 
 Output (from either source): composite grade, per-dimension grades, and (thorough mode) file-level detail.
 Dimensions scoring D or F are flagged as quantitative friction signals and become candidate targets for Pass 2 deep dives alongside qualitative friction from Steps 1a-1b.
@@ -312,5 +311,5 @@ Explicit "assessed / not assessed" scope. Each observation above includes a veri
 - **Analysis registry**: Serena MCP (`list_memories`, `read_memory`, `write_memory`) for registry lookup (Pre-check) and registration (Pass 3b)
 - **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only)
 - **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across agents when available
-- **Quantitative health**: sekko-arch MCP (`health`, `scan`) for 24-dimension architecture scoring — TypeScript projects only, used in Step 1e
+- **Quantitative health**: sekko-arch MCP (`scan`) for 24-dimension architecture scoring with file-level detail — TypeScript projects only, used in Step 1e
 - **Invoked by**: `commands/analyze.md`, `commands/design.md`, `commands/implement.md`

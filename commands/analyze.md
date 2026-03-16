@@ -31,8 +31,7 @@ Check for `--thorough` flag. If present, set mode to `thorough`. If an unrecogni
 
 If `tsconfig.json` exists at the project root, run a quantitative health scan before the qualitative analysis:
 
-- **Normal mode**: Call `mcp__plugin_sekko-arch_sekko-arch__health` with the project path. If the scope from Step 1 targets specific directories, pass the `include` filter matching those directories.
-- **Thorough mode**: Call `mcp__plugin_sekko-arch_sekko-arch__scan` with the same path and include filter, to get file-level dimension scores.
+Call `mcp__plugin_sekko-arch_sekko-arch__scan` with the project path. If the scope from Step 1 targets specific directories, pass the `include` filter matching those directories. This returns per-dimension grades with file-level detail in both normal and thorough modes.
 
 Extract the results:
 - Dimensions scoring D or F are quantitative friction signals — carry these into Step 2 as `health_scores` context

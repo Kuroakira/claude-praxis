@@ -163,7 +163,7 @@ Dispatch a `general-purpose` Task subagent.
 >
 > **Execute**:
 >
-> **Architecture health scan** (TypeScript only — mandatory when tsconfig.json exists): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__health` with the project path. If the synthesis identifies specific directories as affected areas, pass the `include` filter matching those directories. Extract dimensions scoring D or F as quantitative friction signals. If tsconfig.json is absent, skip silently.
+> **Architecture health scan** (TypeScript only — mandatory when tsconfig.json exists): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__scan` with the project path. If the synthesis identifies specific directories as affected areas, pass the `include` filter matching those directories. Extract dimensions scoring D or F as quantitative friction signals. If tsconfig.json is absent, skip silently.
 >
 > Invoke `architecture-analysis` to capture the current codebase state:
 >
