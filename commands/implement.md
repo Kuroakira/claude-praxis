@@ -38,7 +38,7 @@ Runs in the orchestrator's context. Three responsibilities: initialize the works
 
 **Workspace initialization**: Create the working directory `claudedocs/plans/wip/`. If it already exists (from a previous run), delete its contents to ensure a clean workspace.
 
-**Architecture baseline** (optional): If a `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__session_start` with the project path. Do not pass an `include` filter — capture the full project baseline so that session_end comparison uses a consistent reference. If tsconfig.json is absent, skip silently — session monitoring is TypeScript-only.
+**Architecture baseline** (TypeScript only — mandatory when tsconfig.json exists): If a `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__session_start` with the project path. Do not pass an `include` filter — capture the full project baseline so that session_end comparison uses a consistent reference. This step must not be skipped regardless of task scope or size. If tsconfig.json is absent, skip silently.
 
 **Learnings check**: Invoke `check-past-learnings` (role: implementation). Carry relevant learnings forward as constraints or context for implementation.
 
@@ -257,7 +257,7 @@ After G2 completes:
 - Domain: [topic tag]
 ```
 
-3. **Architecture degradation check** (optional): If session_start was called in G0, call `mcp__plugin_sekko-arch_sekko-arch__session_end` with the project path (no `include` filter — matching session_start's full-project scope for consistent comparison). Present the comparison to the human:
+3. **Architecture degradation check** (mandatory when session_start was called in G0): Call `mcp__plugin_sekko-arch_sekko-arch__session_end` with the project path (no `include` filter — matching session_start's full-project scope for consistent comparison). Present the comparison to the human:
 
    - If degradation is detected in **structural dimensions** (cycles, coupling, depth, godFiles, complexFn, cohesion — these reflect code quality):
      1. Present the degraded structural dimensions with before/after grades
@@ -302,7 +302,7 @@ npm run build       # if applicable
 - test: [PASS/FAIL + count]
 - build: [PASS/FAIL or N/A]
 
-### Architecture Health (optional — only when session_end was called in post-G2)
+### Architecture Health (present when session_end was called in post-G2)
 - Baseline: [composite grade at session_start]
 - Final: [composite grade at session_end]
 - Degraded dimensions: [list or "none"]
