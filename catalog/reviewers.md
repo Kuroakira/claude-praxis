@@ -44,17 +44,17 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 
 ### `code-quality`
 
-- **Focus**: TDD compliance, type safety, patterns
-- **Verification Source**: Project code quality rules (`rules/code-quality.md`) and codebase conventions
+- **Focus**: TDD compliance, type safety, patterns, YAGNI/DRY/KISS
+- **Verification Source**: Project code quality rules (`rules/code-quality.md`), `catalog/code-quality-review-points.md` (6 categories, 16 concrete review points with committer attribution)
 - **Applicable Domains**: implement, debug
-- **Prompt**: Review for code quality. Check: code quality rules compliance (rules/code-quality.md), pattern consistency with existing project, test quality (no lazy assertions, TDD followed), YAGNI adherence, appropriate error handling.
+- **Prompt**: Review for code quality. First, read `catalog/code-quality-review-points.md` — this is your checklist with 16 concrete review points across 6 categories: (1) YAGNI, (2) DRY, (3) KISS, (4) Test quality, (5) Dead code/tech debt, (6) Pattern consistency. Also check compliance with `rules/code-quality.md` (TDD, type safety, no lazy assertions). For each changed file, systematically check every applicable point. When you find a violation, cite the specific point ID (e.g., "4-2: async await leak") and the committer principle. Prioritize findings by severity: high = correctness or test reliability risk, medium = maintainability concern, low = convention.
 
 ### `security-perf`
 
-- **Focus**: OWASP, performance profiling, resource usage
-- **Verification Source**: Security research + profiling tools
+- **Focus**: Input validation, resource management, DoS prevention, performance optimization
+- **Verification Source**: `catalog/security-perf-review-points.md` (7 categories, 22 concrete review points with committer attribution), OWASP Top 10
 - **Applicable Domains**: implement, debug
-- **Prompt**: Review for security and performance. Check: OWASP Top 10 vulnerabilities, input validation at boundaries, injection risks, data exposure, algorithmic complexity, unnecessary allocations, N+1 queries, bundle size impact. Severity-rate each finding.
+- **Prompt**: Review for security and performance. First, read `catalog/security-perf-review-points.md` — this is your checklist with 22 concrete review points across 7 categories: (1) Input validation, (2) Object pollution, (3) Resource management, (4) DoS prevention, (5) Performance, (6) Bundle/delivery optimization, (7) Sandbox/permissions. For each changed file, systematically check every applicable point. When you find a violation, cite the specific point ID (e.g., "1-3: arithmetic overflow") and the committer principle. Also check OWASP Top 10 vulnerabilities not covered by the checklist: injection, broken auth, data exposure, XXE, broken access control, misconfiguration, XSS, insecure deserialization, known vulnerabilities, insufficient logging. Severity-rate each finding: critical = exploitable vulnerability, high = security or performance risk, medium = potential issue under specific conditions, low = best practice improvement.
 
 ### `error-resilience`
 
@@ -108,9 +108,9 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 ### `simplicity`
 
 - **Focus**: Unnecessary complexity, over-abstraction, cognitive load reduction
-- **Verification Source**: Cyclomatic complexity indicators, function size, nesting depth, abstraction layer count, conditional logic structure
+- **Verification Source**: `catalog/simplicity-review-points.md` (4 categories, 12 concrete review points with committer attribution), cyclomatic complexity indicators
 - **Applicable Domains**: design, implement, debug
-- **Prompt**: Review for unnecessary complexity — especially the kind AI-generated code tends to introduce. Check: (1) Over-abstraction: Are there wrapper functions, utility classes, or abstraction layers that serve only one caller? Could the code be inlined without loss of clarity? (2) Conditional complexity: Can nested if/else chains be flattened with early returns, guard clauses, or lookup tables? Are there boolean parameters that split a function into two disguised functions? (3) Premature generalization: Are generic type parameters, configuration objects, or strategy patterns used where a simple concrete implementation would suffice? (4) Layer bloat: Are there unnecessary indirection layers (service → helper → util → actual logic)? Could the call chain be shortened? (5) Function size: Can functions over ~20 lines be split into named steps? Are there god functions that do too many things? (6) Design-level complexity (for design reviews): Is the proposed architecture more complex than the problem requires? Are there simpler alternatives that meet the same goals? For each finding, suggest the specific simplification and state what is lost (if anything). Severity-rate: high = complexity with no benefit, medium = justified complexity that could be simpler, low = stylistic simplification.
+- **Prompt**: Review for unnecessary complexity — especially the kind AI-generated code tends to introduce. First, read `catalog/simplicity-review-points.md` — this is your checklist with 12 concrete review points across 4 categories: (1) Unnecessary abstraction, (2) Structure vs patch, (3) Pragmatism, (4) Reduction judgment. For each changed file, systematically check every applicable point. When you find a violation, cite the specific point ID (e.g., "1-1: single-caller helper") and the committer principle. Additionally check: (a) Conditional complexity: Can nested if/else be flattened with early returns or lookup tables? Are boolean parameters splitting a function into two disguised functions? (b) Function size: Can functions over ~20 lines be split into named steps? (c) Design-level complexity (for design reviews): Is the proposed architecture more complex than the problem requires? For each finding, suggest the specific simplification and state what is lost (if anything). Severity-rate: high = complexity with no benefit, medium = justified complexity that could be simpler, low = stylistic simplification.
 
 ### `ts-patterns`
 
