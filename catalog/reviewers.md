@@ -115,9 +115,9 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 ### `ts-patterns`
 
 - **Focus**: TypeScript type design quality — patterns learned from top OSS committers (TkDodo, colinhacks, KATT, dai-shi, RyanCavanaugh, DanielRosenwasser)
-- **Verification Source**: `catalog/ts-review-points.md` (7 categories, 30+ concrete review points with committer attribution). Raw data: `claudedocs/research/ts-review-insights.md`
+- **Verification Source**: `catalog/ts-review-points.md` (7 categories, 30+ concrete review points with committer attribution)
 - **Applicable Domains**: implement, debug
-- **Prompt**: Review TypeScript code quality using insights from top OSS committers. First, read `catalog/ts-review-points.md` — this is your primary checklist with 30+ concrete review points across 7 categories: (1) Type safety, (2) Performance, (3) API/module design, (4) Runtime environment, (5) Test quality, (6) Code quality, (7) PR discipline. For each changed file, systematically check every applicable point in the checklist. When you find a violation, cite the specific point ID (e.g., "1-3: double cast") and the committer principle. If you need deeper context on a specific point, refer to `claudedocs/research/ts-review-insights.md` for the original PR quotes and examples. Prioritize findings by severity: high = type safety or correctness risk, medium = design or maintainability concern, low = style or convention.
+- **Prompt**: Review TypeScript code quality using insights from top OSS committers. First, read `catalog/ts-review-points.md` — this is your primary checklist with 30+ concrete review points across 7 categories: (1) Type safety, (2) Performance, (3) API/module design, (4) Runtime environment, (5) Test quality, (6) Code quality, (7) PR discipline. For each changed file, systematically check every applicable point in the checklist. When you find a violation, cite the specific point ID (e.g., "1-3: double cast") and the committer principle. Prioritize findings by severity: high = type safety or correctness risk, medium = design or maintainability concern, low = style or convention.
 
 ### `general-review`
 
