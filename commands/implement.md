@@ -48,11 +48,12 @@ Runs in the orchestrator's context. Three responsibilities: initialize the works
 
 A plan file path is provided as input (e.g., from a prior `/plan` run).
 
-1. **Validate the existing plan structurally**: Check the plan file exists, contains task definitions with file paths, and includes "Final Review" as the last task
+1. **Validate the existing plan structurally**: Check the plan file exists, contains task definitions with file paths, and includes "Final Review" as the last task. The plan may use flat task headers (`## Task N:`) or hierarchical headers (`## Phase N:` / `### Group N:` / `#### Task N:`). Both formats are valid — recognize whichever is present
 2. **Verify topic alignment**: Confirm the plan's topic matches the current implementation request. If the plan targets a different feature or Design Doc, fall through to inline breakdown
 3. **Check per-task review plans**: Verify that each task in the plan contains a per-task review specification (e.g., `### Per-Task Review` with reviewer IDs and tier). If any tasks lack per-task review plans, warn the human: "Plan lacks per-task review specifications for [N] tasks. Phase 2 Step C will apply baseline reviewers (code-quality + simplicity + general-review + devils-advocate)." Proceed — the Step C fallback handles missing review specs
 4. If an axes-table file exists alongside the plan, delete it (it's a planning artifact, not needed for execution)
-5. Proceed directly to **Phase 2**
+5. **`[DONE]` marking for hierarchical plans**: When marking completed tasks, prepend `[DONE]` to the Task-level heading regardless of hierarchy depth. For flat plans: `## [DONE] Task 1:`. For hierarchical plans: `#### [DONE] Task 1:`. Phase and Group headers are never marked `[DONE]` — only individual Tasks
+6. Proceed directly to **Phase 2**
 
 ### When no plan file is provided (inline breakdown)
 
@@ -152,7 +153,12 @@ Present a brief task completion report:
 - lint: PASS
 - test: PASS (X tests)
 - build: PASS
+
+### Deviation
+- [予定通り | description of what changed from the plan and why]
 ```
+
+The `### Deviation` section is mandatory. If the implementation matched the plan exactly, write "予定通り" (as planned). If it deviated, explain what changed and why. A task completion report without a Deviation section is incomplete.
 
 The `### Review` section is mandatory — it records which reviewers ran and at what tier. If Step C applied the baseline fallback (plan lacked per-task review specs), record `source: baseline-fallback`. If the plan specified reviewers, record `source: plan-specified`. A task completion report without a `### Review` section indicates Step C was skipped — this is a workflow violation.
 
@@ -180,11 +186,19 @@ If issues are found during the auto-review, propose rule additions via `rule-evo
 ## [DONE] Task 1: Setup project structure (completed 2025-01-15T10:30)
 ```
 
-**PAUSE after every task**: Present the task completion report and wait for the human to acknowledge before proceeding to the next task:
+**PAUSE after every task**: Present the task completion report and wait for the human to acknowledge before proceeding. The human can respond with one of three range commands:
 
-> "Task [N] complete. Ready to continue to Task [N+1], or do you want to review the changes first?"
+- **"continue"** — execute the next task, then PAUSE again (current default behavior)
+- **"continue to Task N"** — execute tasks sequentially until Task N is complete, then PAUSE. Each task within the range still produces its own verification and Deviation report
+- **"run Group X"** — execute all tasks in Group X, then PAUSE. Requires a hierarchical plan with Group headers
 
-Always wait for the human's response. Do NOT proceed to the next task automatically. This gate exists because large implementations benefit from incremental human review — the human can inspect changes while context is fresh, catch issues early, and steer direction before more code is built on top.
+Tasks within a range execute without individual PAUSEs. At the range boundary, present a **cumulative summary** listing every task executed within the range — each with its individual verification results and Deviation section. A missing task report means the range execution is incomplete.
+
+**Safety invariant**: The human always reviews results before the next range begins. Range commands shift review timing to range boundaries — they do not skip review.
+
+**Limitations**: No arbitrary expressions or nested ranges. Only the three commands above are supported.
+
+Always wait for the human's response. Do NOT proceed to the next task automatically.
 
 ## G2: Final Review (subagent)
 
@@ -384,116 +398,6 @@ The orchestrator cannot fix failures in-context — it lacks the phase-specific 
 
 **progress.md** entries are written by the orchestrator (not subagents) after each group and each task completes. The format is shown in each group's "Orchestrator post-GN" and Phase 2 Step D sections.
 
-## G1: Full Planning Pipeline (canonical template)
+## G1: Full Planning Pipeline
 
-This section is the canonical planning pipeline template. It is referenced by `commands/plan.md` for its G1 dispatch. It is NOT executed by `/implement` — it exists here only as the single source of truth.
-
-### Dispatch
-
-Dispatch a `general-purpose` Task subagent with the following task prompt. The prompt must be **self-contained** — the subagent starts with a clean context and has no access to the orchestrator's conversation history.
-
-**Input** (embedded in task prompt):
-- Topic: The implementation topic from the user's request
-- Design Doc path: Path to the Design Doc (if exists)
-- Learnings context: Output from G0 (relevant past learnings, carried as text)
-- Health baseline: D/F dimensions and affected scope from G0's sekko-arch health scan (or "no issues detected" or "not available — non-TypeScript project")
-- Rules constraints: Reference to `rules/code-quality.md` for code quality rules
-
-**Task prompt template**:
-
-> You are executing Phase Group G1 of the `/plan` workflow: **Full Planning Pipeline**.
->
-> **Topic**: [topic]
->
-> **Design Doc**: [Design Doc path, or "No Design Doc — implement from user's intent"]
->
-> **Past learnings context**: [learnings from G0, or "No relevant learnings found"]
->
-> **Health baseline**: [D/F dimensions with grades and affected scope from G0, or "no issues detected", or "not available — non-TypeScript project"]
->
-> Execute the following steps:
->
-> **Step 1: Read the Design Doc**
->
-> If a Design Doc path is provided, read it to understand the full scope and design decisions. If no Design Doc exists, understand scope from the topic description and create the plan from the user's intent.
->
-> **Step 2: Analyze Architecture**
->
-> Invoke `architecture-analysis` with:
-> - `scope`: Derived from the Design Doc's affected areas (or from the topic if no Design Doc)
-> - `anticipated_changes`: From the Design Doc's proposal (or from the topic description)
->
-> The skill handles registry lookup internally — if a recent analysis of the same scope exists, it returns the existing report without re-running the full analysis. The analysis produces a durable report at `claudedocs/analysis/[scope-name].md`.
->
-> **Step 3: Scout the Codebase**
->
-> Invoke `workflow-planner` for codebase exploration:
->
-> | Parameter | Value |
-> |-----------|-------|
-> | `task` | Plan implementation of [topic] |
-> | `domain` | implement |
-> | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra OR recursive/graph data structures OR input parsing OR functions where malformed data could cause unbounded behavior → add error-resilience. Change that extends or modifies existing architecture → add structural-fitness. The mandatory Implementation Axes Table structurally prevents conflating Design Doc clarity with implementation approach clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
-> | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. (5) Context gathering must produce an Implementation Axes Table — every implementation decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (6) If Implementation Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before plan creation. |
-> | `catalog_scope` | Reviewers: spec-compliance, code-quality, simplicity, general-review, security-perf, structural-fitness, axes-coherence, error-resilience, devils-advocate. Researchers: codebase-scout, best-practices, axis-evaluator. |
->
-> The planner will dispatch `codebase-scout` (and optionally `best-practices` for unfamiliar patterns) to explore the codebase.
->
-> **Skip criteria**: Scout may be skipped ONLY when: (a) the change targets a single file explicitly specified with no cross-module integration points, or (b) a Scout was dispatched in the immediately preceding task covering the same codebase area. When skipping, state the specific reason in the plan header. Generic reasons ("scope is clear", "straightforward change") are not sufficient — name the file and explain why no unknown patterns exist.
->
-> **Step 4: Enumerate Implementation Axes (MANDATORY)**
->
-> After context gathering, produce an Implementation Axes Table covering every implementation decision where multiple valid approaches exist. This step CANNOT be skipped.
->
-> | Axis | Choices | Verdict | Rationale |
-> |------|---------|---------|-----------|
-> | [implementation decision] | A: [option] / B: [option] | Clear winner (A) / Requires exploration | [why A is clearly better, OR why both are viable] |
->
-> Rules:
-> - Every implementation decision from the context gathering must appear as an axis
-> - "Requires exploration" = both choices have genuine trade-offs that affect the implementation approach
-> - "Clear winner" = one choice is objectively better with stated rationale
-> - A verdict of "0 axes require exploration" needs explicit justification
-> - Common axes: test strategy, implementation ordering, refactoring scope, dependency management, error handling approach
->
-> If any axes require exploration, the planner will execute Independent Axis Evaluation (per-axis parallel agents) to resolve them.
->
-> **Step 5: Create Plan**
->
-> By this point, all axes are resolved. Create a single plan:
->
-> 1. Break into steps sized for ~500-line PRs — each produces a reviewable, self-contained change
-> 2. **Refactoring-first tasks** (when `health_baseline` contains D/F dimensions): If D/F dimensions overlap with the implementation scope, create refactoring tasks targeting those areas BEFORE feature tasks. Each refactoring task should: (a) target a specific D/F dimension and its affected files, (b) include verification that `mcp__plugin_sekko-arch_sekko-arch__health` shows improvement after the refactoring, (c) be self-contained — the codebase should be in a better state even if feature implementation is deferred. Present these as "Refactoring (pre-implementation)" in the plan. If D/F dimensions do not overlap with the implementation scope, note "health baseline reviewed — no pre-implementation refactoring needed" in the plan header
-> 3. For each step specify: exact file paths, existing patterns (cite Scout findings), tests to write FIRST (TDD), expected line count, verification steps, dependencies, per-task review plan
-> 4. Per-task review plan selection (all tasks get **thorough** tier):
->    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
->    - API change / auth → add `security-perf`
->    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
->    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns` to ALL per-task reviews
->    - `simplicity`, `general-review`, and `devils-advocate` are included in ALL per-task reviews
-> 5. TDD ordering: list test files before implementation files within each step
-> 6. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
-> 7. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
->
-> **Step 6: Plan Review**
->
-> Save the plan to `claudedocs/plans/[name]-plan.md` and the resolved Axes Table to `claudedocs/plans/[name]-axes-table.md`.
->
-> Invoke `dispatch-reviewers` with:
-> - **Reviewers**: `axes-coherence` + `simplicity` + `devils-advocate` + `spec-compliance` (if Design Doc exists) + `structural-fitness` (if the plan involves extending or restructuring existing architecture)
-> - **Tier**: thorough
-> - **Target**: both file paths (plan + axes table)
->
-> If the review flags critical or important issues — axes contradictions, over-engineered decomposition, missing Design Doc coverage, questionable fundamental direction, or structural fitness concerns — revise the plan and update the Axes Table before proceeding.
->
-> **Write output files**:
->
-> 1. Plan file at `claudedocs/plans/[name]-plan.md` — the reviewed and revised plan
-> 2. Axes Table file at `claudedocs/plans/[name]-axes-table.md` — the resolved axes
-> 3. Analysis report at `claudedocs/analysis/[scope-name].md` (saved by `architecture-analysis` skill)
-> 4. `reasoning-log-g1.md` at `claudedocs/plans/wip/` — Must contain:
->    - `## Key Decisions` — What was decided during planning
->    - `## Alternatives Considered` — Approaches rejected and why
->    - `## Rationale` — The reasoning chain for the chosen plan structure
->
-> Do NOT write to progress.md — the orchestrator handles that.
+The G1 planning pipeline template is defined in `commands/plan.md` (section "G1: Full Planning Pipeline (subagent — canonical template)"). It is the canonical source for the full planning pipeline used by `/plan`. `/implement` does not execute G1 — it exists only for `/plan`'s consumption.
