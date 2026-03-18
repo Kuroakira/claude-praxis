@@ -34,14 +34,21 @@ Apply the graduated tier model:
 | Condition | Tier | Typical Reviewers |
 |-----------|------|-------------------|
 | 1-3 files, single module, no security | **light** | `code-quality` + `devils-advocate` |
-| 4+ files, or cross-module, or new feature | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `devils-advocate` (+ `error-resilience` if external deps or recursive-graph data or malformed-data risk) |
-| Security-sensitive (auth, input validation, secrets) | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `devils-advocate` |
+| 4+ files, or cross-module, or new feature | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `devils-advocate` (+ `error-resilience` if external deps or recursive-graph data or malformed-data risk) |
+| Security-sensitive (auth, input validation, secrets) | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `devils-advocate` |
+
+### Light tier: add `beyond-diff` when diff contains external interaction signals
+
+Scan the diff for these patterns. If **any** match, add `beyond-diff` to the light tier:
+- HTTP calls: `fetch`, `axios`, `got`, `request`, `ky`, `ofetch`, `$fetch`
+- Auth/session: `signIn`, `signOut`, `token`, `session`, `refresh`, `credential`, `auth`, `JWT`, `OAuth`
+- State across requests: `expiry`, `expire`, `ttl`, `cache`, `retry`, `poll`
+- External SDK calls: API client method invocations (e.g., `stripe.`, `supabase.`, `prisma.`)
 
 Adjust based on the specific changes:
 - API changes → add `spec-compliance`
 - Architecture changes → add `architecture`
 - New hook/utility patterns → add `structural-fitness`
-- State management across requests / external API calls / token/session handling → add `beyond-diff`
 - **TypeScript project** (tsconfig.json exists) → add `ts-patterns` to ALL tiers
 
 ## Step 4: Dispatch

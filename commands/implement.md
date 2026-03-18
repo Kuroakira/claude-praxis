@@ -70,11 +70,10 @@ Perform a lightweight task breakdown in-context:
 4. **TDD ordering**: Within each step, list test files before implementation files. The test is the first deliverable, not an afterthought
 5. Always include "Final Review" as the last task
 6. **Per-task review**: Apply baseline reviewers for all tasks:
-   - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
+   - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `beyond-diff` + `devils-advocate`
    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
    - API change / auth → add `security-perf`
    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
-   - State management across requests / external API calls / token/session handling → add `beyond-diff`
 7. Present the breakdown to the human for acknowledgment before proceeding to Phase 2
 
 ## Phase 2: Task Execution Loop (in-context)
@@ -112,10 +111,9 @@ After verification passes, invoke the per-task review. This step cannot be skipp
 
 **Determine reviewers**: Read the task's per-task review plan from the plan file (typically a `### Per-Task Review` section within each task). If the plan specifies reviewers, use them. If the plan does not specify per-task reviewers for this task, apply the baseline:
 
-- Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
+- Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `beyond-diff` + `devils-advocate`
 - API change / auth → add `security-perf`
 - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
-- State management across requests / external API calls / token/session handling → add `beyond-diff`
 
 Invoke `dispatch-reviewers` with the determined reviewers, tier (**thorough** for all tasks), and the **changed file paths** as target (e.g., `[src/auth.ts, src/auth.test.ts]`). Do NOT include task descriptions or implementation rationale — reviewers read the files independently.
 
