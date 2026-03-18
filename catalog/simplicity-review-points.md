@@ -1,76 +1,76 @@
 # Simplicity Review Points
 
-言語非依存の簡素化レビュー観点チェックリスト。OSSトップコミッターの実際のPRレビューから抽出。
-詳細な引用・コンテキストは `claudedocs/research/simplicity-review-insights.md` を参照。
+Language-agnostic simplicity review checklist. Extracted from actual PR reviews by top OSS committers.
+For detailed quotes and context, see `claudedocs/research/simplicity-review-insights.md`.
 
 ---
 
-## 1. 不要な抽象化
+## 1. Unnecessary Abstraction
 
-### 1-1. 一箇所からしか呼ばれないヘルパーがないか
-一箇所からしか呼ばれないなら、抽象化のコスト（関数境界を超えたコード追跡）が再利用のメリットを上回っている。インライン化する。
+### 1-1. Helper called from only one place
+If called from only one place, the abstraction cost (tracing code across function boundaries) outweighs the reuse benefit. Inline it.
 — sebmarkbage (React)
 
-### 1-2. 全てのレイヤーが存在理由を証明できるか
-Service → Helper → Util → 実際のロジック のような多段間接は、各レイヤーに独立した存在理由がない限り過剰。レイヤーを減らしても同じ機能を実現できるなら減らす。
+### 1-2. Every layer can justify its existence
+Multi-level indirection like Service → Helper → Util → actual logic is excessive unless each layer has an independent reason to exist. If removing a layer achieves the same functionality, remove it.
 — sebmarkbage, acdlite (React)
 
-### 1-3. 抽象化は証明された必要性に基づいているか
-「将来使うかも」で作られた汎用化、ジェネリック化、設定オブジェクトは、具体的な2つ以上のユースケースが存在するまで不要。
+### 1-3. Abstraction based on proven necessity
+Generalization, generics, and configuration objects created "just in case" are unnecessary until two or more concrete use cases exist.
 — sebmarkbage (React), developit (Preact)
 
 ---
 
-## 2. 構造 vs パッチ
+## 2. Structure vs Patch
 
-### 2-1. フィーチャーが既存構造と戦っていないか
-新しい機能が既存構造に無理にフィットさせられている（条件分岐の追加、ワークアラウンド）なら、まず構造をリファクタリングしてから機能を追加する。
+### 2-1. Feature fighting the existing structure
+When a new feature is forced to fit the existing structure (adding conditional branches, workarounds), restructure first, then add the feature.
 — Rich-Harris (Svelte)
 
-### 2-2. 絡み合ったコードにパッチを重ねていないか
-複数の関心事が絡み合ったコードにパッチを重ねると複雑性が指数的に増加する。根本的な構造を修正してから変更する。
+### 2-2. Patches piling on tangled code
+Patching code where multiple concerns are tangled increases complexity exponentially. Fix the fundamental structure before making changes.
 — Rich-Harris (Svelte)
 
 ---
 
-## 3. プラグマティズム
+## 3. Pragmatism
 
-### 3-1. 問題を再定義してシンプルなアプローチにできないか
-複雑なアルゴリズムが必要に見えても、問題そのものを再定義すればシンプルな解法が見つかることがある。アルゴリズムの改善より先に問題の再定義を試みる。
+### 3-1. Problem redefined for a simpler approach
+When a complex algorithm seems necessary, redefining the problem itself may reveal a simpler solution. Try redefining the problem before improving the algorithm.
 — Rich-Harris (Svelte)
 
-### 3-2. エッジケースに完璧な処理を追加して全体の複雑性を上げていないか
-稀なエッジケースにはシンプルなフォールバックで十分なケースが多い。完璧な処理のための複雑性増加は割に合わないことがある。
+### 3-2. Perfect edge case handling increasing overall complexity
+Rare edge cases often warrant a simple fallback. The complexity cost of perfect handling may not be worth it.
 — Rich-Harris (Svelte)
 
-### 3-3. コアと拡張層を分離しているか
-本質的な機能のみをコアに置き、互換性レイヤーやエッジケース対応は拡張層に分離する。
+### 3-3. Core and extension layers separated
+Keep only essential functionality in the core. Compatibility layers and edge case handling belong in the extension layer.
 — developit (Preact)
 
 ---
 
-## 4. 削減の判断
+## 4. Reduction Decisions
 
-### 4-1. 優先度の低いユースケースのサポートコードがコア複雑性を上げていないか
-全てのユースケースをサポートする必要はない。優先度の低いケースを意識的に削ることで、残りのコードがシンプルになる。
+### 4-1. Low-priority use case support code increasing core complexity
+Not every use case needs support. Consciously dropping low-priority cases simplifies the remaining code.
 — acdlite (React)
 
-### 4-2. 複雑性を別のフェーズに移動できないか
-ランタイムの複雑性をビルド時・コンパイル時に移動する、設定の複雑性をデフォルト値で吸収するなど、複雑性の「移動」が有効な場合がある。
+### 4-2. Complexity movable to a different phase
+Moving runtime complexity to build/compile time, absorbing configuration complexity with defaults — "moving" complexity can be effective.
 — sebmarkbage (React)
 
-### 4-3. ツーリング出力に内部実装の詳細が漏れていないか
-エラーメッセージやログ出力は「ユーザーが次に何をすべきか」に焦点を当てる。内部実装の詳細はノイズ。
+### 4-3. Internal implementation details leaking into tooling output
+Error messages and log output should focus on "what the user should do next". Internal implementation details are noise.
 — timneutkens (Next.js)
 
 ---
 
-## AI生成コードで特に注意すべきパターン
+## AI-Generated Code Patterns
 
-| パターン | 対応する観点 |
-|---------|------------|
-| 1-2箇所でしか使わないユーティリティ関数の作成 | 1-1: シングルカラー = インライン |
-| 将来の拡張を見越したジェネリクスやconfig objects | 1-3: 証明された必要性 |
-| Service → Helper → Util → 実際のロジック | 1-2: レイヤー境界を問う |
-| 全てのエッジケースに完璧な処理を追加 | 3-2: プラグマティズム |
-| 既存構造に無理に合わせる条件分岐の追加 | 2-1: 構造 vs パッチ |
+| Pattern | Review Point |
+|---------|-------------|
+| Utility function used in only 1-2 places | 1-1: single caller = inline |
+| Generics or config objects anticipating future extension | 1-3: proven necessity |
+| Service → Helper → Util → actual logic | 1-2: question layer boundaries |
+| Perfect handling for every edge case | 3-2: pragmatism |
+| Conditional branches forced into existing structure | 2-1: structure vs patch |

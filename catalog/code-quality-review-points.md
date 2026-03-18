@@ -1,88 +1,88 @@
 # Code Quality Review Points
 
-言語非依存のコード品質レビュー観点チェックリスト。OSSトップコミッターの実際のPRレビューから抽出。
-詳細な引用・コンテキストは `claudedocs/research/code-quality-review-insights.md` を参照。
+Language-agnostic code quality review checklist. Extracted from actual PR reviews by top OSS committers.
+For detailed quotes and context, see `claudedocs/research/code-quality-review-insights.md`.
 
 ---
 
-## 1. YAGNI（不要なものを作らない）
+## 1. YAGNI (Don't Build What You Don't Need)
 
-### 1-1. 概念的に重複する機能を追加していないか
-既存の機能と微妙に異なる類似機能は、既存APIの改善で解決できないか検討する。
+### 1-1. Adding a conceptually duplicate feature
+A similar feature with subtle differences from an existing one — consider whether improving the existing API solves it instead.
 — timneutkens (Next.js)
 
-### 1-2. 動作しないAPIや型定義が残っていないか
-未実装・非推奨のインターフェースは、利用者に誤った期待を与える（false affordance）。
+### 1-2. Non-functional APIs or type definitions left behind
+Unimplemented or deprecated interfaces give users false affordance — a misleading expectation of available functionality.
 — patak-dev (Vite)
 
-### 1-3. 非推奨コードの削除を計測で裏付けているか
-「いつか使うかも」ではなく、削除によるバンドルサイズ・ビルド時間の改善を計測で示す。
+### 1-3. Dead code removal backed by measurements
+"Might use it someday" is not a reason to keep code. Demonstrate bundle size or build time improvement from removal with measurements.
 — timneutkens (Next.js)
 
 ---
 
-## 2. DRY（重複の排除）
+## 2. DRY (Eliminate Duplication)
 
-### 2-1. 重複ロジックの統合がバグ検出につながっていないか
-散在する同一ロジックを統合すると、個別には見えなかったエッジケースのバグが見つかることがある。DRYはバグ検出の手段でもある。
+### 2-1. Consolidating duplicate logic revealing hidden bugs
+Merging scattered identical logic can expose edge-case bugs that were invisible in individual copies. DRY is also a bug detection mechanism.
 — sebmarkbage (React)
 
-### 2-2. リファクタリングの動機は重複パターンの排除か
-「アーキテクチャ変更のためのアーキテクチャ変更」ではなく、具体的な重複パターンの排除を動機とする。
+### 2-2. Refactoring motivated by duplicate pattern elimination
+"Architecture change for the sake of architecture change" is not valid motivation. Ground refactoring in concrete duplicate patterns being eliminated.
 — sebmarkbage, acdlite (React)
 
 ---
 
-## 3. KISS（シンプルさの維持）
+## 3. KISS (Keep It Simple)
 
-### 3-1. 仕様準拠でコードを削減できないか
-シンプルなコードが仕様にも合致するなら、複雑な独自実装を削除する。
+### 3-1. Spec compliance enabling code reduction
+When simpler code also conforms to the spec, delete complex custom implementations.
 — patak-dev (Vite)
 
-### 3-2. 明らかに無駄なアロケーションを放置していないか
-計測を理由にした過剰な慎重さは不要。明らかに無駄なオブジェクト生成やコピーは即座に排除する。
+### 3-2. Obviously wasteful allocations left in place
+Excessive caution justified by "need to measure first" is unnecessary for clearly wasteful object creation or copies. Eliminate them immediately.
 — dsherret (Deno)
 
 ---
 
-## 4. テスト品質
+## 4. Test Quality
 
-### 4-1. アサーションは検証対象の動作の後にあるか
-アサーションが検証対象の動作の前に配置されていると、何も検証していないのと同じ。
+### 4-1. Assertions placed after the action under test
+Assertions placed before the action they should verify test nothing at all.
 — Node.js core team
 
-### 4-2. 非同期テストで await が漏れていないか
-`await` の漏れはフレーキーテストの根本原因。テストが確率的に通る状態は信頼性ゼロ。
+### 4-2. Missing await in async tests
+Missing `await` is the root cause of flaky tests. A test that passes probabilistically has zero reliability.
 — Node.js core team
 
-### 4-3. タイミング依存をイベント駆動に置き換えているか
-フレーキーテストの修正は `setTimeout` の値を増やすことではなく、タイミング依存そのものの排除。
+### 4-3. Timing dependency replaced with event-driven approach
+Fixing flaky tests means eliminating timing dependency itself, not increasing `setTimeout` values.
 — mcollina (Node.js)
 
-### 4-4. アサーション引数の順序は正しいか
-actual（実際の値）を先に、expected（期待値）を後に。順序の統一は失敗メッセージの品質に直結する。
+### 4-4. Assertion argument order correct
+actual first, expected second. Consistent ordering directly affects failure message quality.
 — Node.js core team
 
-### 4-5. 全ての実行コンテキストでテストしているか
-ハッピーパスだけでなく、全ての実行環境・モード（サーバー、クライアント、ハイブリッド等）でテストする。
+### 4-5. Tested in all execution contexts
+Not just the happy path — test in all runtime environments/modes (server, client, hybrid, etc.).
 — sebmarkbage (React)
 
 ---
 
-## 5. デッドコード・技術的負債
+## 5. Dead Code / Technical Debt
 
-### 5-1. 使われていないコードを「念のため」残していないか
-デッドコードは技術的負債。別のAPIが同じ機能を提供しているなら即座に削除する。
+### 5-1. Unused code kept "just in case"
+Dead code is technical debt. If another API provides the same functionality, delete immediately.
 — Node.js core team
 
-### 5-2. テストインフラの不要な依存を放置していないか
-テストコードの衛生管理はプロダクションコードと同等に重要。
+### 5-2. Unnecessary test infrastructure dependencies left in place
+Test code hygiene is equally important as production code hygiene.
 — Node.js core team
 
 ---
 
-## 6. パターン一貫性
+## 6. Pattern Consistency
 
-### 6-1. 命名がプロジェクトの現在のスコープを反映しているか
-歴史的な名前を残すと新規コントリビュータを混乱させる。プロジェクトの進化に合わせて内部APIの名前も更新する。
+### 6-1. Naming reflecting the project's current scope
+Historical names confuse new contributors. Update internal API names as the project evolves.
 — ryanflorence (React Router)

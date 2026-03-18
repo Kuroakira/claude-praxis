@@ -1,124 +1,124 @@
 # Security & Performance Review Points
 
-言語非依存のセキュリティ・パフォーマンスレビュー観点チェックリスト。OSSトップコミッターの実際のPRレビューから抽出。
-詳細な引用・コンテキストは `claudedocs/research/security-perf-review-insights.md` を参照。
+Language-agnostic security and performance review checklist. Extracted from actual PR reviews by top OSS committers.
+For detailed quotes and context, see `claudedocs/research/security-perf-review-insights.md`.
 
 ---
 
-## 1. 入力バリデーション
+## 1. Input Validation
 
-### 1-1. フォーマット文字列にユーザー入力が到達しないか
-文字列フォーマット関数にユーザー入力が直接・間接的に到達するパスを全て検証する。チェーンされた呼び出しで間接的に到達するケースも見落とさない。
+### 1-1. User input not reaching format strings
+Verify all paths — direct and indirect — where user input reaches string formatting functions. Watch for indirect arrival through chained calls.
 — tniessen (Node.js)
 
-### 1-2. レイヤー間で型制約が維持されているか
-異なるレイヤー（例: スクリプト言語 → ネイティブ、フロントエンド → バックエンド）で型の範囲が変わる場合、各レイヤーの制約を個別に検証する。上位で有効な値が下位でオーバーフローしうる。
+### 1-2. Type constraints maintained across layers
+When value ranges differ across layers (e.g., scripting language → native, frontend → backend), verify constraints at each layer independently. A value valid upstream may overflow downstream.
 — tniessen (Node.js)
 
-### 1-3. 算術演算のオーバーフローを考慮しているか
-offset + length のような加算、ビット演算での暗黙の切り詰め（32bit等）がバリデーションを迂回しないか確認する。
+### 1-3. Arithmetic overflow considered
+Verify that additions like offset + length, or implicit truncation in bit operations (32-bit, etc.) don't bypass validation.
 — tniessen, BridgeAR (Node.js)
 
-### 1-4. オプションオブジェクトのプロパティを一度だけ読み取っているか
-悪意のあるgetter/proxyが設定されたオブジェクトでは、プロパティアクセスのたびに異なる値が返る可能性がある。セキュリティクリティカルな値はローカル変数にコピーしてから使う。
+### 1-4. Option object properties read only once
+Objects with malicious getters/proxies can return different values on each property access. Copy security-critical values to local variables before use.
 — tniessen (Node.js)
 
 ---
 
-## 2. オブジェクト汚染
+## 2. Object Pollution
 
-### 2-1. ユーザー入力をオブジェクトキーとして使っていないか
-ユーザー入力をプレーンオブジェクトのキーにすると、プロトタイプ汚染が可能になる。`Object.create(null)` や `Map` を使う。
+### 2-1. User input not used as object keys
+Using user input as plain object keys enables prototype pollution. Use `Object.create(null)` or `Map`.
 — CVE-2022-21824 (Node.js)
 
-### 2-2. セキュリティクリティカルなオプションでプロトタイプチェーンの値を受け入れていないか
-オプション処理では `hasOwnProperty` チェックまたは分割代入で、プロトタイプチェーンからの意図しない値の混入を防ぐ。
+### 2-2. Security-critical options not accepting prototype chain values
+Use `hasOwnProperty` checks or destructuring in option processing to prevent unintended values from the prototype chain.
 — LiviaMedeiros (Node.js)
 
 ---
 
-## 3. リソース管理
+## 3. Resource Management
 
-### 3-1. イベントリスナーの登録と解除がペアになっているか
-特にプーリングされるリソースでは、再利用前にリスナーをクリーンアップする。maxListeners警告はリークの兆候。
+### 3-1. Event listener registration and removal paired
+Especially for pooled resources, clean up listeners before reuse. maxListeners warnings signal leaks.
 — Node.js core team
 
-### 3-2. リソースの所有権が明確か
-手動のclose/dispose/freeはリークの温床。RAII、try-with-resources、`using` 宣言、finally ブロック等で確実にクリーンアップする。
+### 3-2. Resource ownership clear
+Manual close/dispose/free is a leak breeding ground. Use RAII, try-with-resources, `using` declarations, or finally blocks for guaranteed cleanup.
 — joyeecheung (Node.js)
 
-### 3-3. 短寿命のオブジェクトを不必要にヒープ割り当てしていないか
-ループ内で毎回生成される短寿命のオブジェクトやクロージャは、GCプレッシャーの原因になる。スタック変数や事前確保で代替できないか検討する。
+### 3-3. Short-lived objects not unnecessarily heap-allocated
+Short-lived objects or closures created on every loop iteration cause GC pressure. Consider stack variables or pre-allocation as alternatives.
 — bnoordhuis (Node.js)
 
 ---
 
-## 4. DoS防止
+## 4. DoS Prevention
 
-### 4-1. ネットワーク入力にサイズ制限とタイムアウトがあるか
-無制限の入力はDoSベクター。ヘッダー、ボディ、チャンクサイズ等の全てに上限を設ける。
+### 4-1. Network input has size limits and timeouts
+Unlimited input is a DoS vector. Set upper bounds on headers, body, chunk sizes, etc.
 — Node.js security team
 
-### 4-2. パーサーの各フィールドにサイズ上限があるか
-仕様上「任意長」でも、実装では制限が必要。CVE-2024-22019（chunked transfer encodingのチャンク拡張サイズ無制限）が実例。
+### 4-2. Parser fields have size limits
+Even if specs allow "arbitrary length", implementations need limits. CVE-2024-22019 (unlimited chunked transfer encoding extension size) is a real-world example.
 — Node.js security team
 
-### 4-3. 長時間アイドルのコネクションを適切にドレインしているか
-Keep-aliveコネクションにはアイドルタイムアウトと最大リクエスト数を設定し、ゾンビコネクションによるリソース枯渇を防ぐ。
+### 4-3. Long-idle connections properly drained
+Set idle timeouts and max request counts on keep-alive connections to prevent zombie connections from exhausting resources.
 — Node.js core team
 
 ---
 
-## 5. パフォーマンス
+## 5. Performance
 
-### 5-1. パフォーマンス改善がベンチマークで裏付けられているか
-「たぶん速い」ではなく、計測結果を提示する。改善を主張するならベンチマーク必須。
+### 5-1. Performance improvement backed by benchmarks
+"Probably faster" is not evidence. If claiming improvement, benchmarks are mandatory.
 — ronag, joyeecheung (Node.js), mcollina (Fastify)
 
-### 5-2. 頻繁に呼ばれるバリデーションにファストパスがあるか
-最も一般的なケースを最初にチェックし、早期リターンで不要な処理をスキップする。
+### 5-2. Fast path for frequently called validations
+Check the most common case first and early-return to skip unnecessary processing.
 — ronag (Node.js)
 
-### 5-3. ホットパスで間接的なプロパティアクセスを使っていないか
-getter/setter、Proxyはホットパスでのパフォーマンス低下の原因。直接プロパティアクセスに置き換えられないか検討する。
+### 5-3. No indirect property access on hot paths
+Getters/setters and Proxies degrade hot path performance. Consider replacing with direct property access.
 — ronag (Node.js)
 
-### 5-4. 小さなI/O操作をバッチ化できないか
-複数の小さなwrite/send操作を一括にまとめると、システムコール回数を削減できる。
+### 5-4. Small I/O operations batchable
+Combining multiple small write/send operations reduces system call count.
 — ronag (Node.js)
 
-### 5-5. オブジェクト生成パスに不要な初期化がないか
-初期化時の不要なプロパティ設定、イベント発行、デフォルト値計算を排除し、生成パスを最小限に保つ。
+### 5-5. No unnecessary initialization on object creation paths
+Eliminate unnecessary property setup, event emission, and default value computation during initialization. Keep creation paths minimal.
 — ronag (Node.js)
 
 ---
 
-## 6. バンドル・配信最適化
+## 6. Bundle / Delivery Optimization
 
-### 6-1. tree-shakingを妨げるモジュール形式を使っていないか
-ESM exportを優先する。CommonJSではtree-shakingが効かず、バンドルサイズが膨らむ。
+### 6-1. Module format not blocking tree-shaking
+Prefer ESM exports. CommonJS prevents tree-shaking, inflating bundle size.
 — feedthejim (Next.js)
 
-### 6-2. sideEffects宣言と実際の副作用が一致しているか
-`sideEffects: false` を宣言しているのに副作用のあるコードがあると、tree-shakingで必要なコードが除去される。
+### 6-2. sideEffects declaration matches actual side effects
+Declaring `sideEffects: false` while having side-effectful code causes tree-shaking to remove necessary code.
 — Next.js team
 
-### 6-3. リクエストパイプラインへの追加のオーバーヘッドを計測しているか
-ミドルウェア/フックの追加は全リクエストに影響する。オーバーヘッドを計測し、必要ならopt-inにする。
+### 6-3. Request pipeline addition overhead measured
+Middleware/hook additions affect all requests. Measure overhead and make opt-in if needed.
 — delvedor, mcollina (Fastify)
 
 ---
 
-## 7. サンドボックス・権限
+## 7. Sandbox / Permissions
 
-### 7-1. ファイルパスのバリデーションはシンボリックリンク解決後か
-シンボリックリンクでサンドボックスをバイパスされる脆弱性を防ぐ。`realpath` で正規化してからアクセス制御を適用する。
+### 7-1. File path validation after symlink resolution
+Prevent sandbox bypass via symlinks. Canonicalize with `realpath` before applying access control.
 — Deno security team
 
-### 7-2. 擬似ファイルシステムを考慮しているか
-`/proc/self/environ` 等の擬似ファイルシステムは通常のファイルアクセス制御では防げない。明示的にブロックする。
+### 7-2. Pseudo-filesystems considered
+`/proc/self/environ` and similar pseudo-filesystems bypass normal file access control. Block explicitly.
 — Deno security team
 
-### 7-3. FFI/ネイティブコード呼び出しの権限チェックがあるか
-FFIはサンドボックスをバイパスする最も強力な手段。他の権限より厳格にチェックする。
+### 7-3. FFI/native code call permission check in place
+FFI is the most powerful sandbox bypass mechanism. Check permissions more strictly than for other operations.
 — Deno security team

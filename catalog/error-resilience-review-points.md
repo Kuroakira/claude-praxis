@@ -1,132 +1,143 @@
 # Error Resilience Review Points
 
-言語非依存のエラーハンドリング・障害耐性レビュー観点チェックリスト。OSSトップコミッターの実際のPRレビューから抽出。
-「正常系は動くが、異常時に壊れる」コードを検出することに焦点を当てる。
+Language-agnostic error handling and fault tolerance review checklist. Extracted from actual PR reviews by top OSS committers.
+Focuses on detecting code that works on the happy path but breaks under failure conditions.
 
 ---
 
-## 1. エラー捕捉のスコープ
+## 1. Error Capture Scope
 
-### 1-1. try-catch のスコープが広すぎないか
-I/O 操作とビジネスロジックを同じ try-catch で囲むと、ビジネスロジックのバグが I/O エラーとして処理される。try-catch は発生源のみを囲み、他のエラーは伝播させる。
-（参照: ts-review-points 6-13 はTS固有の観点から同パターンをカバー）
+### 1-1. try-catch scope too broad
+Wrapping both I/O operations and business logic in the same try-catch causes business logic bugs to be handled as I/O errors. Scope try-catch to the error source only; let other errors propagate.
+(See: ts-review-points 6-13 covers the same pattern from a TS-specific perspective.)
 — huozhi, timneutkens (Next.js)
 
-### 1-2. 「見つからない」と「アクセスエラー」を区別しているか
-ファイル存在チェックやデータ取得で、「存在しない」(正常な不在) と「I/O エラー」(異常) を同じ null/undefined で返すと、ディスク障害やネットワーク障害が silent に無視される。
+### 1-2. "Not found" vs "access error" distinguished
+When file existence checks or data retrieval return null/undefined for both "doesn't exist" (normal absence) and "I/O error" (failure), disk failures and network failures are silently ignored.
 — timneutkens (Next.js)
 
-### 1-3. catch ブロックが全てのエラーを飲み込んでいないか
-`catch (e) { return null; }` は全エラーを握りつぶす。想定するエラー型のみ catch し、それ以外は re-throw する。
+### 1-3. Catch block not swallowing all errors
+`catch (e) { return null; }` suppresses all errors. Catch only expected error types and re-throw the rest.
 — huozhi (Next.js), mikearnaldi (Effect-TS)
 
+### 1-4. External API error notification method matches caller's handling approach
+External libraries and SDKs don't always report errors via exceptions. Redirects (next-auth `signIn` with `redirect: true`), response objects with error properties, callback arguments, event emission — each library has its own error notification method. If the code assumes try/catch will capture errors, verify the callee actually throws in that mode. Pay special attention when default option values determine the error notification method (`redirect: true` as default means errors are reported via redirect, not exceptions).
+(See: general-review-points 8-4 detects default behavior mismatches as implicit assumptions.)
+
+**Verification steps**:
+1. Identify external API calls wrapped in try/catch or `.catch()`
+2. Check the API's documentation for error behavior (throw / return value / redirect / callback)
+3. Check whether default options affect the error notification method
+4. If the code's handling approach doesn't match the API's notification method, report the mismatch
+
 ---
 
-## 2. エラー伝播と情報保持
+## 2. Error Propagation and Information Preservation
 
-### 2-1. エラー変換で元のエラー情報が失われていないか
-ラッパーエラーに変換する際、`cause` プロパティや元のスタックトレースが保持されているか確認する。「An unknown error occurred」で元のエラーが埋もれるとデバッグが困難になる。
+### 2-1. Original error information not lost during error transformation
+When wrapping into a new error, verify `cause` property and original stack trace are preserved. "An unknown error occurred" burying the original error makes debugging difficult.
 — mikearnaldi (Effect-TS)
 
-### 2-2. エラー型がレイヤー間で変わっていないか
-変換レイヤーを通過する際にエラーの型が変わると、上位の catch/match ロジックが壊れる。型の変換が必要な場合は、ドキュメントと型定義で明示する。
+### 2-2. Error type not changing across layers
+When error types change while passing through transformation layers, upstream catch/match logic breaks. If type transformation is needed, document it explicitly in types and docs.
 — mikearnaldi, gcanti (Effect-TS)
 
-### 2-3. エラーメッセージがユーザーのアクションにつながるか
-内部実装の詳細（スタックトレース、内部変数名）ではなく、「何が起きて、次に何をすべきか」を伝えるメッセージにする。
+### 2-3. Error message actionable for the user
+Messages should communicate "what happened and what to do next", not internal implementation details (stack traces, internal variable names).
 — timneutkens (Next.js)
 
 ---
 
-## 3. リソースクリーンアップ
+## 3. Resource Cleanup
 
-### 3-1. エラーパスでリソースが解放されているか
-成功パスでのみクリーンアップが実行され、エラーで早期リターンするとリソース（ファイルハンドル、DB 接続、一時ファイル、Map エントリ）がリークする。`finally` ブロックまたは RAII パターンを使う。
+### 3-1. Resources released on error paths
+When cleanup only executes on the success path and errors cause early returns, resources (file handles, DB connections, temp files, Map entries) leak. Use `finally` blocks or RAII patterns.
 — timneutkens (Next.js), joyeecheung (Node.js)
 
-### 3-2. イベントリスナーの登録と解除がペアになっているか
-エラー発生時にリスナーの解除パスが実行されないと、リスナーが蓄積し maxListeners 警告やメモリリークにつながる。
-（参照: security-perf-review-points 3-1 はリソースリーク観点から同パターンをカバー）
+### 3-2. Event listener registration and removal paired
+When the removal path isn't executed on error, listeners accumulate causing maxListeners warnings and memory leaks.
+(See: security-perf-review-points 3-1 covers the same pattern from a resource leak perspective.)
 — KATT (tRPC), Node.js core team
 
-### 3-3. リソースのライフサイクル（生成・使用・破棄）が明確か
-`destroy()` と `onCloseOrError` のどちらが呼ばれるか曖昧なリソースは、リークや二重解放の温床。各リソースの破棄条件を明文化する。
+### 3-3. Resource lifecycle (creation, use, disposal) explicit
+Resources where it's ambiguous whether `destroy()` or `onCloseOrError` gets called are breeding grounds for leaks and double-frees. Document disposal conditions for each resource.
 — KATT (tRPC)
 
 ---
 
-## 4. 部分的防御
+## 4. Partial Defenses
 
-### 4-1. 防御ロジックが全てのコードパスをカバーしているか
-一部のブランチで null チェックや型チェックを行い、他のブランチでは行わない「非対称な防御」は、保護されていないパスでクラッシュする。
+### 4-1. Defensive logic covers all code paths
+Null checks or type checks in some branches but not others ("asymmetric defense") crash on the unprotected paths.
 — timneutkens (Next.js)
 
-### 4-2. 防御が全ての入力型をカバーしているか
-visited セットがオブジェクト型のみ対応し、プリミティブや配列を考慮していないなど。ガードが対象とする全ての型・値の範囲を確認する。
+### 4-2. Defense covers all input types
+E.g., a visited set handling only object types but not primitives or arrays. Verify the guard covers the full range of types and values it targets.
 — colinhacks (Zod), RyanCavanaugh (TypeScript)
 
-### 4-3. エラー収集が最初の1件で停止していないか
-`.find()` で最初のエラーだけ返すと、ユーザーは問題を1つずつ修正して再実行する必要がある。全エラーを収集して一括報告する。
-（参照: ts-review-points 5-11 はTS固有の観点から同パターンをカバー）
+### 4-3. Error collection not stopping at the first error
+Using `.find()` to return only the first error forces users to fix problems one-by-one and re-run. Collect all errors and report them at once.
+(See: ts-review-points 5-11 covers the same pattern from a TS-specific perspective.)
 — timneutkens (Next.js)
 
 ---
 
-## 5. 非同期エラーハンドリング
+## 5. Async Error Handling
 
-### 5-1. イベントエミッタに error ハンドラが登録されているか
-Node.js の EventEmitter は error イベントにハンドラがないとプロセスをクラッシュさせる。非同期リソースの生成時に error ハンドラの登録を確認する。
+### 5-1. Error handler registered on event emitters
+Node.js EventEmitter crashes the process if no handler is registered for the error event. Verify error handler registration when creating async resources.
 — KATT (tRPC)
 
-### 5-2. Promise チェーンの途中でエラーが silent に失われていないか
-`.then()` の後に `.catch()` がない、または `.catch()` が空のハンドラ。Promise チェーンの末端まで辿り、全てのパスでエラーが処理されるか確認する。
+### 5-2. Errors not silently lost mid-Promise chain
+`.then()` without `.catch()`, or `.catch()` with an empty handler. Trace to the end of the Promise chain and verify errors are handled on all paths.
 — KATT (tRPC), mikearnaldi (Effect-TS)
 
-### 5-3. タイムアウトがリクエスト・レスポンス双方向で機能しているか
-送信側のみタイムアウトをリセットし、受信側をリセットしないと、片方向の障害（応答が来ない）を検知できない。
+### 5-3. Timeout functioning in both request and response directions
+Resetting timeout on the send side only but not the receive side means one-directional failures (no response) go undetected.
 — KATT (tRPC)
 
 ---
 
-## 6. 状態マシンとライフサイクル
+## 6. State Machines and Lifecycle
 
-### 6-1. 状態遷移の全パターンが処理されているか
-状態マシンで「接続中にエラー」「初期化中にキャンセル」など、正常系以外の状態遷移が定義されていないと、予期しない状態に陥る。
+### 6-1. All state transition patterns handled
+In state machines, if non-happy-path transitions like "error during connecting" or "cancel during initializing" aren't defined, the system enters unexpected states.
 — KATT (tRPC)
 
-### 6-2. 初期化関数がリトライ安全（冪等）か
-障害後のリトライで初期化関数を再実行したとき、二重登録や二重初期化が発生しないか。冪等でない初期化はリトライ不可能な障害になる。
+### 6-2. Initialization function retry-safe (idempotent)
+When retrying an initialization function after failure, verify no double-registration or double-initialization occurs. Non-idempotent initialization makes retry impossible.
 — mikearnaldi (Effect-TS)
 
-### 6-3. 設定値のデフォルトが「安全な値」か
-必須設定が空文字列やゼロにデフォルトされると、設定漏れが silent に通過し、下流で不可解なエラーになる。必須設定にはデフォルトを設けず、欠落時にエラーを投げる。
+### 6-3. Configuration defaults are "safe values"
+When required configuration defaults to empty string or zero, missing configuration silently passes through, causing cryptic errors downstream. Required config should have no default and throw on absence.
 — dankochetov (Drizzle ORM)
 
 ---
 
-## 7. グレースフルデグラデーション
+## 7. Graceful Degradation
 
-### 7-1. 機能低下が明示的に通知されているか
-ポリフィルや代替実装への切り替えが silent に行われると、依存する機能が正しく動作しない場合に原因特定が困難になる。警告ログやフォールバックマーカーで通知する。
+### 7-1. Feature degradation explicitly notified
+Silent switching to polyfills or fallback implementations makes root cause identification difficult when dependent features malfunction. Notify via warning logs or fallback markers.
 — yyx990803 (Vue.js/Vite)
 
-### 7-2. 操作が上限なく繰り返されないか
-無限イテラブルへの `Array.from()`、上限なしのリトライ、再帰の深さ制限なしなど。全ての繰り返し操作にガードリミットを設ける。
+### 7-2. Operations not repeating without bounds
+`Array.from()` on an infinite iterable, unbounded retries, recursion without depth limits, etc. Set guard limits on all repeating operations.
 — mikearnaldi (Effect-TS)
 
-### 7-3. タイムアウト値の意味と再試行可否が文書化されているか
-`15000ms` のようなマジックナンバーだけでは、タイムアウト後に再試行すべきか、即座にエスカレートすべきか判断できない。タイムアウトの意図と推奨アクションをコメントする。
+### 7-3. Timeout value meaning and retry policy documented
+`15000ms` as a magic number alone doesn't indicate whether to retry after timeout or escalate immediately. Comment the timeout's intent and recommended action.
 — timneutkens (Next.js)
 
 ---
 
-## AI 生成コードで特に注意すべきレジリエンスパターン
+## AI-Generated Code Resilience Patterns
 
-| パターン | 対応する観点 |
-|---------|------------|
-| `catch (e) { return null; }` で全エラーを握りつぶす | 1-3: catch の飲み込み |
-| 成功パスのみ finally でクリーンアップ | 3-1: エラーパスのリソース解放 |
-| 一部の分岐でのみ null チェック | 4-1: 非対称な防御 |
-| `.catch()` なしの Promise チェーン | 5-2: silent なエラー消失 |
-| マジックナンバーのタイムアウト | 7-3: タイムアウトの意図 |
-| `.find()` でエラーを1件だけ返す | 4-3: エラー収集の停止 |
+| Pattern | Review Point |
+|---------|-------------|
+| `catch (e) { return null; }` swallowing all errors | 1-3: catch swallowing |
+| Cleanup only on success path via finally | 3-1: error path resource release |
+| Null check in some branches only | 4-1: asymmetric defense |
+| Promise chain without `.catch()` | 5-2: silent error loss |
+| Wrapping external API in try/catch but API doesn't throw on error | 1-4: error notification mismatch |
+| Magic number timeouts | 7-3: timeout intent |
+| `.find()` returning only the first error | 4-3: error collection stopping |
