@@ -30,6 +30,31 @@ External libraries and SDKs don't always report errors via exceptions. Redirects
 3. Check whether default options affect the error notification method
 4. If the code's handling approach doesn't match the API's notification method, report the mismatch
 
+### 1-5. User-initiated action errors not distinguished from system errors
+User actions like closing a popup, cancelling a dialog, navigating away, or aborting an operation produce errors that are semantically different from system failures. When both flow through the same catch block with a generic error message ("Sign-in failed"), the user sees a failure message for something they intentionally did. Distinguish user-initiated errors and suppress or handle them silently.
+
+```
+// ❌ Popup close and auth failure both show "Sign-in failed"
+try {
+  await signInWithPopup(auth, provider);
+} catch (e) {
+  setError("Sign-in failed. Please try again.");  // shown even when user closed popup
+}
+
+// ✅ Distinguish user-initiated cancellation from actual errors
+try {
+  await signInWithPopup(auth, provider);
+} catch (e) {
+  if (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request") {
+    return;  // user intentionally cancelled — not an error
+  }
+  setError("Sign-in failed. Please try again.");
+}
+```
+
+**Common user-initiated error signals**: `auth/popup-closed-by-user`, `AbortError` (from AbortController), `auth/cancelled-popup-request`, `user_cancelled`, dialog dismiss events. Each external API has its own set — check the API's documentation for cancellation-specific error codes.
+— Derived from PR review gap analysis: all 8 reviewers missed popup cancellation UX in a Firebase Auth implementation
+
 ---
 
 ## 2. Error Propagation and Information Preservation
@@ -128,6 +153,33 @@ Silent switching to polyfills or fallback implementations makes root cause ident
 `15000ms` as a magic number alone doesn't indicate whether to retry after timeout or escalate immediately. Comment the timeout's intent and recommended action.
 — timneutkens (Next.js)
 
+### 7-4. Retry/wait strategy not accounting for execution context
+A retry with exponential backoff (e.g., 3 retries, max 600ms total) is reasonable on the client side where it runs in the background. The same retry on the server side (e.g., in a JWT callback, API route handler, or middleware) blocks the HTTP request — the user's browser hangs for the total retry duration. Evaluate whether the retry strategy is appropriate for where the code actually executes.
+
+```
+// ❌ Server-side JWT callback retries 3x with backoff — user waits up to 600ms+ for page load
+async jwt({ token }) {
+  try {
+    return await refreshToken(token);
+  } catch {
+    return await retryWithBackoff(() => refreshToken(token), { maxRetries: 3 });
+    // user's request is blocked for the entire retry duration
+  }
+}
+
+// ✅ Server-side: fail fast, let client handle retry or show refresh prompt
+async jwt({ token }) {
+  try {
+    return await refreshToken(token);
+  } catch {
+    return { ...token, error: "RefreshFailed" };  // propagate to client
+  }
+}
+```
+
+**Key question**: "Is this code running within a user's HTTP request lifecycle?" If yes, every millisecond of retry/wait directly increases response time. Prefer fail-fast with error propagation over server-side retry.
+— Derived from PR review gap analysis: error-resilience confirmed retry bounds (3x, 600ms) but missed that JWT callback blocks the request
+
 ---
 
 ## AI-Generated Code Resilience Patterns
@@ -141,3 +193,5 @@ Silent switching to polyfills or fallback implementations makes root cause ident
 | Wrapping external API in try/catch but API doesn't throw on error | 1-4: error notification mismatch |
 | Magic number timeouts | 7-3: timeout intent |
 | `.find()` returning only the first error | 4-3: error collection stopping |
+| Generic "failed" message for user-initiated cancellation | 1-5: user action vs system error |
+| Server-side retry blocking HTTP request | 7-4: execution context retry |
