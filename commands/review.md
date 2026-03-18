@@ -41,6 +41,7 @@ Adjust based on the specific changes:
 - API changes → add `spec-compliance`
 - Architecture changes → add `architecture`
 - New hook/utility patterns → add `structural-fitness`
+- State management across requests / external API calls / token/session handling → add `beyond-diff`
 - **TypeScript project** (tsconfig.json exists) → add `ts-patterns` to ALL tiers
 
 ## Step 4: Dispatch

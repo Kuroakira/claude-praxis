@@ -44,7 +44,7 @@ If the `reviewers` list for a thorough review has fewer than 3 entries or omits 
 ## Dispatch Procedure
 
 1. **Validate reviewer IDs**: Check each ID against `catalog/reviewers.md`. If an ID is not found, warn:
-   > ⚠️ Unknown reviewer ID '[id]' — skipping. Available: architecture, spec-compliance, document-quality, code-quality, ts-patterns, general-review, simplicity, security-perf, error-resilience, devils-advocate, requirements, feasibility, user-impact, structural-fitness, axes-coherence, regression-check
+   > ⚠️ Unknown reviewer ID '[id]' — skipping. Available: architecture, spec-compliance, document-quality, code-quality, ts-patterns, general-review, simplicity, security-perf, error-resilience, beyond-diff, devils-advocate, requirements, feasibility, user-impact, structural-fitness, axes-coherence, regression-check
 
 2. **Enforce structural floor**: For thorough tier, ensure 3+ reviewers and devils-advocate presence
 

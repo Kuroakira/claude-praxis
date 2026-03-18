@@ -74,6 +74,7 @@ Perform a lightweight task breakdown in-context:
    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
    - API change / auth → add `security-perf`
    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
+   - State management across requests / external API calls / token/session handling → add `beyond-diff`
 7. Present the breakdown to the human for acknowledgment before proceeding to Phase 2
 
 ## Phase 2: Task Execution Loop (in-context)
@@ -114,6 +115,7 @@ After verification passes, invoke the per-task review. This step cannot be skipp
 - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
 - API change / auth → add `security-perf`
 - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
+- State management across requests / external API calls / token/session handling → add `beyond-diff`
 
 Invoke `dispatch-reviewers` with the determined reviewers, tier (**thorough** for all tasks), and the **changed file paths** as target (e.g., `[src/auth.ts, src/auth.test.ts]`). Do NOT include task descriptions or implementation rationale — reviewers read the files independently.
 
