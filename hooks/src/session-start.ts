@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { readStdin, writeJson } from "./lib/io.js";
+import { readStdin } from "./lib/io.js";
 import { getMarkerDir, cleanSessionMarkers } from "./lib/markers.js";
 import { detectPersistenceFiles, readLastCompact } from "./lib/context-files.js";
 import { loadPraxisConfig } from "./lib/praxis-config.js";
@@ -65,11 +65,9 @@ try {
   }
 
   if (sections.length > 0) {
-    writeJson({
-      hookSpecificOutput: {
-        additionalContext: sections.join("\n\n"),
-      },
-    });
+    // SessionStart has no hookSpecificOutput schema — output as plain text
+    // (plain text stdout is injected into additionalContext by Claude Code)
+    process.stdout.write(sections.join("\n\n") + "\n");
   }
 } catch {
   process.exit(0);

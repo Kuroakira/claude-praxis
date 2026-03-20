@@ -24,6 +24,7 @@ if (usedPercentage >= THRESHOLD_URGENT && lastNotifiedLevel !== "urgent") {
   writeContextPressure(contextDir, { ...pressure, lastNotifiedLevel: "urgent" });
   writeJson({
     hookSpecificOutput: {
+      hookEventName: "UserPromptSubmit",
       additionalContext:
         `Context usage is above ${THRESHOLD_URGENT}% (${usedPercentage}%). Auto-compact is approaching — this is urgent. Run /claude-praxis:compound to preserve knowledge before compact occurs.`,
     },
@@ -35,6 +36,7 @@ if (usedPercentage >= THRESHOLD_URGENT && lastNotifiedLevel !== "urgent") {
   writeContextPressure(contextDir, { ...pressure, lastNotifiedLevel: "info" });
   writeJson({
     hookSpecificOutput: {
+      hookEventName: "UserPromptSubmit",
       additionalContext:
         `Context usage is above ${THRESHOLD_INFO}% (${usedPercentage}%). Consider running /claude-praxis:compound at the next natural break point to preserve learnings.`,
     },

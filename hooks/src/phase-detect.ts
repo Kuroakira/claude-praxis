@@ -9,6 +9,7 @@ try {
 
   writeJson({
     hookSpecificOutput: {
+      hookEventName: "UserPromptSubmit",
       additionalContext: result,
     },
   });
@@ -16,6 +17,7 @@ try {
   // Any failure → safe pass-through (never block user input)
   writeJson({
     hookSpecificOutput: {
+      hookEventName: "UserPromptSubmit",
       additionalContext: "",
     },
   });

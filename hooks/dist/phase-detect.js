@@ -7,6 +7,7 @@ try {
     const result = detectPhase(prompt);
     writeJson({
         hookSpecificOutput: {
+            hookEventName: "UserPromptSubmit",
             additionalContext: result,
         },
     });
@@ -15,6 +16,7 @@ catch {
     // Any failure → safe pass-through (never block user input)
     writeJson({
         hookSpecificOutput: {
+            hookEventName: "UserPromptSubmit",
             additionalContext: "",
         },
     });
