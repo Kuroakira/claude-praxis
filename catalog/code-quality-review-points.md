@@ -210,3 +210,24 @@ function useOverflow({ containerRef, onOverflowChange }: Props) {
  */
 ```
 — Derived from PR review gap analysis: JSDoc stated "required when using onOverflowChange" but implementation auto-created internal ref, 5/5 reviewers missed
+
+---
+
+## 12. CSS / Inline Style Quality
+
+### 12-1. Magic numbers in inline styles not extracted to constants
+Hardcoded pixel values (`-20px`, `48px`, `200ms`) in inline styles are magic numbers that resist search, bulk update, and design system consistency. Extract to named constants, CSS custom properties, or theme tokens.
+
+```tsx
+// ❌ Magic number in inline style — meaning unclear, hard to find and update
+<div style={{ top: "-20px", width: "48px" }} />
+
+// ✅ Named constant or CSS custom property
+const ICON_OFFSET_TOP = -20;
+const CELL_WIDTH = 48;
+<div style={{ top: `${ICON_OFFSET_TOP}px`, width: `${CELL_WIDTH}px` }} />
+
+// ✅ Or better — CSS custom property for design system alignment
+<div style={{ top: "var(--icon-offset-top)", width: "var(--cell-width)" }} />
+```
+— Derived from PR review gap analysis: `-20px` hardcoded in inline style was flagged by CI bot but missed by all reviewers, despite code-quality having a general magic number principle

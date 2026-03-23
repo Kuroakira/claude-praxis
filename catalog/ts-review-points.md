@@ -120,6 +120,24 @@ Don't add large dependencies like `@shikijs/cli` (~21MB). Reduce network demands
 Calling `indexOf` in a loop is O(n²). Direct checking with `isAnyDirectorySeparator` in a tight loop is more efficient.
 — DanielRosenwasser
 
+### 2-15. React.memo invalidated by unstable props
+When a component is wrapped in `React.memo`, every prop must be referentially stable across renders. Inline functions (`onClick={(e) => ...}`), inline objects (`style={{ color: x }}`), and array literals created in render create new references on every render, defeating memoization entirely. Extract to `useCallback`/`useMemo` or stable references outside the render path.
+
+```tsx
+// ❌ memo is useless — onClick creates a new function reference every render
+const Cell = React.memo(({ value, onClick }: CellProps) => <td onClick={onClick}>{value}</td>);
+// Parent:
+<Cell value={cell} onClick={(e) => handleClick(rowIdx, colIdx, e)} />
+
+// ✅ Stable reference via useCallback or data attribute + single handler
+const handleCellClick = useCallback((e: React.MouseEvent<HTMLTableCellElement>) => {
+  const { row, col } = e.currentTarget.dataset;
+  handleClick(Number(row), Number(col), e);
+}, [handleClick]);
+<Cell value={cell} onClick={handleCellClick} data-row={rowIdx} data-col={colIdx} />
+```
+— Derived from PR review gap analysis: `React.memo` on cell component was nullified by per-cell inline `onClick`, ts-patterns 2-1 detected "closure on hot paths" but rated Low without connecting to memo invalidation
+
 ---
 
 ## 3. API / Module Design

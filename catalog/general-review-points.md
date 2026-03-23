@@ -39,6 +39,29 @@ A closure created inside a loop references an outer variable whose value changes
 Shared state may be modified by another operation during a long-running async task. Snapshot state at operation start or add mutual exclusion.
 — KATT (tRPC), Rich-Harris (Svelte)
 
+### 2-5. Index-based derived state stale after collection mutation
+When state stores indices into an array/list (selectedIndex, selectionAnchor, cursor position, focused row/column), and the underlying collection is mutated (insert, delete, reorder), the stored indices silently point to wrong elements or go out-of-bounds. After every collection mutation, validate and adjust all index-based derived state.
+
+```typescript
+// ❌ selectedRange stores {row, col} indices into cells[][]
+//    After insertRowAt(0), all indices shift by +1 but selectedRange is unchanged
+const [selectedRange, setSelectedRange] = useState({ start: {row: 2, col: 1}, end: {row: 3, col: 2} });
+function insertRowAt(index: number) {
+  setCells(prev => [...prev.slice(0, index), newRow, ...prev.slice(index)]);
+  // selectedRange still points to old indices — now selects wrong cells
+}
+
+// ✅ Adjust derived index state when base collection changes
+function insertRowAt(index: number) {
+  setCells(prev => [...prev.slice(0, index), newRow, ...prev.slice(index)]);
+  setSelectedRange(prev => ({
+    start: { row: prev.start.row >= index ? prev.start.row + 1 : prev.start.row, col: prev.start.col },
+    end: { row: prev.end.row >= index ? prev.end.row + 1 : prev.end.row, col: prev.end.col },
+  }));
+}
+```
+— Derived from PR review gap analysis: row/column insertion shifted cell indices but selectedRange and selectionAnchor were not adjusted, 6/6 reviewers missed
+
 ---
 
 ## 3. Null/Undefined Handling
@@ -162,6 +185,30 @@ When stub code exists (`component: () => null`, empty implementations, placehold
 4. Check that guards are consistent — one unguarded path makes all other guards irrelevant
 — Derived from PR review gap analysis: `component: () => null` with `supportsEditMode: true` was judged "appropriate stub" without verifying toolbar disabled flag covered all creation paths
 
+### 8-6. CSS overflow hiding absolutely-positioned children
+`overflow: hidden` on a parent element clips absolutely-positioned children that extend beyond the parent's bounds. Icons, tooltips, dropdowns, or decorative elements placed with `position: absolute` become invisible when any ancestor has `overflow: hidden` or `overflow: auto`. The culprit may be several DOM levels above the clipped element.
+
+```css
+/* ❌ Parent has overflow: hidden, child's absolute icon is clipped */
+.cell-wrapper {
+  position: relative;
+  overflow: hidden;     /* clips content */
+}
+.cell-icon {
+  position: absolute;
+  top: -20px;           /* extends above parent — invisible */
+}
+
+/* ✅ Use overflow: visible, or restructure so the icon's container is outside the clipped area */
+.cell-wrapper {
+  position: relative;
+  overflow: visible;    /* or move icon to a non-clipped ancestor */
+}
+```
+
+**Verification**: For every `position: absolute/fixed` element, trace up the DOM tree and check for `overflow: hidden/auto/scroll` on ancestors. If found, verify the element stays within the ancestor's bounds.
+— Derived from PR review gap analysis: absolute-positioned icon with negative offset was clipped by parent's overflow:hidden, no reviewer checked CSS layout interaction
+
 ### 8-4. External library default behavior matches code's control flow assumptions
 External library APIs may report errors or results through methods different from what the code implicitly assumes. In particular, a call wrapped in try/catch may not throw on error — libraries may use redirects, special return values, or callback-based error notification by default. Verify that the callee's default options match the control flow the code expects.
 (See: 5-4 covers cases where internal functions swallow errors making catch unreachable. This point covers cases where external library API contracts make catch non-functional.)
@@ -262,3 +309,5 @@ it("should return early when selection is not empty", () => {
 | Stub component/function assumed unreachable without verifying all entry points | 8-5: stub production reachability |
 | Behavior change detected but missing test not flagged | 10-1: behavior change without test |
 | Early return branch exists but no test exercises it | 10-2: branch without test coverage |
+| Index-based state (selection, cursor) not adjusted after array insert/delete | 2-5: index-based state stale |
+| Absolute-positioned element clipped by ancestor's overflow:hidden | 8-6: CSS overflow clipping |
