@@ -30,6 +30,33 @@ Merging scattered identical logic can expose edge-case bugs that were invisible 
 "Architecture change for the sake of architecture change" is not valid motivation. Ground refactoring in concrete duplicate patterns being eliminated.
 — sebmarkbage, acdlite (React)
 
+### 2-3. Redundant guard already performed by callee
+A defensive check (null coalescing, default value, normalization) that the callee already performs internally. The caller's guard is dead code that obscures the actual contract. Trace into the called function to verify whether the guard is already applied.
+
+```
+// ❌ useRichTextEditor internally does `content || ""` at L120,
+//    so the caller's guard is redundant noise
+const editor = useRichTextEditor({ content: content || "" });
+
+// ✅ Trust the callee's contract — it handles null/undefined internally
+const editor = useRichTextEditor({ content });
+```
+— Derived from PR review gap analysis: hook internally normalized input, but callers added redundant guards that 5/5 reviewers missed
+
+### 2-4. Fix suggestion not using existing project utility
+When suggesting a fix for duplication or code smell, search the project's utility layer (`src/lib/`, `src/utils/`, shared modules) for an existing function that already solves the problem. Suggesting a generic solution (e.g., `clsx(...)`) when the project already has a tailored utility (e.g., `cn()`) misses the point of DRY.
+
+```
+// ❌ Suggesting generic library usage without checking project utilities
+import clsx from "clsx";
+const className = clsx("base", condition && "active");
+
+// ✅ Project already has cn() in src/lib/utils — use it
+import { cn } from "@/lib/utils";
+const className = cn("base", condition && "active");
+```
+— Derived from PR review gap analysis: reviewers detected trailing space issue but suggested generic clsx instead of project's existing cn()
+
 ---
 
 ## 3. KISS (Keep It Simple)
@@ -157,3 +184,29 @@ A boolean parameter that makes a function do two different things. `update(data,
 ### 10-3. Complex conditional not encapsulated
 Raw boolean expressions like `if (timer.hasExpired() && !timer.isRecurrent())` inline in business logic. Extract to a named predicate: `if (shouldBeDeleted(timer))`. The name communicates intent.
 — Robert C. Martin (Clean Code: G28)
+
+---
+
+## 11. Documentation-Code Consistency
+
+### 11-1. JSDoc/comment describing behavior that implementation contradicts
+When a JSDoc comment says a parameter is "required when X" but the implementation auto-fills a default when omitted, the documentation gives users a false understanding of the API contract. Check that documentation of optional parameters accurately describes what happens when they are omitted — especially auto-fill, fallback, or internally-managed behavior.
+
+```typescript
+// ❌ JSDoc says "required when using onOverflowChange" but implementation
+//    creates an internal ref when containerRef is omitted
+/**
+ * @param containerRef - Required when using onOverflowChange
+ */
+function useOverflow({ containerRef, onOverflowChange }: Props) {
+  const internalRef = useRef(null);
+  const ref = containerRef ?? internalRef;  // auto-fills — not actually required
+  // ...
+}
+
+// ✅ JSDoc matches implementation behavior
+/**
+ * @param containerRef - Optional. Uses an internal ref when omitted.
+ */
+```
+— Derived from PR review gap analysis: JSDoc stated "required when using onOverflowChange" but implementation auto-created internal ref, 5/5 reviewers missed

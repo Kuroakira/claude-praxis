@@ -197,6 +197,54 @@ When each branch of `if` / `else` / `switch` returns objects with subtly differe
 
 ---
 
+## 10. Test Coverage Gaps
+
+### 10-1. Behavior change without corresponding test
+When code changes observable behavior (event propagation, default values, error handling, keyboard shortcuts), a test must verify the new behavior. Detecting that behavior changed is insufficient — the reviewer must also check that tests for the new behavior exist. If no test covers the changed behavior, propose a specific test case.
+
+```typescript
+// Code change: Escape now calls stopPropagation (behavior change)
+case "Escape":
+  e.stopPropagation();  // NEW: previously did not stop propagation
+  editor.commands.blur();
+  break;
+
+// ❌ Reviewer notes "behavior change" but doesn't check for test
+// ✅ Reviewer checks test file, finds no test, and proposes:
+it("should stop propagation on Escape key", () => {
+  const event = new KeyboardEvent("keydown", { key: "Escape" });
+  const stopPropagation = vi.spyOn(event, "stopPropagation");
+  editor.view.dom.dispatchEvent(event);
+  expect(stopPropagation).toHaveBeenCalled();
+});
+```
+— Derived from PR review gap analysis: 3/5 reviewers detected Escape stopPropagation change, 0/5 noted missing test
+
+### 10-2. Branch without test coverage — enumerate and match
+For each function with branching logic (if/else, switch, early return, ternary), enumerate every branch and verify that at least one test case exercises it. List untested branches by name and line, and propose specific test cases for each.
+
+```typescript
+// Function has 3 branches:
+function handlePaste(editor, event) {
+  if (!editor.state.selection.empty) return;  // Branch A: non-empty selection
+  const text = event.clipboardData?.getData("text");
+  if (!text) return;                           // Branch B: no clipboard text
+  editor.commands.insertContent(text);         // Branch C: happy path
+}
+
+// ❌ Tests only cover Branch C (happy path)
+// ✅ Enumerate: Branch A (selection non-empty) — no test. Branch B (no text) — no test.
+//    Propose test for Branch A:
+it("should return early when selection is not empty", () => {
+  editor.commands.setTextSelection({ from: 1, to: 5 });
+  handlePaste(editor, pasteEvent);
+  expect(editor.state.doc.textContent).toBe(originalContent);
+});
+```
+— Derived from PR review gap analysis: `if (!editor.state.selection.empty) return` branch had no test, reviewer's "check branch coverage" instruction was too abstract to catch it
+
+---
+
 ## AI-Generated Code Bug Patterns
 
 | Pattern | Review Point |
@@ -212,3 +260,5 @@ When each branch of `if` / `else` / `switch` returns objects with subtly differe
 | Wrapping external library in try/catch but library doesn't throw on error | 8-4: external library defaults |
 | Negative index from indexOf passed to slice/splice | 4-4: negative index behavior |
 | Stub component/function assumed unreachable without verifying all entry points | 8-5: stub production reachability |
+| Behavior change detected but missing test not flagged | 10-1: behavior change without test |
+| Early return branch exists but no test exercises it | 10-2: branch without test coverage |
