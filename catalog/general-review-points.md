@@ -71,6 +71,22 @@ When a loop has special handling for the first and last iteration, a single elem
 `.split()`, `.indexOf()`, `.slice()` return unexpected results for empty strings. Also check for Unicode surrogate pairs and newline characters.
 — colinhacks (Zod), yyx990803 (Vue.js)
 
+### 4-4. Negative index behavior in array/string operations
+Language-specific behavior of negative indices can silently produce wrong results instead of errors. In JavaScript, `Array.prototype.slice(-1)` returns the last element (counting from end), `Array.prototype.at(-1)` returns the last element, but `array[-1]` returns `undefined`. When an index variable can be negative (e.g., from `indexOf` returning -1, or from arithmetic), trace through each array/string operation and verify the language-spec behavior for that negative value.
+
+```
+// ❌ indexOf returns -1, slice(-1) silently returns last element
+const idx = headers.indexOf(targetColumn);  // -1 if not found
+const after = row.slice(idx);  // slice(-1) = last element, not empty
+// Bug: silently operates on wrong data instead of failing
+
+// ✅ Guard against negative index before array operations
+const idx = headers.indexOf(targetColumn);
+if (idx === -1) throw new Error(`Column not found: ${targetColumn}`);
+const after = row.slice(idx);
+```
+— Derived from PR review gap analysis: reviewer noted "out-of-range index is implicitly no-op" but missed that negative index has distinct language-spec behavior in slice
+
 ---
 
 ## 5. Async Pitfalls
@@ -136,6 +152,16 @@ After extracting functions, adding parameters, or changing conditions, verify th
 A default value that's correct in one context may cause incorrect behavior in another. When a parameter with a default is called from multiple sites, verify the default is appropriate at every call site.
 — colinhacks (Zod), KATT (tRPC)
 
+### 8-5. Stub/placeholder code not reachable in production
+When stub code exists (`component: () => null`, empty implementations, placeholder returns), verify that production code paths cannot reach it. Check surrounding integration points: can a user trigger creation of a stub-backed entity? Does the UI expose controls (toolbar buttons, menu items) that lead to the stub? A stub marked `supportsEditMode: true` with a disabled toolbar flag is only safe if the toolbar flag is checked on all entry points.
+
+**Verification steps**:
+1. List all code paths that reference the stub
+2. For each path, trace backward to the nearest user-facing entry point
+3. Verify a guard (disabled flag, feature flag, conditional rendering) blocks every entry point
+4. Check that guards are consistent — one unguarded path makes all other guards irrelevant
+— Derived from PR review gap analysis: `component: () => null` with `supportsEditMode: true` was judged "appropriate stub" without verifying toolbar disabled flag covered all creation paths
+
 ### 8-4. External library default behavior matches code's control flow assumptions
 External library APIs may report errors or results through methods different from what the code implicitly assumes. In particular, a call wrapped in try/catch may not throw on error — libraries may use redirects, special return values, or callback-based error notification by default. Verify that the callee's default options match the control flow the code expects.
 (See: 5-4 covers cases where internal functions swallow errors making catch unreachable. This point covers cases where external library API contracts make catch non-functional.)
@@ -184,3 +210,5 @@ When each branch of `if` / `else` / `switch` returns objects with subtly differe
 | Calling async function without `await` | 5-2: unawaited Promise |
 | Callee swallows all errors making outer catch dead code | 5-4: catch reachability |
 | Wrapping external library in try/catch but library doesn't throw on error | 8-4: external library defaults |
+| Negative index from indexOf passed to slice/splice | 4-4: negative index behavior |
+| Stub component/function assumed unreachable without verifying all entry points | 8-5: stub production reachability |

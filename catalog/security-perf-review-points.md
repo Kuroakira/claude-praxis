@@ -1,6 +1,6 @@
 # Security & Performance Review Points
 
-Language-agnostic security and performance review checklist. Extracted from actual PR reviews by top OSS committers.
+Language-agnostic security and performance review checklist. Extracted from actual PR reviews by top OSS committers and review gap analysis.
 For detailed quotes and context, see `claudedocs/research/security-perf-review-insights.md`.
 
 ---
@@ -22,6 +22,29 @@ Verify that additions like offset + length, or implicit truncation in bit operat
 ### 1-4. Option object properties read only once
 Objects with malicious getters/proxies can return different values on each property access. Copy security-critical values to local variables before use.
 — tniessen (Node.js)
+
+### 1-5. Validation/limit change scoped to intended code paths only
+When a validation rule or size limit is relaxed for a specific use case (e.g., increasing `MAX_DATA_SIZE` for table elements), verify that the change doesn't apply to unrelated code paths sharing the same constraint. A limit raised to support large tables may also allow oversized payloads for sticky notes, comments, or other element types that don't need it.
+
+**Verification steps**:
+1. Identify all code paths that pass through the changed validation
+2. For each path, ask: "Does this path's use case justify the relaxed constraint?"
+3. If not, the validation needs per-type or per-path scoping
+— Derived from PR review gap analysis: MAX_DATA_SIZE increase for table support also applied to all other element types
+
+### 1-6. Deserialization validation for persisted structured data
+When structured data (JSON arrays, nested objects) is stored in a database and read back, the runtime type may not match the expected type. Jagged arrays, null entries, missing fields, or malformed JSON can bypass compile-time type checks. Validate structure at the deserialization boundary, not just at the type level.
+
+```
+// ❌ Trust DB data matches the type
+const cells: TableCell[][] = JSON.parse(row.data);
+// Jagged array, null row, or extra fields silently accepted
+
+// ✅ Validate structure at deserialization boundary
+const parsed: unknown = JSON.parse(row.data);
+const cells = tableCellsSchema.parse(parsed);  // zod or similar
+```
+— Derived from PR review gap analysis: TableCell[][] from DB assumed rectangular but could contain jagged arrays or invalid entries
 
 ---
 

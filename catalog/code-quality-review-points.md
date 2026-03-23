@@ -1,7 +1,6 @@
 # Code Quality Review Points
 
-Language-agnostic code quality review checklist. Extracted from actual PR reviews by top OSS committers.
-For detailed quotes and context, see `claudedocs/research/code-quality-review-insights.md`.
+Language-agnostic code quality review checklist. Categories 1-6 extracted from actual PR reviews by top OSS committers (for detailed quotes and context, see `claudedocs/research/code-quality-review-insights.md`). Categories 7-10 derived from Clean Code smells and heuristics (Robert C. Martin).
 
 ---
 
@@ -67,6 +66,10 @@ actual first, expected second. Consistent ordering directly affects failure mess
 Not just the happy path — test in all runtime environments/modes (server, client, hybrid, etc.).
 — sebmarkbage (React)
 
+### 4-6. Test case symmetry for functions with similar signatures
+When multiple functions share similar signatures and behavior (e.g., `insertRowAt` / `insertColumnAt`, `addUser` / `removeUser`), verify that test coverage is symmetric. If one function has edge-case tests (empty array, boundary index, invalid input), the counterpart should have equivalent tests. Asymmetric test coverage often indicates copy-paste test creation where edge cases were added to one function but forgotten for the other.
+— Derived from PR review gap analysis: `insertRowAt` had empty array test but `insertColumnAt` did not
+
 ---
 
 ## 5. Dead Code / Technical Debt
@@ -86,3 +89,71 @@ Test code hygiene is equally important as production code hygiene.
 ### 6-1. Naming reflecting the project's current scope
 Historical names confuse new contributors. Update internal API names as the project evolves.
 — ryanflorence (React Router)
+
+---
+
+## 7. Abstraction Level Discipline
+
+### 7-1. Function mixing high-level and low-level operations
+A function that both orchestrates a workflow and performs low-level operations (string parsing, byte manipulation, direct I/O) is mixing abstraction levels. Each function should operate at a single level — either coordinate other functions or perform primitive operations, not both.
+— Robert C. Martin (Clean Code: G6, G34)
+
+### 7-2. Base class depending on derivative details
+When a base class references or assumes knowledge of its derived classes, the dependency is inverted. Base classes should be ignorant of their derivatives.
+— Robert C. Martin (Clean Code: G7)
+
+---
+
+## 8. Naming and Convention Consistency
+
+### 8-1. Inconsistent naming for similar entities
+`getUser` / `findPerson` / `retrieveEmployee` for the same pattern. When things have the same meaning, they should follow the same convention. Pick one and apply it everywhere.
+— Robert C. Martin (Clean Code: G11)
+
+### 8-2. Name hiding side effects
+`getUser()` that also writes to a cache or log. `createReport()` that also sends an email. Names should describe everything the function does — if the name can't describe it concisely, the function does too much.
+— Robert C. Martin (Clean Code: N7)
+
+### 8-3. Name at wrong abstraction level
+An interface method named `process` or `handle` is too generic for its abstraction level. A utility function named `validateUserEmailForRegistrationFlow` is too specific for a general-purpose module. Names should match the abstraction level of the context they live in.
+— Robert C. Martin (Clean Code: N2)
+
+### 8-4. Short name in long scope
+`d`, `tmp`, `val` as class fields or module-level variables. The farther a variable is from its declaration, the longer and more descriptive its name should be. Conversely, loop indices like `i` in a 3-line loop are fine.
+— Robert C. Martin (Clean Code: N5)
+
+### 8-5. Negative conditionals obscuring intent
+`if (!isNotValid)` instead of `if (isValid)`. Negatives are harder to parse than positives. Prefer affirmative boolean names and conditions.
+— Robert C. Martin (Clean Code: G29)
+
+---
+
+## 9. Responsibility and Coupling
+
+### 9-1. Feature envy
+A method that uses another object's data more than its own. When a function reaches into another object for multiple fields to compute a result, that logic likely belongs on the other object.
+— Robert C. Martin (Clean Code: G14)
+
+### 9-2. Transitive navigation (Law of Demeter)
+`a.getB().getC().doSomething()` — each dot couples the caller to an additional object's structure. Talk to immediate collaborators only; don't reach through them to access their internals.
+— Robert C. Martin (Clean Code: G36)
+
+### 9-3. Misplaced responsibility
+Logic placed where it's convenient to write rather than where it conceptually belongs. Ask: "Which module would a reader look in first to find this behavior?" Place it there.
+— Robert C. Martin (Clean Code: G17)
+
+---
+
+## 10. Function Interface Design
+
+### 10-1. Too many arguments
+More than 3 arguments signals the function does too much or the arguments form a concept that deserves its own object. Fewer arguments = easier to understand, test, and call correctly.
+— Robert C. Martin (Clean Code: F1)
+
+### 10-2. Flag arguments splitting behavior
+A boolean parameter that makes a function do two different things. `update(data, replace=True)` should be two functions: `replace(data)` and `update(data)`. Each function should do one thing.
+— Robert C. Martin (Clean Code: F3)
+
+### 10-3. Complex conditional not encapsulated
+Raw boolean expressions like `if (timer.hasExpired() && !timer.isRecurrent())` inline in business logic. Extract to a named predicate: `if (shouldBeDeleted(timer))`. The name communicates intent.
+— Robert C. Martin (Clean Code: G28)
