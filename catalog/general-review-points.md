@@ -209,6 +209,30 @@ When stub code exists (`component: () => null`, empty implementations, placehold
 **Verification**: For every `position: absolute/fixed` element, trace up the DOM tree and check for `overflow: hidden/auto/scroll` on ancestors. If found, verify the element stays within the ancestor's bounds.
 — Derived from PR review gap analysis: absolute-positioned icon with negative offset was clipped by parent's overflow:hidden, no reviewer checked CSS layout interaction
 
+### 8-7. Event handler unreachable due to child element covering parent
+An event handler on a parent element uses `e.target === e.currentTarget` to detect "background clicks" (clicks directly on the parent, not on children). However, if a child element fills the parent completely (`h-full w-full`, `absolute inset-0`, `flex-1` filling remaining space), the parent has no exposed clickable area — `e.target` is always the child, never the parent. The handler never fires in a real browser, even though unit tests using `fireEvent.click(parent)` pass (because `fireEvent` dispatches directly on the target, bypassing layout).
+
+```tsx
+// ❌ Grid child fills root completely — root never receives a direct click
+<div onClick={handleBackgroundClick} className="relative h-full">  {/* root */}
+  <div className="h-full w-full">  {/* grid — covers root entirely */}
+    {cells.map(cell => <Cell key={cell.id} />)}
+  </div>
+</div>
+const handleBackgroundClick = (e) => {
+  if (e.target === e.currentTarget) onClearSelection();  // never true in browser
+};
+
+// ✅ Option A: Check that click target is not a cell (positive identification)
+const handleBackgroundClick = (e) => {
+  if (!(e.target as HTMLElement).closest('[data-cell]')) onClearSelection();
+};
+// ✅ Option B: Handle deselection at a higher level (canvas/board) or via Escape key
+```
+
+**Verification**: For every `e.target === e.currentTarget` check, inspect CSS of all direct children. If any child has sizing that fills the parent (`h-full w-full`, `flex-1 + flex parent`, `absolute inset-0`, `100% width + 100% height`), the condition is unreachable. Also check whether tests use `fireEvent.click(element)` to test such handlers — `fireEvent` bypasses layout, so the test passes but the behavior is broken in a real browser.
+— Derived from PR review gap analysis: `handleBackgroundClick` with `e.target === e.currentTarget` was unreachable because grid child covered parent entirely; `fireEvent.click(root)` test passed, masking the issue
+
 ### 8-4. External library default behavior matches code's control flow assumptions
 External library APIs may report errors or results through methods different from what the code implicitly assumes. In particular, a call wrapped in try/catch may not throw on error — libraries may use redirects, special return values, or callback-based error notification by default. Verify that the callee's default options match the control flow the code expects.
 (See: 5-4 covers cases where internal functions swallow errors making catch unreachable. This point covers cases where external library API contracts make catch non-functional.)
@@ -311,3 +335,4 @@ it("should return early when selection is not empty", () => {
 | Early return branch exists but no test exercises it | 10-2: branch without test coverage |
 | Index-based state (selection, cursor) not adjusted after array insert/delete | 2-5: index-based state stale |
 | Absolute-positioned element clipped by ancestor's overflow:hidden | 8-6: CSS overflow clipping |
+| `e.target === e.currentTarget` on parent fully covered by child | 8-7: event handler unreachable |

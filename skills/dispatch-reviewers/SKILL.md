@@ -80,6 +80,19 @@ After all reviewers return:
 3. **Conflicting opinions** — resolve explicitly (state which opinion was adopted and why)
 4. If revision is needed, re-run only the affected reviewer(s), not the full team
 
+### Triage Anti-Patterns
+
+When dismissing a reviewer finding, verify the dismissal reasoning against these known failure modes:
+
+| Dismiss reasoning | Verification required |
+|---|---|
+| "Derived/effective state prevents the issue" | Derived state (`effectiveX = condition ? x : null`) masks values on **read**. Verify the original state is also **cleared on write** — when the condition flips back, the original value resurfaces. Masking ≠ clearing. |
+| "Guard/check prevents the issue" | Trace all entry points — a guard on one path doesn't protect other paths. A disabled flag on a toolbar button doesn't prevent programmatic creation. |
+| "Test passes so the behavior works" | Check whether the test uses `fireEvent.click()` or similar synthetic dispatch that bypasses browser layout. A test that passes because it dispatches events directly on an element doesn't prove user interaction reaches that element. |
+| "Standard/well-known pattern" | A pattern being standard doesn't mean it's correctly applied in this context. `e.target === e.currentTarget` is a valid background-click pattern, but only when the parent has exposed clickable area. Verify preconditions for the pattern. |
+
+**Rule**: When dismissing a finding, state not just why the issue appears safe, but also the specific condition under which the issue would reappear. If that condition is plausible (e.g., "safe unless the user re-enters the mode" — which they will), the finding is valid.
+
 ## Integration
 
 - **Invoked by**: `workflow-planner` skill, commands (directly or via planner)
