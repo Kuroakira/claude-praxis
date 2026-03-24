@@ -60,6 +60,7 @@ If the `reviewers` list for a thorough review has fewer than 3 entries or omits 
      2. **Catalog Prompt**: The `Prompt` field from the catalog entry
      3. **Target files**: "Review the following files: [file path list from `target` parameter]"
      4. **Verification source**: The reviewer's verification source from the catalog
+     5. **Checklist Output Format** (checklist-based reviewers only): If the reviewer ID is one of `code-quality`, `security-perf`, `error-resilience`, `simplicity`, `ts-patterns`, `general-review`, `beyond-diff`, append the Checklist Output Format from `catalog/reviewers.md`. Non-checklist reviewers (architecture, devils-advocate, spec-compliance, etc.) use free-form output.
    - Do NOT include: `reasoning`, implementation context, task descriptions, or any conversation-derived content
    - **Exception — `regression-check`**: This reviewer receives `diff` content instead of file paths. Prompt structure:
      1. Context Isolation preamble (same as above, but replace "target files" with "the diff provided below")

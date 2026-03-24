@@ -338,10 +338,6 @@ TypeScript union types have non-deterministic iteration order. Write test cases 
 Assert how many `edits` are returned, whether `results.length` matches expectations. Strengthens test reliability.
 — dsherret (ts-morph)
 
-### 5-11. Collect all errors instead of `.find` for just one
-`.find` stops at the first match. Inspecting all parameters and enumerating all invalid values is more user-friendly.
-— timneutkens (Next.js)
-
 ### 5-12. No `sleep` needed in type tests
 Type tests don't execute at runtime. `Promise.resolve(...)` from queryFn is sufficient.
 — TkDodo
@@ -390,10 +386,6 @@ Don't change logic in a type improvement PR. Truthy checks and `=== true` checks
 Target only the affected elements (e.g., Vue custom elements only) rather than applying a fix to all elements. Broad fixes have higher side-effect risk.
 — yyx990803 (Vue.js)
 
-### 6-7. Avoid negated conditionals
-`if (!cond) { A } else { B }` — prefer `if (cond) { B } else { A }` for readability.
-— RyanCavanaugh
-
 ### 6-8. Early return to reduce nesting
 Nested `if` statements are hard to read. Return early to reduce indentation levels.
 — KATT, yyx990803
@@ -414,10 +406,6 @@ When reference count is low, destructuring reduces readability. "Rule of 3" — 
 Index files make import paths ambiguous. Use specific file names.
 — KATT
 
-### 6-13. Minimize try-catch scope
-Large try-catch blocks hide problems. Wrap only I/O operations; let other errors propagate.
-— huozhi (Next.js)
-
 ### 6-14. Remove unnecessary `await`
 `await` on synchronously completing code creates unnecessary microtasks.
 — huozhi (Next.js)
@@ -437,10 +425,6 @@ When taking a different approach from the original implementation, add a comment
 ### 6-18. Don't assign refs during rendering in Concurrent Mode
 `ref.current = value` during rendering is unsafe in Concurrent Mode. Do it inside effects.
 — TkDodo, dai-shi
-
-### 6-19. `||` vs `??` usage care
-Use `??` when `false` or `0` are valid values. `||` skips all falsy values.
-— DanielRosenwasser
 
 ### 6-20. Minimize function parameters, consolidate into option objects
 4+ parameters should be consolidated into an option object. "What do you think about making this a single object parameter?"
@@ -465,10 +449,6 @@ Timers like ping intervals should call `unref()` to not prevent graceful shutdow
 ### 6-25. Regex dotAll flag (`s`) and browser compatibility
 ES2018 regex features don't work in older browsers. Use compatible alternatives like `/[^]+/`.
 — yyx990803 (Vue.js)
-
-### 6-26. Call existing helpers instead of reimplementing
-Maintaining two regexes for the same purpose is painful. Changing how you call an existing helper is safer.
-— huozhi (Next.js)
 
 ---
 

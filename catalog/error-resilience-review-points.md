@@ -9,7 +9,6 @@ Focuses on detecting code that works on the happy path but breaks under failure 
 
 ### 1-1. try-catch scope too broad
 Wrapping both I/O operations and business logic in the same try-catch causes business logic bugs to be handled as I/O errors. Scope try-catch to the error source only; let other errors propagate.
-(See: ts-review-points 6-13 covers the same pattern from a TS-specific perspective.)
 — huozhi, timneutkens (Next.js)
 
 ### 1-2. "Not found" vs "access error" distinguished
@@ -79,11 +78,6 @@ Messages should communicate "what happened and what to do next", not internal im
 When cleanup only executes on the success path and errors cause early returns, resources (file handles, DB connections, temp files, Map entries) leak. Use `finally` blocks or RAII patterns.
 — timneutkens (Next.js), joyeecheung (Node.js)
 
-### 3-2. Event listener registration and removal paired
-When the removal path isn't executed on error, listeners accumulate causing maxListeners warnings and memory leaks.
-(See: security-perf-review-points 3-1 covers the same pattern from a resource leak perspective.)
-— KATT (tRPC), Node.js core team
-
 ### 3-3. Resource lifecycle (creation, use, disposal) explicit
 Resources where it's ambiguous whether `destroy()` or `onCloseOrError` gets called are breeding grounds for leaks and double-frees. Document disposal conditions for each resource.
 — KATT (tRPC)
@@ -102,7 +96,6 @@ E.g., a visited set handling only object types but not primitives or arrays. Ver
 
 ### 4-3. Error collection not stopping at the first error
 Using `.find()` to return only the first error forces users to fix problems one-by-one and re-run. Collect all errors and report them at once.
-(See: ts-review-points 5-11 covers the same pattern from a TS-specific perspective.)
 — timneutkens (Next.js)
 
 ---

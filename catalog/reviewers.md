@@ -19,6 +19,31 @@ Reviewers do NOT receive and MUST NOT rely on: implementation discussion, design
 
 The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at dispatch time.
 
+## Checklist Output Format
+
+Applies to reviewers with a `catalog/*.md` verification source: `code-quality`, `security-perf`, `error-resilience`, `simplicity`, `ts-patterns`, `general-review`, `beyond-diff`.
+
+The `dispatch-reviewers` skill appends this format requirement to their prompts at dispatch time.
+
+```
+OUTPUT FORMAT (MANDATORY):
+
+1. Point-by-point checklist — list EVERY point ID from your checklist file with a verdict:
+   - N/A (brief reason) — point does not apply to this diff
+   - FINDING — issue detected, detailed below
+
+   Example:
+   1-1: N/A (no || usage) | 1-2: FINDING | 1-3: N/A (no chained negations) | ...
+
+2. Findings — for each FINDING, provide:
+   ### [point-id]: [point title] — [Severity: High/Medium/Low]
+   [Location, description, concrete example, suggested fix]
+
+3. Additional findings — issues not covered by any checklist point
+
+EVERY point in the checklist file must appear. Missing points = unchecked items.
+```
+
 ## Entries
 
 ### `architecture`
@@ -59,9 +84,9 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 ### `error-resilience`
 
 - **Focus**: Unhappy paths, failure modes, graceful degradation
-- **Verification Source**: `catalog/error-resilience-review-points.md` (7 categories, 23 concrete review points with committer attribution), production failure patterns, chaos engineering principles
+- **Verification Source**: `catalog/error-resilience-review-points.md` (7 categories, 22 concrete review points with committer attribution), production failure patterns, chaos engineering principles
 - **Applicable Domains**: implement, debug
-- **Prompt**: Review for error resilience. First, read `catalog/error-resilience-review-points.md` — this is your checklist with 23 concrete review points across 7 categories: (1) Error capture scope, (2) Error propagation and context, (3) Resource cleanup, (4) Partial defenses, (5) Async error handling, (6) State machines and lifecycle, (7) Graceful degradation. For each changed file, systematically check every applicable point. When you find a violation, cite the specific point ID (e.g., "1-2: not-found vs access-error") and the committer principle. Additionally check: How does the code behave on DB connection loss, external API timeout, malformed input, resource exhaustion? Are retries bounded? Is there circuit breaker logic where needed? Are errors distinguished (auth failure vs service unavailable)? For defensive mechanisms (visited sets, guards, cycle detection, input validation): verify coverage is complete — all types, all code paths, not just the primary case. A guard that protects section elements but not non-section elements is a partial defense. Construct specific adversarial inputs that bypass partial guards. Verify against production failure patterns.
+- **Prompt**: Review for error resilience. First, read `catalog/error-resilience-review-points.md` — this is your checklist with 22 concrete review points across 7 categories: (1) Error capture scope, (2) Error propagation and context, (3) Resource cleanup, (4) Partial defenses, (5) Async error handling, (6) State machines and lifecycle, (7) Graceful degradation. For each changed file, systematically check every applicable point. When you find a violation, cite the specific point ID (e.g., "1-2: not-found vs access-error") and the committer principle. Additionally check: How does the code behave on DB connection loss, external API timeout, malformed input, resource exhaustion? Are retries bounded? Is there circuit breaker logic where needed? Are errors distinguished (auth failure vs service unavailable)? For defensive mechanisms (visited sets, guards, cycle detection, input validation): verify coverage is complete — all types, all code paths, not just the primary case. A guard that protects section elements but not non-section elements is a partial defense. Construct specific adversarial inputs that bypass partial guards. Verify against production failure patterns.
 
 ### `devils-advocate`
 
