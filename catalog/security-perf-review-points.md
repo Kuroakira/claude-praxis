@@ -138,6 +138,41 @@ useLayoutEffect(() => {
 **Rule of thumb**: `useLayoutEffect` is only justified when the effect reads DOM geometry (`getBoundingClientRect`, `offsetHeight`, `scrollTop`) or mutates DOM to prevent visual flicker. All other effects should use `useEffect`.
 — Derived from PR review gap analysis: `useLayoutEffect` used for ref updates without DOM measurement, security-perf reviewer noted "render-phase state update" but did not flag the specific useLayoutEffect overuse
 
+### 5-7. High-frequency external callback propagating expensive parent updates
+When an external library (e.g., TipTap's `onUpdate`, ResizeObserver, MutationObserver) fires a callback on every keystroke or DOM mutation, and that callback calls a parent update function (e.g., `onUpdateElement` for height changes), every invocation triggers a state update + re-render in the parent tree. Even if the parent debounces DB persistence, the local state updates and React re-renders are not debounced.
+
+```tsx
+// ❌ Every keystroke in the editor fires onHeightChange → parent setState → re-render
+onUpdate: ({ editor }) => {
+  const newHeight = editor.view.dom.offsetHeight;
+  const delta = newHeight - prevHeightRef.current;
+  if (delta !== 0) {
+    onHeightChange(delta);  // fires on every character input that changes height
+  }
+}
+
+// ✅ Option A: Debounce or throttle the callback at the source
+const debouncedHeightChange = useMemo(
+  () => debounce((delta: number) => onHeightChange(delta), 100),
+  [onHeightChange]
+);
+
+// ✅ Option B: Batch multiple deltas and flush on blur/idle
+const pendingDeltaRef = useRef(0);
+onUpdate: ({ editor }) => {
+  pendingDeltaRef.current += delta;  // accumulate
+}
+onBlur: () => {
+  if (pendingDeltaRef.current !== 0) {
+    onHeightChange(pendingDeltaRef.current);  // flush once
+    pendingDeltaRef.current = 0;
+  }
+}
+```
+
+**Verification**: For every callback passed to an external library (editor, observer, animation), trace how often the library invokes it. If the callback calls `setState` or a parent update function, check whether the invocation frequency is bounded. Keystroke-frequency callbacks (10-30x/sec during typing) propagating `setState` to ancestor components are a performance concern.
+— Derived from PR review gap analysis: TipTap `onUpdate` firing `onHeightChange` on every keystroke, propagating `onUpdateElement` to the board container; security-perf reviewer checked memo stability but not callback invocation frequency from external libraries
+
 ---
 
 ## 6. Bundle / Delivery Optimization

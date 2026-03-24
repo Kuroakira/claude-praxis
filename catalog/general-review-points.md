@@ -254,6 +254,37 @@ if (result?.error) {
 }
 ```
 
+### 8-8. Optional prop conditionally required by sibling prop
+When a component has an optional prop that becomes semantically required when another prop is set (e.g., `onCellEditEnd` is meaningless without `isEditing`, but required when `isEditing=true`), the type system allows invalid combinations. If the guard `A && B` is used in JSX to gate a child that needs both, the fallthrough when `A=true, B=undefined` silently renders the wrong branch.
+
+```tsx
+// ❌ Optional prop creates silent fallback to wrong branch
+interface Props {
+  isEditing: boolean;
+  onEditEnd?: () => void;  // optional, but required when isEditing=true
+}
+{isEditing && onEditEnd ? (
+  <Editor onCancel={onEditEnd} />  // intended branch
+) : (
+  <ReadOnlyView />  // renders here when isEditing=true but onEditEnd=undefined
+)}
+
+// ✅ Option A: Discriminated union makes invalid state unrepresentable
+type Props =
+  | { isEditing: false }
+  | { isEditing: true; onEditEnd: () => void };
+
+// ✅ Option B: Assert at runtime with a fallback
+{isEditing ? (
+  <Editor onCancel={onEditEnd ?? (() => {})} />
+) : (
+  <ReadOnlyView />
+)}
+```
+
+**Verification**: For every JSX conditional that combines a boolean prop with an optional callback/value prop (pattern: `boolProp && optionalProp ? ... : ...`), check whether the `boolProp=true, optionalProp=undefined` combination is reachable. If it is, the false branch renders in a state that visually contradicts the boolean.
+— Derived from PR review gap analysis: `isEditing && onCellEditEnd` guard caused read-only view to render when `isEditing=true` but `onCellEditEnd` was not provided; 9 reviewers (including general-review, ts-patterns, code-quality) did not flag the implicit prop dependency
+
 ---
 
 ## 9. Copy-Paste / Inconsistencies
@@ -336,3 +367,4 @@ it("should return early when selection is not empty", () => {
 | Index-based state (selection, cursor) not adjusted after array insert/delete | 2-5: index-based state stale |
 | Absolute-positioned element clipped by ancestor's overflow:hidden | 8-6: CSS overflow clipping |
 | `e.target === e.currentTarget` on parent fully covered by child | 8-7: event handler unreachable |
+| Optional callback prop guarded by sibling boolean creates silent wrong-branch rendering | 8-8: conditional required prop |
