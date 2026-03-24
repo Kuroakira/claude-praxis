@@ -6,6 +6,10 @@ disable-model-invocation: false
 
 Orchestrate a **standalone code review** with graduated tier selection.
 
+## Options
+
+- `--full`: Skip tier determination and dispatch **all** reviewers. Use when maximum coverage is needed regardless of diff size.
+
 ## Step 1: Verify
 
 Run the full verification suite before requesting review:
@@ -29,7 +33,12 @@ Identify all changed files (use `git diff --name-only` against the base branch o
 
 ## Step 3: Determine Tier and Select Reviewers
 
-Apply the graduated tier model:
+**If `--full` was specified**, skip tier determination and use all reviewers:
+- **Tier**: `thorough`
+- **Reviewers**: `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `error-resilience` + `devils-advocate` + `ts-patterns` (if TypeScript) + `regression-check`
+- Proceed directly to Step 4.
+
+**Otherwise**, apply the graduated tier model:
 
 | Condition | Tier | Typical Reviewers |
 |-----------|------|-------------------|

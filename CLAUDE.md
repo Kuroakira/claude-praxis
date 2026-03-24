@@ -14,9 +14,16 @@ claude-praxis/
 │   ├── document-quality.md      # Structure, terminology, progressive detailing
 │   ├── design-doc-format.md     # WHY over HOW, Notion format, outline-first
 │   └── verification.md          # No claims without evidence, completion report
-├── catalog/                     # Shared agent catalogs (referenced by planner)
-│   ├── reviewers.md             # 12 reviewer types with independent verification sources
-│   └── researchers.md           # 5 researcher types with agent types and verification sources
+├── catalog/                     # Shared agent catalogs and review-point checklists
+│   ├── reviewers.md             # 17 reviewer types with independent verification sources
+│   ├── researchers.md           # 7 researcher types with agent types and verification sources
+│   ├── code-quality-review-points.md    # 12 categories, code quality checklist (OSS committer-sourced)
+│   ├── general-review-points.md         # 10 categories, bug detection checklist
+│   ├── beyond-diff-review-points.md     # 3 categories, temporal state / cross-diff / external spec
+│   ├── security-perf-review-points.md   # 7 categories, security and performance checklist
+│   ├── error-resilience-review-points.md  # 7 categories, failure mode checklist
+│   ├── simplicity-review-points.md      # 4 categories, over-engineering detection
+│   └── ts-review-points.md             # 8 categories, TypeScript patterns checklist
 ├── agents/
 │   ├── implementer.md           # Implementation agent
 │   ├── reviewer.md              # Code review agent (read-only)
@@ -73,7 +80,7 @@ claude-praxis/
 |-------|----------|----------|------------------|
 | **CLAUDE.md** | What is this project, how to use it? | Project info, workflow overview, skill/agent catalog | Rule details, procedures, hook logic |
 | **Rule** (`rules/`) | What must always be followed? | Constraints, prohibitions, quality standards (with examples) | Procedures, workflows, self-evolution logic |
-| **Catalog** (`catalog/`) | What agents are available to select from? | Agent types with IDs, focus areas, independent verification sources, applicable domains | Procedures, phase ordering, selection logic (Skill's job) |
+| **Catalog** (`catalog/`) | What agents are available to select from? What do they check? | Agent types with IDs, focus areas, independent verification sources, applicable domains. Review-point checklists referenced by reviewer prompts | Procedures, phase ordering, selection logic (Skill's job) |
 | **Command** (`commands/`) | In what order, by whom, where does the human decide? | Phase sequence, PAUSE points, skill invocations, planner invocation with domain context + constraints | Procedure bodies (delegate to Skill), constraints (delegate to Rule) |
 | **Skill** (`skills/`) | How to do it? (reusable procedure) | Step-by-step procedures, templates, decision criteria | Constraints (Rule's job), phase ordering (Command's job) |
 | **Agent** (`agents/`) | Who does it? | Role, tools, model, maxTurns | Procedures (Skill's job), constraints (Rule's job) |

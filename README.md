@@ -38,7 +38,7 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 | `/compare [topic]` | Structured comparison of 2-4 options with axes evaluation — when facing a decision with multiple viable approaches |
 | `/research [topic]` | Explore a problem space without committing to a Design Doc |
 | `/plan [topic] [design-doc-path]` | Create a thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
-| `/review` | Code review on existing code outside the implementation flow (scope auto-detected from git diff) |
+| `/review [--full]` | Code review on existing code outside the implementation flow. `--full` skips tier detection and dispatches all reviewers |
 | `/compound` | Extract and classify learnings from completed work |
 | `/understanding-check` | Verify you can explain key decisions in AI-generated work (recommended: separate session) |
 
@@ -116,7 +116,7 @@ rm ~/.claude/skills/claude-praxis
 | `/compare [topic]` | Standalone: structured comparison of 2-4 options with axes evaluation |
 | `/research [topic]` | Standalone: explore a problem space without committing to a Design Doc |
 | `/plan [topic] [design-doc-path]` | Standalone: thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
-| `/review` | Standalone: code review on existing code (scope auto-detected from git diff) |
+| `/review [--full]` | Standalone: code review on existing code (scope auto-detected from git diff). `--full` dispatches all reviewers |
 | `/compound` | Extract learnings and carry them to the next project |
 | `/understanding-check` | Standalone: verify understanding of AI-generated work |
 
@@ -131,6 +131,7 @@ rm ~/.claude/skills/claude-praxis
 | `[plan-path]` | `/implement` | Path to plan from `/plan` (e.g., `claudedocs/plans/feature-plan.md`). Omit for inline breakdown |
 | `[design-doc-path]` | `/plan` | Path to existing Design Doc to plan against |
 | `--thorough` | `/analyze` | Two-phase analysis: generates debt inventory, then user selects items for deep dive |
+| `--full` | `/review` | Skip tier determination and dispatch all reviewers for maximum coverage |
 
 ## Quality Rules (Defaults)
 
