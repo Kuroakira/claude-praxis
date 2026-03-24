@@ -114,6 +114,30 @@ Combining multiple small write/send operations reduces system call count.
 Eliminate unnecessary property setup, event emission, and default value computation during initialization. Keep creation paths minimal.
 — ronag (Node.js)
 
+### 5-6. useLayoutEffect for non-DOM-measurement work
+`useLayoutEffect` runs synchronously after DOM mutation and blocks visual update. When the effect only updates a ref, sets state from props, or performs non-DOM work, `useEffect` is sufficient. Unnecessary `useLayoutEffect` delays paint and hurts perceived performance, especially on low-end devices.
+
+```tsx
+// ❌ useLayoutEffect updating a ref that doesn't need DOM measurement
+useLayoutEffect(() => {
+  prevValueRef.current = value;  // no DOM read — useEffect is sufficient
+}, [value]);
+
+// ✅ useEffect for non-DOM work
+useEffect(() => {
+  prevValueRef.current = value;
+}, [value]);
+
+// ✅ useLayoutEffect IS correct when measuring DOM before paint
+useLayoutEffect(() => {
+  const height = elementRef.current.getBoundingClientRect().height;
+  setMeasuredHeight(height);  // needs DOM measurement before paint
+}, [children]);
+```
+
+**Rule of thumb**: `useLayoutEffect` is only justified when the effect reads DOM geometry (`getBoundingClientRect`, `offsetHeight`, `scrollTop`) or mutates DOM to prevent visual flicker. All other effects should use `useEffect`.
+— Derived from PR review gap analysis: `useLayoutEffect` used for ref updates without DOM measurement, security-perf reviewer noted "render-phase state update" but did not flag the specific useLayoutEffect overuse
+
 ---
 
 ## 6. Bundle / Delivery Optimization

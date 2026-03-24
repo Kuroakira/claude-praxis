@@ -48,6 +48,62 @@ A retry loop captures initial state in a closure and re-uses it across iteration
 ### 1-4. Accumulated side effects across repeated invocations
 Event listeners added on each call without cleanup, timers set without clearing previous ones, entries appended to a collection without bounds. The first invocation works; the 100th causes memory leaks, duplicate handlers, or performance degradation.
 
+### 1-5. Stale reference under debounce/throttle accumulating wrong delta
+A debounced/throttled callback reads a ref or variable to compute a delta, but rapid successive calls during the delay window all read the same pre-debounce value. Each call computes its delta from the same base, so only the last delta takes effect — earlier deltas are silently lost. The fix is to optimistically update the ref immediately on each call, before the debounced execution.
+
+```
+// ❌ onUpdateElement is debounced. Three rapid +8 deltas all read
+//    elementHeightRef.current = 100, so all compute next = 108.
+//    Result: 108 instead of 124.
+const onUpdateElement = useDebouncedCallback((elementId) => {
+  const current = elementHeightRef.current;  // stale on 2nd, 3rd call
+  const next = current + delta;
+  updateElement(elementId, { height: next });
+}, 300);
+
+// ✅ Update ref optimistically before debounced execution
+function handleHeightChange(elementId: string, delta: number) {
+  elementHeightRef.current += delta;  // immediate — next call sees updated value
+  debouncedUpdateElement(elementId, elementHeightRef.current);
+}
+```
+
+**Detection**: For every debounced/throttled callback, check whether it reads mutable state (ref, module variable, external store) to compute a delta or incremental update. If yes, ask: "What happens if this fires 3 times in 50ms?" If all 3 reads return the same value, the accumulation is broken.
+— Derived from PR review gap analysis: debounced `onUpdateElement` read `elementHeightRef.current` for height delta, but rapid resize events all read the same stale base value, resulting in +8 instead of +24
+
+### 1-6. Compound state transition in single synchronous handler
+A single event handler both terminates one operation and initiates another (e.g., end editing cell A, then start editing cell B). In frameworks with batched state updates (React, Vue, Svelte), the first `setState` hasn't been applied when the second transition's conditions are evaluated — the handler sees pre-first-transition state for both decisions. The second transition may fire when it shouldn't, or read stale values from the first operation.
+
+```tsx
+// ❌ Clicking already-selected cell B while editing cell A:
+//    editingCell is still A when the selectedRange check runs,
+//    so B's editing starts without A's cleanup completing
+function handleCellClick(cell: Cell) {
+  if (editingCell) {
+    commitEdit(editingCell);       // sets editingCell = null (batched)
+    setEditingCell(null);          // batched — not yet applied
+  }
+  if (selectedRange?.contains(cell)) {
+    setEditingCell(cell);          // fires because editingCell still truthy? No —
+  }                                // but selectedRange check passes, starting B's edit
+}                                  // before A's edit is fully cleaned up
+
+// ✅ Separate into two user actions: first click ends edit, second click starts new edit
+function handleCellClick(cell: Cell) {
+  if (editingCell) {
+    commitEdit(editingCell);
+    setEditingCell(null);
+    return;  // stop here — next click will start the new edit
+  }
+  if (selectedRange?.contains(cell)) {
+    setEditingCell(cell);
+  }
+}
+```
+
+**Detection**: For every handler that calls `setState` (or equivalent) more than once, ask: "Does the second setState depend on the first having taken effect?" If yes, the handler has a compound transition bug. Split into separate user actions with early return, or use a state machine that explicitly models the intermediate state.
+— Derived from PR review gap analysis: clicking already-selected cell B while editing cell A caused both edit-end and edit-start in same handler; reviewer traced single-call path and dismissed as "actually fine"
+
 ---
 
 ## 2. Cross-Diff Consistency
@@ -116,6 +172,8 @@ Code assumes unlimited requests, single-page responses, or idempotent retries wh
 
 | Pattern | Review Point |
 |---------|-------------|
+| Debounced callback accumulating deltas from same stale ref value | 1-5: stale reference under debounce |
+| Handler ending one operation and starting another without early return | 1-6: compound state transition |
 | Token refresh that works once but breaks on repeat | 1-1: state not updated after operation |
 | Auth state listener conflicting with ongoing auth flow | 1-2: lifecycle event racing |
 | Fix applied to one call site but not siblings | 2-1: inconsistent fix across callers |
