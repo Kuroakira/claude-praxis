@@ -68,13 +68,14 @@ Perform a lightweight task breakdown in-context:
    - Verification steps (typecheck, lint, test, build)
    - Dependencies on other steps
 4. **TDD ordering**: Within each step, list test files before implementation files. The test is the first deliverable, not an afterthought
-5. Always include "Final Review" as the last task
-6. **Per-task review**: Apply baseline reviewers for all tasks:
+5. **Milestones within tasks**: If a step spans multiple files, add a `### Milestones` section listing ordered sub-steps (one file's TDD cycle per milestone). Single-file steps do not need milestones
+6. Always include "Final Review" as the last task
+7. **Per-task review**: Apply baseline reviewers for all tasks:
    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `beyond-diff` + `devils-advocate`
    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
    - API change / auth → add `security-perf`
    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
-7. Present the breakdown to the human for acknowledgment before proceeding to Phase 2
+8. Present the breakdown to the human for acknowledgment before proceeding to Phase 2
 
 ## Phase 2: Task Execution Loop (in-context)
 
@@ -88,7 +89,13 @@ For each task in the plan (excluding the Final Review task, which is handled by 
 
 ### Step A: Implement with TDD
 
-Invoke `tdd-cycle` for the RED-GREEN-REFACTOR procedure and decision point consultation pattern.
+If the task contains a `### Milestones` section, execute milestones sequentially. For each milestone:
+
+1. Invoke `tdd-cycle` for the RED-GREEN-REFACTOR procedure and decision point consultation pattern
+2. After the milestone's TDD cycles complete, invoke the `milestone-review` skill
+3. Carry the milestone review output forward as input context for the next milestone
+
+If the task has no milestones section, invoke `tdd-cycle` directly (no milestone review — backward compatible with existing plans).
 
 For independent tasks (no mutual dependencies with other pending tasks), evaluate `subagent-driven-development` for parallel execution. For dependent tasks, execute in-context sequentially.
 

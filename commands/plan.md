@@ -153,16 +153,22 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >>
 >>    All refactoring tasks are self-contained — the codebase should be in a better state even if feature implementation is deferred. Present these as "Refactoring (pre-implementation)" in the plan
 > 5. For each step specify: exact file paths, existing patterns (cite Scout findings), tests to write FIRST (TDD), expected line count, verification steps, dependencies, per-task review plan
-> 6. **Per-task Why field** (mandatory): Every Task must have a `**Why**:` line explaining its purpose. Tasks that implement a Design Doc decision describe the connection to that decision. Tasks that don't directly correspond to the Design Doc (refactoring prerequisites, test infrastructure, etc.) state the implementation reason. Why is descriptive prose — mechanical references like "Implements Proposal section 2.1" are forbidden; explain the purpose in the reader's terms
-> 7. Per-task review plan selection (all tasks get **thorough** tier):
+> 6. **Milestones within tasks** (when a task spans multiple files): If a task contains multiple files that each require their own TDD cycle, add a `### Milestones` section listing ordered sub-steps. Each milestone represents a focused unit of work — typically one file's TDD cycle and implementation. During execution, `implement.md` invokes `milestone-review` at each milestone boundary for cross-milestone consistency checking. The default granularity is one file per milestone, but the planner can combine small files into one milestone or split large files across milestones. Tasks with a single file do not need milestones. Example format:
+>    ```
+>    ### Milestones
+>    1. **M1: [file/scope]** — [what this milestone produces]
+>    2. **M2: [file/scope]** — [what this milestone produces, building on M1]
+>    ```
+> 7. **Per-task Why field** (mandatory): Every Task must have a `**Why**:` line explaining its purpose. Tasks that implement a Design Doc decision describe the connection to that decision. Tasks that don't directly correspond to the Design Doc (refactoring prerequisites, test infrastructure, etc.) state the implementation reason. Why is descriptive prose — mechanical references like "Implements Proposal section 2.1" are forbidden; explain the purpose in the reader's terms
+> 8. Per-task review plan selection (all tasks get **thorough** tier):
 >    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `devils-advocate`
 >    - API change / auth → add `security-perf`
 >    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
 >    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns` to ALL per-task reviews
 >    - `simplicity`, `general-review`, and `devils-advocate` are included in ALL per-task reviews
-> 8. TDD ordering: list test files before implementation files within each step
-> 9. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
-> 10. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
+> 9. TDD ordering: list test files before implementation files within each step
+> 10. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
+> 11. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
 >
 > **Step 6: Plan Review**
 >

@@ -60,6 +60,7 @@ claude-praxis/
 │   ├── guide-generation/        # Multi-pass codebase exploration + single-narrator guide writing
 │   ├── check-past-learnings/    # Recall relevant learnings before starting work
 │   ├── tdd-cycle/               # RED-GREEN-REFACTOR procedure + decision points
+│   ├── milestone-review/        # Cross-milestone consistency self-review at milestone boundaries
 │   ├── rule-evolution/          # Propose and add new rules from discovered issues
 │   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
 │   ├── agent-team-execution/    # Parallel exploration: research, review teams, debugging
