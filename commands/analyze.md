@@ -39,9 +39,17 @@ Extract the results:
 
 If `tsconfig.json` is absent, skip silently and note in the report's Confidence Boundary: "Quantitative architecture health scoring was not assessed (project does not use TypeScript)."
 
+## Step 1c: Pattern Consideration
+
+After the health scan (or after scope determination if health scan was skipped), read `catalog/structural-pattern-review-points.md` and evaluate the analysis scope for design pattern applicability. For each category in the catalog, check whether the target code exhibits the recognition signal. Report:
+- **Pattern opportunities**: where a design pattern would reduce structural complexity (e.g., "scattered type-dispatching in `src/handlers/` — 1-1 applies, Polymorphism would consolidate")
+- **Inconsistent pattern usage**: where a pattern is partially applied (e.g., "Factory used in `src/auth/` but manual instantiation in `src/payments/`")
+
+Carry findings into Step 2 as `pattern_context`. If no opportunities are found, note `pattern_context: no opportunities detected`. These findings appear in the report's "Structural Observations" section.
+
 ## Step 2: Run Analysis
 
-Pass the `health_scores` from Step 1b to the skill so the report includes the "Architecture Health Scores" section. If the skill's Step 1e produces its own health scan, the command-level results take precedence (avoid redundant calls).
+Pass the `health_scores` from Step 1b and `pattern_context` from Step 1c to the skill so the report includes the corresponding sections. If the skill's Step 1e produces its own health scan, the command-level results take precedence (avoid redundant calls).
 
 **Normal mode**: Invoke `architecture-analysis` skill with:
 

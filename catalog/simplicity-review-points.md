@@ -25,10 +25,12 @@ Generalization, generics, and configuration objects created "just in case" are u
 
 ### 2-1. Feature fighting the existing structure
 When a new feature is forced to fit the existing structure (adding conditional branches, workarounds), restructure first, then add the feature.
+(See: structural-pattern-review-points for refactoring direction when the structural fight involves conditional/type-dispatch logic.)
 — Rich-Harris (Svelte)
 
 ### 2-2. Patches piling on tangled code
 Patching code where multiple concerns are tangled increases complexity exponentially. Fix the fundamental structure before making changes.
+(See: structural-pattern-review-points for when tangled code warrants design pattern extraction.)
 — Rich-Harris (Svelte)
 
 ---

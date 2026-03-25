@@ -179,10 +179,12 @@ More than 3 arguments signals the function does too much or the arguments form a
 
 ### 10-2. Flag arguments splitting behavior
 A boolean parameter that makes a function do two different things. `update(data, replace=True)` should be two functions: `replace(data)` and `update(data)`. Each function should do one thing.
+(See: structural-pattern-review-points for broader type-dispatching patterns beyond boolean flags.)
 — Robert C. Martin (Clean Code: F3)
 
 ### 10-3. Complex conditional not encapsulated
 Raw boolean expressions like `if (timer.hasExpired() && !timer.isRecurrent())` inline in business logic. Extract to a named predicate: `if (shouldBeDeleted(timer))`. The name communicates intent.
+(See: structural-pattern-review-points for when extraction should be structural — polymorphism/strategy — rather than just a named predicate.)
 — Robert C. Martin (Clean Code: G28)
 
 ---

@@ -21,7 +21,7 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 
 ## Checklist Output Format
 
-Applies to reviewers with a `catalog/*.md` verification source: `code-quality`, `security-perf`, `error-resilience`, `simplicity`, `ts-patterns`, `general-review`, `beyond-diff`.
+Applies to reviewers with a `catalog/*.md` verification source: `code-quality`, `security-perf`, `error-resilience`, `simplicity`, `ts-patterns`, `general-review`, `beyond-diff`, `structural-patterns`.
 
 The `dispatch-reviewers` skill appends this format requirement to their prompts at dispatch time.
 
@@ -165,6 +165,13 @@ EVERY point in the checklist file must appear. Missing points = unchecked items.
 - **Applicable Domains**: implement
 - **Prompt**: Review the diff (not the final files). For each removed line or block, check: (1) Was the removed behavior replaced by equivalent code? (2) Were removed protections (validation, guards, error handling, disabled-state checks) re-added in the new code? (3) Were removed error handling paths covered by the replacement? (4) Were removed comments that documented non-obvious constraints preserved or rendered unnecessary by the new code? List every removed behavior that has no equivalent in the added code. For each finding, state: what was removed, what (if anything) replaced it, and what risk the gap creates.
 
+### `structural-patterns`
+
+- **Focus**: Design pattern applicability — recognizing when code structure warrants refactoring to well-known patterns
+- **Verification Source**: `catalog/structural-pattern-review-points.md` (12 categories, 14 concrete review points derived from refactoring literature)
+- **Applicable Domains**: implement, debug, design
+- **Prompt**: Review for structural pattern opportunities. First, read `catalog/structural-pattern-review-points.md` — this is your checklist with 14 concrete review points across 12 categories covering: (1) Scattered type-dispatching, (2) Algorithm selection, (3) State-dependent behavior, (4) Object construction complexity, (5) Creation logic scattered, (6) Interface incompatibility, (7) Feature extension by subclassing, (8) Operation management, (9) Event/notification chains, (10) Responsibility mixing, (11) Data access in business logic, (12) Uncontrolled global access. **This catalog is subordinate to simplicity rules** — if the simplicity catalog says the code is appropriately simple, do not flag it for pattern extraction. Only flag code where the structural problem is a current barrier to comprehension, modification, or extension. For each changed file, systematically check every applicable point. When you find a pattern opportunity, cite the specific point ID (e.g., "1-1: scattered type-dispatching → Polymorphism") and describe the concrete code smell observed. Also check the "Not warranted when" section for each point before reporting — if the exclusion conditions apply, do not report. For design domain: evaluate whether the proposed design creates structural patterns that will become the smells this catalog detects. Severity-rate: high = structural problem blocking safe modification, medium = pattern opportunity that would improve comprehension, low = minor structural improvement.
+
 > **Note**: The distinction sections below clarify boundaries for human readers and planner agents. Selection logic (which reviewers to pick for a given task) is determined by `skills/workflow-planner/SKILL.md`.
 
 ## Distinction: `general-review` vs `code-quality` vs `simplicity`
@@ -202,6 +209,14 @@ AI-generated code tends to be correct but over-engineered — adding unnecessary
 `beyond-diff` looks outward from the diff: forward in time (temporal state), sideways across the codebase (consistency), and outward to external contracts (spec conformance). `regression-check` looks backward at the diff: what was removed and whether it was replaced. `general-review` looks inward at the diff: tracing execution of the current code with concrete inputs.
 
 A token refresh function can pass `general-review` (logic traces correctly for a single invocation), pass `regression-check` (no behavior was removed), and still fail in production because state isn't updated after refresh (temporal), the same bug exists in another call site (consistency), or the request format doesn't match the API spec (conformance). `beyond-diff` catches these by extending the review scope beyond what the diff alone reveals.
+
+## Distinction: `structural-patterns` vs `simplicity` vs `code-quality`
+
+`structural-patterns` detects under-engineering: code that has grown past the point where design patterns would reduce complexity (scattered type-dispatching, tangled state transitions, mixed responsibilities).
+`simplicity` detects over-engineering: unnecessary abstractions, premature generalization, wrappers with one caller.
+`code-quality` checks correctness standards: TDD, type safety, naming, coupling.
+
+They form a three-way balance: `simplicity` prevents adding patterns where they aren't needed, `structural-patterns` identifies where patterns would help, and `code-quality` ensures whatever pattern is used follows correctness standards. `structural-patterns` is explicitly subordinate to `simplicity` — if simplicity says the code is appropriately simple, structural-patterns does not override. Their verification sources differ (refactoring literature vs complexity metrics vs project rules), making them independently valuable.
 
 ## Distinction: `axes-coherence` vs `devils-advocate` vs `structural-fitness`
 

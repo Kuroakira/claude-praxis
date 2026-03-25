@@ -58,6 +58,7 @@ Adjust based on the specific changes:
 - API changes → add `spec-compliance`
 - Architecture changes → add `architecture`
 - New hook/utility patterns → add `structural-fitness`
+- Complex conditional logic (scattered type-dispatching, state-dependent branching, responsibility mixing) → add `structural-patterns`
 - **TypeScript project** (tsconfig.json exists) → add `ts-patterns` to ALL tiers
 
 ## Step 4: Dispatch
