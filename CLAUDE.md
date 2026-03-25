@@ -23,7 +23,9 @@ claude-praxis/
 │   ├── security-perf-review-points.md   # 7 categories, security and performance checklist
 │   ├── error-resilience-review-points.md  # 7 categories, failure mode checklist
 │   ├── simplicity-review-points.md      # 4 categories, over-engineering detection
-│   └── ts-review-points.md             # 8 categories, TypeScript patterns checklist
+│   ├── ts-review-points.md             # 8 categories, TypeScript patterns checklist
+│   ├── red-phase-test-patterns.md      # 12 points, RED phase test design prompts (mini-catalog)
+│   └── post-green-bug-patterns.md      # 16 points, post-GREEN latent bug patterns (mini-catalog)
 ├── agents/
 │   ├── implementer.md           # Implementation agent
 │   ├── reviewer.md              # Code review agent (read-only)

@@ -8,11 +8,38 @@ user-invocable: false
 
 The concrete procedure for test-driven development. The constraint "TDD Required — delete and redo" lives in `rules/code-quality.md`. This skill provides the HOW.
 
+## Mini-Catalog Loading (once per implementation session)
+
+Before the first TDD cycle in this session, read:
+- `catalog/red-phase-test-patterns.md` — test design prompts for the RED phase
+- `catalog/post-green-bug-patterns.md` — latent bug patterns for the VERIFY phase
+
+These provide context for the trigger questions and VERIFY dispositions below. Read once — not per cycle.
+
 ## The Cycle
 
 ### RED: Write a Failing Test
 
 Define the expected behavior as a test BEFORE writing any production code.
+
+**Trigger Questions**: Before writing the test, evaluate each pattern below. These cover the highest-frequency patterns; the full set (including data flow and null safety patterns) is in `catalog/red-phase-test-patterns.md`. For each, produce a disposition:
+- **"N/A: [reason]"** — the pattern does not apply to this task
+- **"Test added: [description]"** — a test case was added to cover this pattern
+
+| # | Pattern | Disposition |
+|---|---------|-------------|
+| 1 | Will this code need to handle empty collections (array, Map, Set)? | |
+| 2 | Will this code have first/last logic that must work for single-element collections? | |
+| 3 | Can any index become negative (from indexOf -1, arithmetic)? | |
+| 4 | Are there type utilities that need edge case tests (any, never, unknown, union)? | |
+| 5 | Will state be reused across sequential operations? Test for leakage. | |
+| 6 | Will closures be created inside loops or repeated operations? | |
+| 7 | Will this operation update state that drives a subsequent decision? | |
+| 8 | Will this function be called repeatedly? Test for accumulated side effects. | |
+| 9 | Will concurrent async operations share mutable state? | |
+| 10 | Will preconditions be checked before an await that could invalidate them? | |
+
+After completing the trigger question dispositions, write the test:
 
 1. Write a test that describes what the code should do
 2. Run the test — it MUST fail (if it passes, the test is wrong or the behavior already exists)
@@ -26,7 +53,34 @@ Write the smallest amount of code that makes the test pass.
 2. Run the test — it MUST pass
 3. If it doesn't pass, fix the code (not the test, unless the test was wrong)
 
+### VERIFY: Check for Latent Bug Patterns
+
+Before refactoring, scan the code you just wrote for latent bugs — patterns where tests pass but hidden issues exist. For each pattern below, produce a disposition:
+- **"N/A: [reason]"** — the pattern does not apply to this code
+- **"Finding: [issue] → Action: [fix]"** — an issue was found and addressed
+
+| # | Pattern | Disposition |
+|---|---------|-------------|
+| 1 | Is decision-driving state updated after the action it triggers? | |
+| 2 | Can a lifecycle event fire during an in-progress async operation? | |
+| 3 | Are side effects (listeners, timers, entries) cleaned up? | |
+| 4 | Does a debounced/throttled callback read a ref that goes stale under rapid calls? | |
+| 5 | Does a single handler both end one operation and start another (compound transition)? | |
+| 6 | Is the try-catch scope limited to the error source (not wrapping business logic too)? | |
+| 7 | Does a catch block discriminate by error type (not swallowing all errors)? | |
+| 8 | Does the external API actually throw on error, or report via redirect/return/callback? | |
+| 9 | Are resources (handles, connections, temp files) released on error paths? | |
+| 10 | Are async callbacks on event listeners/emitters guarded with .catch()? | |
+| 11 | Is every async call's return value awaited (not silently discarded)? | |
+| 12 | Is the Promise chain's error path complete (.then with .catch, no empty handlers)? | |
+| 13 | Does a guard clause make downstream branch conditions always true/false? | |
+| 14 | Are values preserved through the transformation pipeline (no silent drops)? | |
+| 15 | Is the return value of called functions used (not ignored when it carries error info)? | |
+| 16 | Are stubs/placeholders unreachable from production code paths? | |
+
 ### REFACTOR: Clean Up
+
+Review the VERIFY dispositions for any findings that should inform cleanup decisions.
 
 Improve the code while keeping all tests green.
 
@@ -79,6 +133,7 @@ The human decides. This is where engineering judgment grows.
 ## Integration
 
 - **Semantic tools**: Serena MCP (`find_referencing_symbols`) for quantitative coupling metrics in Structural Friction Check
+- **Mini-catalogs**: `catalog/red-phase-test-patterns.md` (RED trigger question context), `catalog/post-green-bug-patterns.md` (VERIFY disposition context)
 - **Constraint**: `rules/code-quality.md` — "TDD Required. Delete and redo."
 - **Invoked by**: `commands/implement.md` Phase 2 Step A
 - **Referenced by**: `subagent-driven-development` Implementer Prompt Template
