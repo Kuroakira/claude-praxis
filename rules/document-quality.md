@@ -103,6 +103,74 @@ Prefer concrete, direct expressions over abstract jargon. If a reader must decod
 
 When a technical term is unavoidable, define it inline on first use. But if a plain expression conveys the same meaning, use the plain expression.
 
+## Breathing Room
+
+Dense text blocks exhaust the reader. Use whitespace to separate ideas visually.
+
+```
+❌ Section heading immediately followed by 10+ lines of unbroken prose
+✅ Section heading → 1-2 sentence context → blank line → details
+```
+
+- **Between sections**: Always one blank line after a heading before content
+- **Between paragraphs**: One blank line between distinct ideas. If two paragraphs discuss the same point, they should be one paragraph
+- **After code blocks / diagrams**: One blank line before continuing prose
+
+**Wall-of-text signal**: If a paragraph exceeds 5 lines, check whether it contains multiple ideas. If yes, split at the idea boundary with a blank line.
+
+## Lists Over Prose
+
+When information has parallel structure, use lists. Prose that enumerates is harder to scan.
+
+```
+❌ "The system supports JWT, OAuth2, and API keys. JWT is used for session auth,
+    OAuth2 for third-party integration, and API keys for service-to-service."
+
+✅ The system supports three auth methods:
+   - **JWT** — session authentication
+   - **OAuth2** — third-party integration
+   - **API keys** — service-to-service communication
+```
+
+**When to use bullet lists**: 3+ parallel items, feature lists, pros/cons, requirements.
+
+**When to use numbered lists**: Steps with order dependency, priority-ranked items.
+
+**When NOT to use lists**: Narrative explanation, cause-and-effect reasoning, argument flow. These need prose to connect ideas.
+
+**List hygiene**:
+- Each item is one idea (no multi-sentence bullets)
+- Consistent grammatical form across items (all nouns, all verbs, all sentences — don't mix)
+- No nested lists deeper than 2 levels — if needed, restructure into subsections
+
+## Visual Chunking
+
+Long unbroken content creates cognitive fatigue. Break content into scannable chunks.
+
+```
+❌ 15-line paragraph explaining three related but distinct concepts
+✅ Three 3-5 line paragraphs, each covering one concept, separated by blank lines
+```
+
+**Chunk boundaries**: Place breaks at idea transitions, not arbitrary line counts. A 7-line paragraph about one idea is fine. A 4-line paragraph mixing two ideas should be split.
+
+**Section length**: If a section exceeds ~20 lines of prose (excluding code blocks and lists), consider whether it covers multiple sub-topics that deserve their own subsections.
+
+## Emphasis Discipline
+
+Bold and italic aid scanning when used sparingly. Overuse neutralizes their effect.
+
+```
+❌ **The system** uses **JWT tokens** for **authentication** with **15-minute** expiry
+✅ The system uses JWT tokens for authentication with **15-minute expiry**
+```
+
+- **Bold**: Key terms at definition, critical constraints, warnings. Ask: "Would a scanner miss something important without this?"
+- **Italic**: Introducing a term, attributing a phrase, subtle emphasis. Rare
+- **Neither**: Default. Most text needs no emphasis
+
+**Overuse signal**: If more than ~20% of a paragraph is bold, nothing stands out — reduce to the one or two most important phrases.
+
 ## Document Checklist
 
 ```
@@ -127,6 +195,13 @@ Conciseness:
 Plain Language:
 - [ ] No abstract jargon when a concrete expression conveys the same meaning
 - [ ] Technical terms defined inline on first use if unavoidable
+
+Visual Readability:
+- [ ] No paragraph exceeds 5 lines without an idea-boundary check
+- [ ] 3+ parallel items use bullet or numbered lists, not prose
+- [ ] List items are single-idea, consistent grammatical form, ≤2 nesting levels
+- [ ] Bold used only for key terms / critical constraints (~20% max per paragraph)
+- [ ] Blank lines between sections, paragraphs, and after code blocks
 
 Readability:
 - [ ] Sections self-contained (minimal backtracking)
