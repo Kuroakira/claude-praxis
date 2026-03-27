@@ -36,7 +36,6 @@ Each method operates on different content types. Grep does not replace Serena â€
 | `mode` | No | `normal` (default) or `thorough`. Controls analysis depth and report structure. When absent or unrecognized, defaults to `normal` with a warning for unrecognized values |
 | `thorough_config` | No | Configuration for thorough mode (present only when `mode=thorough`). Contains: `registry_prefix` (string, e.g. `analysis-thorough-registry:`), `phase` (`1` or `2`), `selected_items` (list of debt items, Phase 2 only) |
 | `health_scores` | No | Pre-computed sekko-arch scan results from the calling command. When present, Step 1e uses these results instead of calling sekko-arch again (avoids redundant calls). When absent, Step 1e runs its own scan call as before |
-| `pattern_context` | No | Pre-computed design pattern applicability findings from the calling command (Step 1c in `/analyze`). When present, include in the "Structural Observations" section. When absent, skip pattern analysis |
 
 ### Mode Fallback
 
@@ -277,11 +276,8 @@ Friction signals with specific file references. For each observation:
 - Why it matters (coupling risk, complexity cost, maintenance burden)
 - Refactoring opportunity: what restructuring would look like and what benefit it would provide
 
-**Pattern Opportunities** (present when `pattern_context` is provided):
-Include the calling command's pattern applicability findings. For each opportunity, reference the specific catalog point ID and describe the observed code smell and suggested pattern direction.
-
 **Structural Fitness Assessment** (mandatory when `anticipated_changes` is provided):
-Does the current structure naturally support the anticipated changes, or would restructuring first make the changes simpler? If restructuring is recommended, describe the scope and expected benefit. When `pattern_context` identifies opportunities that overlap with the anticipated changes, include them in the fitness assessment.
+Does the current structure naturally support the anticipated changes, or would restructuring first make the changes simpler? If restructuring is recommended, describe the scope and expected benefit.
 
 ## Debt Inventory (Thorough Mode)
 

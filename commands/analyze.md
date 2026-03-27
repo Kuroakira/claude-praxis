@@ -39,17 +39,9 @@ Extract the results:
 
 If `tsconfig.json` is absent, skip silently and note in the report's Confidence Boundary: "Quantitative architecture health scoring was not assessed (project does not use TypeScript)."
 
-## Step 1c: Pattern Consideration
-
-After the health scan (or after scope determination if health scan was skipped), read `catalog/structural-pattern-review-points.md` and evaluate the analysis scope for design pattern applicability. For each category in the catalog, check whether the target code exhibits the recognition signal. Report:
-- **Pattern opportunities**: where a design pattern would reduce structural complexity (e.g., "scattered type-dispatching in `src/handlers/` — 1-1 applies, Polymorphism would consolidate")
-- **Inconsistent pattern usage**: where a pattern is partially applied (e.g., "Factory used in `src/auth/` but manual instantiation in `src/payments/`")
-
-Carry findings into Step 2 as `pattern_context`. If no opportunities are found, note `pattern_context: no opportunities detected`. These findings appear in the report's "Structural Observations" section.
-
 ## Step 2: Run Analysis
 
-Pass the `health_scores` from Step 1b and `pattern_context` from Step 1c to the skill so the report includes the corresponding sections. If the skill's Step 1e produces its own health scan, the command-level results take precedence (avoid redundant calls).
+Pass the `health_scores` from Step 1b to the skill. If the skill's Step 1e produces its own health scan, the command-level results take precedence (avoid redundant calls).
 
 **Normal mode**: Invoke `architecture-analysis` skill with:
 
@@ -99,6 +91,17 @@ After user selection, invoke `architecture-analysis` skill again with:
 
 The skill runs Pass 2 (deep dives on selected items), Pass 3 (synthesis), and Pass 3b (registry). The skill appends Phase 2 results to the existing report.
 
+## Step 2.5: Pattern Consideration (mandatory)
+
+After architecture-analysis produces its report (Normal mode: after Step 2; Thorough mode: after Step 2c), read `catalog/structural-pattern-review-points.md` and evaluate the analysis report's Structural Observations and friction areas for design pattern applicability. For each category in the catalog, check whether the friction signals, coupling issues, or complexity findings match the recognition signal. Report:
+
+- **Pattern opportunities**: where a design pattern would reduce structural friction identified in the analysis (e.g., "Structural Observations identified scattered type-dispatching in `src/handlers/` with high coupling — 1-1 applies, Polymorphism would consolidate")
+- **Inconsistent pattern usage**: where the analysis revealed a pattern partially applied (e.g., "Factory used in `src/auth/` but manual instantiation in `src/payments/` noted as friction")
+
+If no opportunities are found, note "Pattern consideration: no opportunities detected."
+
+Append a `## Pattern Opportunities` section to the saved analysis report (after the Structural Observations section). For each opportunity, reference the specific catalog point ID (e.g., "1-1"), the friction finding it addresses, and the suggested pattern direction.
+
 ## Step 3: Save and Present
 
 **Normal mode**:
@@ -108,6 +111,7 @@ The skill runs Pass 2 (deep dives on selected items), Pass 3 (synthesis), and Pa
 3. Present the report to the user with a brief summary of key findings:
    - Number of components identified
    - Friction areas found (if any)
+   - Pattern opportunities (if any)
    - Refactoring opportunities (if any)
    - What was NOT assessed (from Confidence Boundary)
 
@@ -117,6 +121,7 @@ The report at `claudedocs/analysis/[scope-name]-thorough.md` is already assemble
    - Number of debt items identified (from Phase 1 inventory)
    - Number of items analyzed in detail (from Phase 2 deep dives)
    - Key findings from deep dives
+   - Pattern opportunities (if any)
    - What was NOT assessed (from Confidence Boundary)
 
 The report is now available for the user to read and for subsequent `/design` or `/implement` workflows to consume as input.

@@ -77,7 +77,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > |-----------|-------|
 > | `task` | Research and write a Design Doc for [topic] |
 > | `domain` | design |
-> | `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. When researching a feature/system design, codebase-scout should evaluate whether existing code has structural patterns (see `catalog/structural-pattern-review-points.md`) that the design should leverage, consolidate, or restructure — this informs whether "extend current structure" vs "restructure first" is a relevant design axis. The mandatory Design Axes Table in Synthesis Rules structurally prevents conflating "What" clarity with "How" clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
+> | `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. When researching a feature/system design, codebase-scout should evaluate whether existing code has structural patterns that the design should leverage, consolidate, or restructure — this informs whether "extend current structure" vs "restructure first" is a relevant design axis. The mandatory Design Axes Table in Synthesis Rules structurally prevents conflating "What" clarity with "How" clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
 > | `constraints` | (1) Research must produce a synthesis with findings and contradictions. (2) Synthesis must include a Design Axes Table — every design decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (3) If Design Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before returning. (4) Design Doc format rules (`rules/design-doc-format.md`) must be followed. |
 > | `catalog_scope` | Reviewers: architecture, document-quality, simplicity, structural-patterns, feasibility, user-impact, security-perf, structural-fitness, axes-coherence, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, axis-evaluator). |
 >
@@ -174,6 +174,11 @@ Dispatch a `general-purpose` Task subagent.
 >    - `research_context`: Key findings from the synthesis
 >    - `health_scores`: Results from the health scan above (D/F dimensions and grades). Omit if health scan was skipped
 > 3. **Output**: The analysis skill saves a durable report to `claudedocs/analysis/[scope-name].md`
+> 4. **Pattern Consideration (mandatory)**: After the analysis report is saved, read `catalog/structural-pattern-review-points.md` and evaluate the report's Structural Observations and friction areas for design pattern applicability. For each catalog category, check whether the analysis findings match the recognition signal. Append a `## Pattern Opportunities` section to the analysis report with:
+>    - Pattern opportunities: where a design pattern would reduce structural friction identified in the analysis (reference specific catalog point ID and the friction finding it addresses)
+>    - Inconsistent pattern usage: where the analysis revealed a pattern partially applied
+>    If no opportunities are found, note "Pattern consideration: no opportunities detected" in the section.
+>    These findings should also be noted in `reasoning-log-g2.md` under Structural Friction, as they inform G3 about restructuring axes.
 >
 > If the analysis detects structural friction (existing architecture doesn't naturally support the proposed changes), note this in the reasoning-log — it should inform the Outline phase (G3) about whether "extend current structure" vs "restructure first" is a relevant axis.
 >
@@ -184,7 +189,7 @@ Dispatch a `general-purpose` Task subagent.
 >    - `## Key Decisions` — Scope selection rationale, areas analyzed
 >    - `## Alternatives Considered` — Other scopes considered and why not chosen
 >    - `## Rationale` — Why this scope and these findings matter for the design
->    - `## Structural Friction` — If detected, describe what doesn't fit and why (this informs G3)
+>    - `## Structural Friction` — If detected, describe what doesn't fit and why. Include pattern opportunities from the mandatory pattern consideration step (catalog point IDs and suggested directions). This informs G3 about restructuring axes
 >
 > Do NOT write to progress.md — the orchestrator handles that.
 
