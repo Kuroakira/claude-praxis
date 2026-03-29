@@ -94,6 +94,12 @@ When dispatching a task agent, include:
 ## Task
 [Full task description from plan]
 
+## Structural Fitness Context
+[Include the resolved structural fitness axis verdict from the Axes Table.
+If "Restructure first" was decided, state: "Plan verdict: Restructure [area] before implementing. This task must follow that decision."
+If "Extend current structure" was decided, state: "Plan verdict: Current structure supports this change. Extend incrementally."
+If no Axes Table exists (inline breakdown), state: "No plan-level structural fitness evaluation. Evaluate before implementing: does the existing structure naturally support this task, or would restructuring first make it simpler? If restructuring is warranted, stop and report to the controller."]
+
 ## Shared Context
 Files referenced by multiple tasks, pre-read by the Controller.
 
@@ -111,9 +117,10 @@ Files referenced by multiple tasks, pre-read by the Controller.
 
 ## Requirements
 1. Follow TDD (RED → GREEN → REFACTOR)
-2. Run verification before reporting (typecheck, lint, test)
-3. Do a self-review before reporting back
-4. Report: what you did, key decisions you made and WHY, verification output
+2. Evaluate structural fitness BEFORE writing code — do not patch around structural problems
+3. Run verification before reporting (typecheck, lint, test)
+4. Do a self-review before reporting back
+5. Report: what you did, key decisions you made and WHY, verification output
 ```
 
 ## Shared Context Token Budget

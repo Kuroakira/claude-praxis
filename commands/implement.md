@@ -60,22 +60,39 @@ A plan file path is provided as input (e.g., from a prior `/plan` run).
 Perform a lightweight task breakdown in-context:
 
 1. **Understand the scope**: Read the Design Doc if it exists. If no Design Doc (direct implementation request), read the codebase to understand the current state and the user's intent
-2. **Break into steps sized for ~500-line PRs**: Each step should produce a reviewable, self-contained change. If a step would exceed ~500 lines, split it further
-3. For each step, specify:
+2. **Evaluate structural fitness (MANDATORY)**: Before breaking into tasks, evaluate whether the existing structure naturally supports the requested change. This step produces a required artifact — a structural fitness disposition:
+
+   ```markdown
+   ### Structural Fitness Evaluation
+   | Question | Verdict | Evidence |
+   |----------|---------|----------|
+   | Does the existing structure naturally support this change? | Yes / No / Uncertain | [specific files, coupling data, or structural observation] |
+   | Would restructuring first make the implementation simpler? | Yes / No / Uncertain | [what would change and why] |
+   | Are there existing patterns being extended — are those patterns themselves appropriate? | Yes / N/A | [pattern name and assessment] |
+
+   **Decision**: [Extend current structure / Restructure [specific area] first / Consult human]
+   ```
+
+   If the decision is "Restructure first", include refactoring tasks BEFORE feature tasks in the breakdown. If "Uncertain", present the evaluation to the human and ask for direction before proceeding.
+
+   This evaluation is the input for the Structural Fitness Context section in each subagent's prompt (see `subagent-driven-development` Implementer Prompt Template). Skipping this step leaves subagents without structural fitness context.
+
+3. **Break into steps sized for ~500-line PRs**: Each step should produce a reviewable, self-contained change. If a step would exceed ~500 lines, split it further
+4. For each step, specify:
    - Exact file paths to create or modify
    - What tests to write FIRST (TDD — RED before GREEN)
    - Expected line count estimate (keep under ~500 lines per step)
    - Verification steps (typecheck, lint, test, build)
    - Dependencies on other steps
-4. **TDD ordering**: Within each step, list test files before implementation files. The test is the first deliverable, not an afterthought
-5. **Milestones within tasks**: If a step spans multiple files, add a `### Milestones` section listing ordered sub-steps (one file's TDD cycle per milestone). Single-file steps do not need milestones
-6. Always include "Final Review" as the last task
-7. **Per-task review**: Apply baseline reviewers for all tasks:
-   - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `beyond-diff` + `devils-advocate`
+5. **TDD ordering**: Within each step, list test files before implementation files. The test is the first deliverable, not an afterthought
+6. **Milestones within tasks**: If a step spans multiple files, add a `### Milestones` section listing ordered sub-steps (one file's TDD cycle per milestone). Single-file steps do not need milestones
+7. Always include "Final Review" as the last task
+8. **Per-task review**: Apply baseline reviewers for all tasks:
+   - Baseline (ALL tasks): `code-quality` + `simplicity` + `structural-fitness` + `general-review` + `beyond-diff` + `devils-advocate`
    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
    - API change / auth → add `security-perf`
    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
-8. Present the breakdown to the human for acknowledgment before proceeding to Phase 2
+9. Present the breakdown (including the Structural Fitness Evaluation) to the human for acknowledgment before proceeding to Phase 2
 
 ## Phase 2: Task Execution Loop (in-context)
 
@@ -118,7 +135,7 @@ After verification passes, invoke the per-task review. This step cannot be skipp
 
 **Determine reviewers**: Read the task's per-task review plan from the plan file (typically a `### Per-Task Review` section within each task). If the plan specifies reviewers, use them. If the plan does not specify per-task reviewers for this task, apply the baseline:
 
-- Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `beyond-diff` + `devils-advocate`
+- Baseline (ALL tasks): `code-quality` + `simplicity` + `structural-fitness` + `general-review` + `beyond-diff` + `devils-advocate`
 - API change / auth → add `security-perf`
 - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
 
@@ -244,7 +261,7 @@ Dispatch a `general-purpose` Task subagent.
 > This is a **thorough** review — structural floor applies (3+ reviewers including `devils-advocate`).
 >
 > Invoke `dispatch-reviewers` with:
-> - **Reviewers**: `spec-compliance` + `code-quality` + `simplicity` + `general-review` + `devils-advocate` (+ `ts-patterns` if tsconfig.json exists, + `security-perf` if the implementation touches auth/security, + `error-resilience` if external dependencies or recursive-graph data or malformed-data risk)
+> - **Reviewers**: `spec-compliance` + `code-quality` + `simplicity` + `structural-fitness` + `general-review` + `devils-advocate` (+ `ts-patterns` if tsconfig.json exists, + `security-perf` if the implementation touches auth/security, + `error-resilience` if external dependencies or recursive-graph data or malformed-data risk)
 > - **Tier**: thorough
 > - **Target**: All changed file paths from the changed-files list
 >

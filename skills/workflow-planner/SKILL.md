@@ -53,7 +53,7 @@ Rules:
 - "Clear winner" = one choice is objectively better with stated rationale
 - A verdict of "0 axes require exploration" needs explicit justification
 
-**Structural fitness axis (mandatory for `implement` domain)**:
+**Structural fitness axis (mandatory for `implement` and `design` domains)**:
 
 - **What to evaluate**: "Does the existing structure naturally support this change, or would restructuring first make the implementation simpler?"
 - **Axis format**: Choices like "A: Extend current structure / B: Restructure [specific area] first, then add feature"

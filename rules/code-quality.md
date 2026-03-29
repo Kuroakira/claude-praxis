@@ -68,18 +68,21 @@ AI-generated code systematically tends toward over-engineering. Actively resist 
 
 ### Planning Level
 
-Before adding a feature, ask: "Does the existing structure naturally support this, or are we forcing it?"
+**Always evaluate structural fitness before planning implementation.** Never assume the current structure is the right structure.
 
 ```
 ❌ Plan to add conditionals/branches to accommodate the new feature
 ❌ Plan to duplicate patterns in a new location because the existing structure doesn't fit
 ❌ Plan that touches many files for a conceptually simple feature (structural friction signal)
 ❌ Plan that assumes the current structure is the right structure without evaluating fitness
+❌ Plan that follows an existing pattern without evaluating whether that pattern is appropriate
 
-✅ If the feature fights the structure, restructure first, then add
-✅ If adding requires spreading logic across many places, consolidate first
-✅ Include refactoring tasks BEFORE feature tasks when structure doesn't fit
-✅ "What's the simplest structure that supports both existing and new behavior?"
+✅ Always evaluate: does the existing structure naturally support this change?
+✅ When the feature fights the structure, restructure first, then add — never patch around structural problems
+✅ When adding requires spreading logic across many places, consolidate first
+✅ Always include refactoring tasks BEFORE feature tasks when structure doesn't fit
+✅ Always ask: "What's the simplest structure that supports both existing and new behavior?"
+✅ When following an existing pattern, verify the pattern itself is appropriate — consistency with a bad pattern is not a virtue
 ```
 
 ### Code Level
