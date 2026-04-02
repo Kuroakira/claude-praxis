@@ -39,6 +39,7 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 | `/research [topic]` | Explore a problem space without committing to a Design Doc |
 | `/plan [topic] [design-doc-path]` | Create a thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
 | `/review [--full]` | Code review on existing code outside the implementation flow. `--full` skips tier detection and dispatches all reviewers |
+| `/review-guide [--base branch] [--doc path]` | Generate a self-review guide for AI-generated code — test-first reading order with attention points and design rationale |
 | `/compound` | Extract and classify learnings from completed work |
 | `/understanding-check` | Verify you can explain key decisions in AI-generated work (recommended: separate session) |
 
@@ -117,6 +118,7 @@ rm ~/.claude/skills/claude-praxis
 | `/research [topic]` | Standalone: explore a problem space without committing to a Design Doc |
 | `/plan [topic] [design-doc-path]` | Standalone: thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
 | `/review [--full]` | Standalone: code review on existing code (scope auto-detected from git diff). `--full` dispatches all reviewers |
+| `/review-guide [--base branch] [--doc path]` | Standalone: self-review guide for AI-generated code (test-first reading order + attention points) |
 | `/compound` | Extract learnings and carry them to the next project |
 | `/understanding-check` | Standalone: verify understanding of AI-generated work |
 
@@ -132,6 +134,8 @@ rm ~/.claude/skills/claude-praxis
 | `[design-doc-path]` | `/plan` | Path to existing Design Doc to plan against |
 | `--thorough` | `/analyze` | Two-phase analysis: generates debt inventory, then user selects items for deep dive |
 | `--full` | `/review` | Skip tier determination and dispatch all reviewers for maximum coverage |
+| `--base` | `/review-guide` | Override the base branch for diff detection (default: auto-detect merge-base with main) |
+| `--doc` | `/review-guide` | Specify a FeatureSpec or Design Doc path for design context |
 
 ## Quality Rules (Defaults)
 

@@ -51,6 +51,7 @@ claude-praxis/
 │   ├── research.md              # /research — standalone research
 │   ├── plan.md                  # /plan — thorough planning with Axes Table and architecture analysis
 │   ├── review.md                # /review — standalone code review
+│   ├── review-guide.md          # /review-guide — self-review guide for AI-generated code
 │   ├── compare.md               # /compare — structured multi-option comparison + selection
 │   ├── compound.md              # /compound — extract and accumulate learnings
 │   └── understanding-check.md   # /understanding-check — verify understanding of AI-generated work
