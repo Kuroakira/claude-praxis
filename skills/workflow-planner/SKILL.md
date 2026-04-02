@@ -90,7 +90,7 @@ Apply the graduated review model to each step:
 |------|-------|------|-----------|-----------------|
 | **None** | No formal review | Intermediate artifacts that will be fully revised (research notes, working drafts) | 0 | No |
 | **Light** | 1-2 focused dimensions | Drafts/outlines, low-risk intermediate steps | 1-2 | Optional |
-| **Thorough** | Multi-dimensional, comprehensive | Final outputs, high-risk decisions, human-facing deliverables | 3-6 | **Mandatory** |
+| **Thorough** | Multi-dimensional, comprehensive | Final outputs, high-risk decisions, human-facing deliverables | 3-8 | **Mandatory** |
 
 **Judgment guidelines** (apply based on domain_context):
 - Intermediate artifacts to be revised → **None** or **Light**
@@ -98,7 +98,7 @@ Apply the graduated review model to each step:
 - Final deliverable or irreversible decision → **Thorough** (comprehensive coverage)
 - Security-sensitive or architecture-impacting → **Thorough** regardless of stage
 
-**Structural floor for thorough**: 3+ reviewers including `devils-advocate`. This is a command-level constraint the planner cannot override. The planner's flexibility is in choosing which other 2-5 reviewers to include.
+**Structural floor for thorough**: 3+ reviewers including `devils-advocate`. This is a command-level constraint the planner cannot override. The planner's flexibility is in choosing which other 2-7 reviewers to include.
 
 **None tier limitation**: None tier applies only to artifacts that will be completely revised. Before passing to the next step, verify structural completeness (all expected sections/data exist) — not a formal review, but prevents obviously incomplete output from propagating.
 

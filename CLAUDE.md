@@ -15,7 +15,7 @@ claude-praxis/
 │   ├── design-doc-format.md     # WHY over HOW, Notion format, outline-first
 │   └── verification.md          # No claims without evidence, completion report
 ├── catalog/                     # Shared agent catalogs and review-point checklists
-│   ├── reviewers.md             # 18 reviewer types with independent verification sources
+│   ├── reviewers.md             # 19 reviewer types with independent verification sources
 │   ├── researchers.md           # 7 researcher types with agent types and verification sources
 │   ├── code-quality-review-points.md    # 12 categories, code quality checklist (OSS committer-sourced)
 │   ├── general-review-points.md         # 10 categories, bug detection checklist
@@ -24,6 +24,7 @@ claude-praxis/
 │   ├── error-resilience-review-points.md  # 7 categories, failure mode checklist
 │   ├── simplicity-review-points.md      # 4 categories, over-engineering detection
 │   ├── structural-pattern-review-points.md  # 12 categories, design pattern applicability checklist
+│   ├── readability-review-points.md    # 8 categories, code understandability checklist (empirical, TSE 2024)
 │   ├── ts-review-points.md             # 8 categories, TypeScript patterns checklist
 │   ├── red-phase-test-patterns.md      # 12 points, RED phase test design prompts (mini-catalog)
 │   └── post-green-bug-patterns.md      # 16 points, post-GREEN latent bug patterns (mini-catalog)

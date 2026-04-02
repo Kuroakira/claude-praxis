@@ -21,7 +21,7 @@ The `dispatch-reviewers` skill prepends this rule to every reviewer prompt at di
 
 ## Checklist Output Format
 
-Applies to reviewers with a `catalog/*.md` verification source: `code-quality`, `security-perf`, `error-resilience`, `simplicity`, `ts-patterns`, `general-review`, `beyond-diff`, `structural-patterns`.
+Applies to reviewers with a `catalog/*.md` verification source: `code-quality`, `security-perf`, `error-resilience`, `simplicity`, `ts-patterns`, `general-review`, `beyond-diff`, `structural-patterns`, `readability`.
 
 The `dispatch-reviewers` skill appends this format requirement to their prompts at dispatch time.
 
@@ -172,6 +172,13 @@ EVERY point in the checklist file must appear. Missing points = unchecked items.
 - **Applicable Domains**: implement, debug, design
 - **Prompt**: Review for structural pattern opportunities. First, read `catalog/structural-pattern-review-points.md` — this is your checklist with 14 concrete review points across 12 categories covering: (1) Scattered type-dispatching, (2) Algorithm selection, (3) State-dependent behavior, (4) Object construction complexity, (5) Creation logic scattered, (6) Interface incompatibility, (7) Feature extension by subclassing, (8) Operation management, (9) Event/notification chains, (10) Responsibility mixing, (11) Data access in business logic, (12) Uncontrolled global access. **This catalog is subordinate to simplicity rules** — if the simplicity catalog says the code is appropriately simple, do not flag it for pattern extraction. Only flag code where the structural problem is a current barrier to comprehension, modification, or extension. For each changed file, systematically check every applicable point. When you find a pattern opportunity, cite the specific point ID (e.g., "1-1: scattered type-dispatching → Polymorphism") and describe the concrete code smell observed. Also check the "Not warranted when" section for each point before reporting — if the exclusion conditions apply, do not report. For design domain: evaluate whether the proposed design creates structural patterns that will become the smells this catalog detects. Severity-rate: high = structural problem blocking safe modification, medium = pattern opportunity that would improve comprehension, low = minor structural improvement.
 
+### `readability`
+
+- **Focus**: Code understandability from the reader's perspective — naming clarity, documentation quality, logic conciseness, visual consistency, string/log quality
+- **Verification Source**: `catalog/readability-review-points.md` (8 categories, 22 concrete review points derived from empirical analysis of 2,401 code review comments — Oliveira et al., IEEE TSE 2024)
+- **Applicable Domains**: implement, debug
+- **Prompt**: Review for code readability — whether a developer unfamiliar with this code can understand it without unnecessary effort. First, read `catalog/readability-review-points.md` — this is your checklist with 22 concrete review points across 8 categories: (1) Bad identifier, (2) Incomplete or inadequate documentation, (3) Complex/long/inadequate logic, (4) Unnecessary code, (5) Inconsistent or disrupted formatting, (6) Wrong/missing/inadequate string expression, (7) Inadequate logging and monitoring, (8) Missing constant usage. For each changed file, systematically check every applicable point. When you find an issue, cite the specific point ID (e.g., "1-2: identifier does not match type") and provide a concrete improvement. **Key principle**: This review is about the reader's cognitive experience, not correctness or architecture. A function can be correct, well-typed, and well-structured but still hard to understand because its name is misleading, its comments are stale, or its logic is unnecessarily verbose. Check the "Not warranted when" sections before reporting — some points have explicit exclusion conditions. Severity-rate: high = actively misleading (wrong name, stale documentation, confusing logic), medium = unnecessary cognitive effort (verbose code, missing context), low = minor friction (formatting, style inconsistency).
+
 > **Note**: The distinction sections below clarify boundaries for human readers and planner agents. Selection logic (which reviewers to pick for a given task) is determined by `skills/workflow-planner/SKILL.md`.
 
 ## Distinction: `general-review` vs `code-quality` vs `simplicity`
@@ -225,3 +232,12 @@ They form a three-way balance: `simplicity` prevents adding patterns where they 
 `structural-fitness` checks architecture fit: "Should we extend or restructure?"
 
 `axes-coherence` is uniquely positioned because it reads TWO artifacts — the Axes Table and the outline/plan — and cross-references them. Devils-advocate reads only the target and challenges from first-principles skepticism — questioning whether the problem, direction, and benefits are valid at all. Structural-fitness evaluates architecture without reference to prior axis decisions. Their verification sources differ (resolved Axes Table vs failure patterns vs coupling/cohesion metrics).
+
+## Distinction: `readability` vs `code-quality` vs `general-review` vs `simplicity`
+
+`readability` asks "can a reader unfamiliar with this code understand it without unnecessary effort?" — naming clarity, documentation accuracy, logic conciseness, visual consistency, string/log quality.
+`code-quality` asks "does this code follow correctness standards?" — TDD, type safety, YAGNI/DRY/KISS rules, pattern consistency.
+`general-review` asks "does this code have bugs?" — execution tracing with concrete inputs, logic errors, state tracking.
+`simplicity` asks "is this more complex than it needs to be?" — over-abstraction, unnecessary indirection, premature generalization.
+
+Code can pass all three existing reviewers and still be hard to read: correct types, no bugs, minimal abstraction, but misleading variable names, stale comments, verbose logic where an idiomatic one-liner exists, and magic numbers scattered throughout. `readability` catches these by evaluating the reader's cognitive experience — grounded in empirical evidence of what real code reviewers flag most often (Oliveira et al., TSE 2024). Their verification sources differ (empirical readability research vs project rules vs bug pattern databases vs complexity metrics), making them independently valuable.
