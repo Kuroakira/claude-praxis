@@ -19,7 +19,7 @@ This is a standalone command. Run it after completing a workflow (`/feature-spec
 ## When Not to Use
 
 - After trivial changes (single-line fixes, config updates) where no design decisions were made
-- When progress.md has no Decision/Rationale entries from the preceding workflow
+- When `.claude/context/progress.md` has no Decision/Rationale entries from the preceding workflow
 - During a workflow (wait until the workflow completes)
 
 ## Phase 0: Check Past Learnings
@@ -30,13 +30,13 @@ Invoke `check-past-learnings` (role: investigation). Carry relevant learnings fo
 
 Restore the context of the completed work:
 
-1. **Read progress.md** — identify Decision/Rationale entries from the preceding workflow. These are the pre-recorded rationale that Understanding Check will use for comparison
+1. **Read `.claude/context/progress.md`** — identify Decision/Rationale entries from the preceding workflow. These are the pre-recorded rationale that Understanding Check will use for comparison
 2. **Read the artifact** — the primary output of the workflow:
    - `/design` → Design Doc (`claudedocs/design-docs/[name].md`)
    - `/feature-spec` → FeatureSpec (`claudedocs/feature-specs/[name].md`)
    - `/debug` → Investigation Report (`.claude/context/investigation-[name].md`)
    - `/implement` → `git diff` of the implementation changes
-3. **Assess material sufficiency** — if progress.md lacks sufficient Decision/Rationale entries, inform the human and skip (do not generate degraded questions)
+3. **Assess material sufficiency** — if `.claude/context/progress.md` lacks sufficient Decision/Rationale entries, inform the human and skip (do not generate degraded questions)
 
 If material is sufficient, proceed to Phase 2. If insufficient, explain why — the remedy is running the original workflow with more explicit decision recording, not `/compound` (which promotes existing knowledge but does not generate new decision records).
 
@@ -45,16 +45,16 @@ If material is sufficient, proceed to Phase 2. If insufficient, explain why — 
 Invoke the `understanding-check` skill.
 
 The skill will:
-1. **Generate questions** from progress.md rationale (3-5 questions)
+1. **Generate questions** from `.claude/context/progress.md` rationale (3-5 questions)
 2. **PAUSE** — present questions and wait for the human to explain each decision in their own words
 3. **Compare** — present structured table comparing human's explanation with pre-recorded rationale
-4. **Discover** — identify gaps (Missing/Divergent) and record them to progress.md
+4. **Discover** — identify gaps (Missing/Divergent) and record them to `.claude/context/progress.md`
 
 ## Phase 3: Record and Next Phase
 
 After the Understanding Check completes:
 
-1. **Verify gap recording** — confirm all discovered gaps have been appended to progress.md in the prescribed format
+1. **Verify gap recording** — confirm all discovered gaps have been appended to `.claude/context/progress.md` in the prescribed format
 2. **Present Understanding Status** — include in the completion report:
 
 ```markdown
@@ -70,7 +70,7 @@ Understanding Check: [Y] of [X] key decisions explained, [Z] gaps discovered
 → Run /claude-praxis:compound to capture learnings?
 ```
 
-**Record to progress.md**:
+**Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:understanding-check: Check complete

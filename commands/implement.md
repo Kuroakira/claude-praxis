@@ -29,7 +29,7 @@ graph TD
 **Orchestrator principles**:
 - Pass **file paths**, not file contents, between groups
 - Do NOT read full file contents — structural validation only (file existence + section headers). Exception: Plan Resolution reads the plan file to present to the human for inline breakdown acknowledgment
-- Write progress.md entries after each group completes (subagents do not write progress.md)
+- Write `.claude/context/progress.md` entries after each group completes (subagents do not write to this file)
 - All intermediate files (`reasoning-log-g2.md`, `review-findings.md`, `changed-files.md`) are written to `claudedocs/plans/wip/`. This directory is created at G0 and cleaned up at G3. Permanent artifacts (plan file) go to their standard locations
 
 ## G0: Check Past Learnings + Workspace Init + Plan Resolution (in-context)
@@ -195,7 +195,7 @@ If issues are found during the auto-review, propose rule additions via `rule-evo
 - [file path] — [brief description]
 ```
 
-**Record to progress.md**: Append an entry with decisions made during this task. Include choices made at decision points (Step A) — these entries serve as comparison material for `/understanding-check`.
+**Record to `.claude/context/progress.md`**: Append an entry with decisions made during this task. Include choices made at decision points (Step A) — these entries serve as comparison material for `/understanding-check`.
 
 ```markdown
 ## [timestamp] — /claude-praxis:implement: Task [N] complete — [task name]
@@ -281,13 +281,13 @@ Dispatch a `general-purpose` Task subagent.
 >    - `## Alternatives Considered` — Other reviewer combinations considered
 >    - `## Rationale` — Why this reviewer set for this implementation
 >
-> Do NOT write to progress.md — the orchestrator handles that.
+> Do NOT write to `.claude/context/progress.md` — the orchestrator handles that.
 
 ### Orchestrator post-G2
 
 After G2 completes:
 1. **Validate** — Check `review-findings.md` and `reasoning-log-g2.md` exist in `claudedocs/plans/wip/`
-2. **Record to progress.md**:
+2. **Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:implement: G2 complete — Final Review
@@ -307,8 +307,8 @@ After G2 completes:
      3. For each degraded dimension, propose a concrete fix direction: which files to refactor, what structural change would restore the grade (e.g., "extract module X from Y to break the cycle", "split god file Z into A and B")
      4. **PAUSE** — present the degradation report with fix directions and ask: "Architecture degradation detected. Fix before proceeding, or continue to G3?"
      5. If the human chooses to fix: return to Phase 2 with fix tasks (each targeting one degraded dimension), then re-run session_end to verify improvement
-   - If **process-oriented dimensions** only changed (busFactor, codeChurn, changeCoupling, codeAge): these fluctuate based on git history rather than code quality. Present as informational in the progress.md entry but do NOT trigger the PAUSE gate. Proceed to G3
-   - If no degradation (grades stable or improved): note in the progress.md entry and proceed to G3.
+   - If **process-oriented dimensions** only changed (busFactor, codeChurn, changeCoupling, codeAge): these fluctuate based on git history rather than code quality. Present as informational in the `.claude/context/progress.md` entry but do NOT trigger the PAUSE gate. Proceed to G3
+   - If no degradation (grades stable or improved): note in the `.claude/context/progress.md` entry and proceed to G3.
 
 4. Proceed to G3
 
@@ -354,7 +354,7 @@ npm run build       # if applicable
 → [Next phase suggestion per verification.md lookup table]
 ```
 
-4. **Record to progress.md**:
+4. **Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:implement: Final review complete
@@ -380,7 +380,7 @@ where `${sessionId}` is the current session ID. This marker signals that Phase 3
 | Group | Required Input | Required Output | Reasoning-Log |
 |-------|---------------|-----------------|---------------|
 | G0 (in-context) | Topic from user, Design Doc path (optional), plan file path (optional) | Learnings context (stays in orchestrator), `claudedocs/plans/wip/` directory, resolved plan, architecture baseline session (if TypeScript project) | None |
-| Phase 2 (in-context) | Resolved plan | Changed files (filesystem), progress.md entries, changed-files list (`claudedocs/plans/wip/changed-files.md`) | None |
+| Phase 2 (in-context) | Resolved plan | Changed files (filesystem), `.claude/context/progress.md` entries, changed-files list (`claudedocs/plans/wip/changed-files.md`) | None |
 | G2 (subagent) | Changed-files list path | `review-findings.md` | `reasoning-log-g2.md` |
 | G3 (in-context) | `review-findings.md` path, plan file path (optional) | Completion Report, Final Review marker | None |
 
@@ -420,7 +420,7 @@ The orchestrator cannot fix failures in-context — it lacks the phase-specific 
 
 **Reasoning-logs** are temporary files (`reasoning-log-g2.md`) recording the judgment chain within the subagent. Format: `## Key Decisions`, `## Alternatives Considered`, `## Rationale`. Created by G2 in `claudedocs/plans/wip/`, deleted during G3 cleanup.
 
-**progress.md** entries are written by the orchestrator (not subagents) after each group and each task completes. The format is shown in each group's "Orchestrator post-GN" and Phase 2 Step D sections.
+**`.claude/context/progress.md`** entries are written by the orchestrator (not subagents) after each group and each task completes. The format is shown in each group's "Orchestrator post-GN" and Phase 2 Step D sections.
 
 ## G1: Full Planning Pipeline
 

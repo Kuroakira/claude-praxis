@@ -219,7 +219,7 @@ Cost scales linearly with the number of "Requires exploration" axes. Each axis-e
 
 ### Reporting
 
-Record per-axis evaluation results to progress.md when axes are evaluated:
+Record per-axis evaluation results to `.claude/context/progress.md` when axes are evaluated:
 
 ```markdown
 ## [timestamp] — Independent Axis Evaluation

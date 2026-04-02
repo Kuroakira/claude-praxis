@@ -34,7 +34,7 @@ graph TD
     O -->|in-context| G6[G6: Present to Human]
 ```
 
-**Orchestrator principles**: Follow the orchestrator principles defined in `commands/implement.md` (file paths not contents, structural validation only, progress.md by orchestrator). Additionally:
+**Orchestrator principles**: Follow the orchestrator principles defined in `commands/implement.md` (file paths not contents, structural validation only, `.claude/context/progress.md` by orchestrator). Additionally:
 - Delete reasoning-logs after their downstream group succeeds
 - All intermediate files (`synthesis.md`, `outline.md`, `axes-table.md`, `reasoning-log-g*.md`, `review-findings.md`) are written to `claudedocs/design-docs/wip/`. This directory is created at workflow start and cleaned up after G6 approval. Permanent artifacts (Design Doc, analysis report) go to their standard locations
 
@@ -124,13 +124,13 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >    - `## Alternatives Considered` — Approaches rejected and why
 >    - `## Rationale` — The reasoning chain for the chosen direction
 >
-> Do NOT write to progress.md — the orchestrator handles that.
+> Do NOT write to `.claude/context/progress.md` — the orchestrator handles that.
 
 ### Orchestrator post-G1
 
 After G1 completes:
 1. **Validate** output per the Validation Protocol (check synthesis.md and reasoning-log-g1.md)
-2. **Record to progress.md**:
+2. **Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:design: G1 complete — Research + Synthesis
@@ -191,14 +191,14 @@ Dispatch a `general-purpose` Task subagent.
 >    - `## Rationale` — Why this scope and these findings matter for the design
 >    - `## Structural Friction` — If detected, describe what doesn't fit and why. Include pattern opportunities from the mandatory pattern consideration step (catalog point IDs and suggested directions). This informs G3 about restructuring axes
 >
-> Do NOT write to progress.md — the orchestrator handles that.
+> Do NOT write to `.claude/context/progress.md` — the orchestrator handles that.
 
 ### Orchestrator post-G2
 
 After G2 completes:
 1. **Validate** — Check analysis report exists in `claudedocs/analysis/` and `reasoning-log-g2.md` exists
 2. **Delete** `reasoning-log-g1.md` (G1's reasoning-log — G2 has succeeded, so G1's log is no longer needed)
-3. **Record to progress.md**:
+3. **Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:design: G2 complete — Architecture Analysis
@@ -274,14 +274,14 @@ Dispatch a `general-purpose` Task subagent.
 >    - `## Rationale` — Why this structure best presents the design argument
 >    - `## Review Feedback` — Summary of reviewer findings and how they were addressed
 >
-> Do NOT write to progress.md — the orchestrator handles that.
+> Do NOT write to `.claude/context/progress.md` — the orchestrator handles that.
 
 ### Orchestrator post-G3
 
 After G3 completes:
 1. **Validate** — Check `outline.md`, `axes-table.md`, and `reasoning-log-g3.md` exist. Verify outline.md contains section headers
 2. **Delete** `reasoning-log-g2.md` (G2's reasoning-log — G3 has succeeded)
-3. **Record to progress.md**:
+3. **Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:design: G3 complete — Outline + Review
@@ -336,7 +336,7 @@ Dispatch a `general-purpose` Task subagent.
 >    - `## Alternatives Considered` — Alternative ways to structure the argument
 >    - `## Rationale` — Why this document structure best communicates the design
 >
-> Do NOT write to progress.md — the orchestrator handles that.
+> Do NOT write to `.claude/context/progress.md` — the orchestrator handles that.
 
 ### Orchestrator post-G4
 
@@ -344,7 +344,7 @@ After G4 completes:
 1. **Validate** — Check Design Doc exists in `claudedocs/design-docs/` and `reasoning-log-g4.md` exists. Verify Design Doc contains: `## Overview`, `## Context and Scope`, `## Proposal`, `## Alternatives Considered`
 2. **Delete** `reasoning-log-g3.md` (G3's reasoning-log — G4 has succeeded)
 3. Do NOT delete `outline.md` or `axes-table.md` yet — they may be needed if G6 revision requires re-dispatching G3. These are deleted after G6 approval (see G6 cleanup)
-4. **Record to progress.md**:
+4. **Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:design: G4 complete — Design Doc written
@@ -394,14 +394,14 @@ Dispatch a `general-purpose` Task subagent.
 >
 > No reasoning-log needed — the review findings themselves serve as the judgment record.
 >
-> Do NOT write to progress.md — the orchestrator handles that.
+> Do NOT write to `.claude/context/progress.md` — the orchestrator handles that.
 
 ### Orchestrator post-G5
 
 After G5 completes:
 1. **Validate** — Check `review-findings.md` exists and contains reviewer results
 2. **Delete** `reasoning-log-g4.md` (G4's reasoning-log — G5 has succeeded)
-3. **Record to progress.md**:
+3. **Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:design: G5 complete — Final Review
@@ -435,7 +435,7 @@ Present to the human with:
 - Delete temporary files: `outline.md`, `axes-table.md`, `synthesis.md`, `review-findings.md`, and any remaining `reasoning-log-g*.md` files
 - The Design Doc in `claudedocs/design-docs/` and the analysis report in `claudedocs/analysis/` are permanent artifacts
 
-**Record to progress.md** after G6 completes (approval or after final revision cycle):
+**Record to `.claude/context/progress.md`** after G6 completes (approval or after final revision cycle):
 
 ```markdown
 ## [timestamp] — /claude-praxis:design: Design Doc complete
@@ -474,8 +474,8 @@ Apply the Orchestrator Validation Protocol defined in `commands/implement.md`. T
 
 Inputs are passed as **file paths** in the subagent's task description. Subagents read input files independently — the orchestrator does not embed file contents in dispatch prompts. Exception: G1 receives topic and learnings as text (G0 output is lightweight and stays in orchestrator context).
 
-## Reasoning-Log and progress.md Notes
+## Reasoning-Log and `.claude/context/progress.md` Notes
 
 **Reasoning-logs** are temporary files (`reasoning-log-g[N].md`) recording the judgment chain within each subagent. Format: `## Key Decisions`, `## Alternatives Considered`, `## Rationale`. Created by subagents, deleted by the orchestrator after the downstream group succeeds (see each group's "Orchestrator post-GN" section for specific deletion timing). Any remaining reasoning-logs are deleted during G6 cleanup.
 
-**progress.md** entries are written by the orchestrator (not subagents) after each group completes. The format is shown in each group's "Orchestrator post-GN" section.
+**`.claude/context/progress.md`** entries are written by the orchestrator (not subagents) after each group completes. The format is shown in each group's "Orchestrator post-GN" section.

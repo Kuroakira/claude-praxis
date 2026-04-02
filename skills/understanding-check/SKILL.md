@@ -18,15 +18,15 @@ Showing the AI's rationale before the human explains creates anchoring — the h
 
 ## Prerequisites
 
-This skill requires **pre-recorded rationale** in progress.md. Each upstream command (`/design`, `/implement`, `/feature-spec`, `/debug`) records Decision/Rationale entries during execution. Understanding Check consumes these entries as comparison material.
+This skill requires **pre-recorded rationale** in `.claude/context/progress.md`. Each upstream command (`/design`, `/implement`, `/feature-spec`, `/debug`) records Decision/Rationale entries during execution. Understanding Check consumes these entries as comparison material.
 
-**Material sufficiency check** — before generating questions, assess the available progress.md entries:
+**Material sufficiency check** — before generating questions, assess the available `.claude/context/progress.md` entries:
 
 | Material Level | Indicator | Action |
 |---------------|-----------|--------|
 | **Rich** | Entries include rejected alternatives, trade-off analysis, constraint reasoning | Generate full 3-5 questions including "why X not Y" |
 | **Thin** | Entries have Decision/Rationale but no alternatives or trade-offs | Generate 2-3 questions focused on context and constraints |
-| **Insufficient** | Fewer than 2 entries, or entries lack rationale | Skip with explicit message: "Insufficient decision records in progress.md — skipping Understanding Check" |
+| **Insufficient** | Fewer than 2 entries, or entries lack rationale | Skip with explicit message: "Insufficient decision records in `.claude/context/progress.md` — skipping Understanding Check" |
 
 Do NOT generate degraded questions from insufficient material. Weak questions train compliance, not understanding.
 
@@ -40,7 +40,7 @@ Generate questions from the pre-recorded rationale, then **PAUSE** for the human
 
 1. **Focus on "why" and "how"** — reasoning questions ("Why this architecture?", "Why was the alternative rejected?") produce 2x+ knowledge transfer compared to definitional or factual questions (Chi et al., 1994)
 2. **Generate 3-5 questions** — fewer is insufficient coverage; more causes fatigue and quality degradation
-3. **Derive from actual rationale, not templates** — each question must reference a specific Decision/Rationale entry in progress.md
+3. **Derive from actual rationale, not templates** — each question must reference a specific Decision/Rationale entry in `.claude/context/progress.md`
 
 **Question selection criteria** (when more than 5 candidate questions exist):
 
@@ -53,7 +53,7 @@ Generate questions from the pre-recorded rationale, then **PAUSE** for the human
 | Workflow | Primary Material | Question Character |
 |----------|-----------------|-------------------|
 | `/design` | Design Doc (Alternatives Considered, design decisions) | "Why this design over alternatives?" |
-| `/implement` | progress.md entries + code diff | "What constraint drove this implementation choice?" |
+| `/implement` | `.claude/context/progress.md` entries + code diff | "What constraint drove this implementation choice?" |
 | `/feature-spec` | FeatureSpec (In/Out Scope, Problem Statement) | "Why was X scoped out?" |
 | `/debug` | Investigation Report (hypotheses, evidence) | "Why was this hypothesis retained over others?" |
 
@@ -61,8 +61,8 @@ Generate questions from the pre-recorded rationale, then **PAUSE** for the human
 
 > Here are [N] questions about the key decisions in this work. Explain each in your own words — I'll compare with the recorded rationale afterward.
 >
-> 1. [Question derived from progress.md entry]
-> 2. [Question derived from progress.md entry]
+> 1. [Question derived from `.claude/context/progress.md` entry]
+> 2. [Question derived from `.claude/context/progress.md` entry]
 > ...
 
 **PAUSE**: Wait for the human to answer all questions before proceeding.
@@ -102,7 +102,7 @@ Differences do not always mean the human is wrong. The AI's recorded rationale m
 
 Synthesize the comparison into actionable output.
 
-**Gap recording** — for each Missing or Divergent item, append to progress.md:
+**Gap recording** — for each Missing or Divergent item, append to `.claude/context/progress.md`:
 
 ```markdown
 ## [timestamp] — /understanding-check: Gap discovered
@@ -121,7 +121,7 @@ This status is included in the completion report **only when Understanding Check
 
 **Next step suggestion:**
 
-> Gaps have been recorded in progress.md. Run `/claude-praxis:compound` to promote these learnings for future sessions.
+> Gaps have been recorded in `.claude/context/progress.md`. Run `/claude-praxis:compound` to promote these learnings for future sessions.
 
 ## Context Window Management
 
@@ -134,8 +134,8 @@ Understanding Check often runs when context is most constrained (after a long wo
 ## Integration
 
 - **Invoked by**: `commands/understanding-check.md`
-- **Consumes**: progress.md Decision/Rationale entries (pre-recorded by upstream commands)
-- **Produces**: progress.md Gap entries, Understanding Status for completion report
+- **Consumes**: `.claude/context/progress.md` Decision/Rationale entries (pre-recorded by upstream commands)
+- **Produces**: `.claude/context/progress.md` Gap entries, Understanding Status for completion report
 - **Anti-sycophancy source**: `receiving-code-review` skill patterns
 - **Downstream**: `/compound` promotes Gap entries to learnings files
 - **Rule**: `rules/verification.md` defines the Understanding Status field in completion report

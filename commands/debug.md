@@ -140,7 +140,7 @@ After all investigators return:
 
 **PAUSE**: Present the diagnosis with the full hypothesis investigation results to the human. The human may have additional context that changes the diagnosis.
 
-**Record to progress.md**: Append an entry with the root cause and why it was hard to find. Include hypothesis adoption/rejection decisions with evidence — these entries serve as comparison material for `/understanding-check`.
+**Record to `.claude/context/progress.md`**: Append an entry with the root cause and why it was hard to find. Include hypothesis adoption/rejection decisions with evidence — these entries serve as comparison material for `/understanding-check`.
 
 ```markdown
 ## [timestamp] — /claude-praxis:debug: Diagnosis complete

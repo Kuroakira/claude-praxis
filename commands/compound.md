@@ -9,14 +9,14 @@ Invoke skill `context-persistence`, then execute both phases sequentially.
 ## Phase 1: Flow → Stock Promotion
 
 1. Read `.claude/context/progress.md` (recent work log)
-2. **Review the current conversation context**: Scan the conversation history for valuable knowledge (decisions, discoveries, trade-offs, debugging insights, etc.) that was NOT captured in `progress.md`. This is critical — important learnings often emerge during discussion but are never written to progress. Include any such findings alongside progress.md entries in the promotion proposal.
-3. For each entry (from both progress.md and conversation context), evaluate: does this contain reusable knowledge?
+2. **Review the current conversation context**: Scan the conversation history for valuable knowledge (decisions, discoveries, trade-offs, debugging insights, etc.) that was NOT captured in `.claude/context/progress.md`. This is critical — important learnings often emerge during discussion but are never written to progress. Include any such findings alongside `.claude/context/progress.md` entries in the promotion proposal.
+3. For each entry (from both `.claude/context/progress.md` and conversation context), evaluate: does this contain reusable knowledge?
 4. **Present a routing proposal to the human** — do NOT write directly:
 
 ```
 📋 /compound — Knowledge Promotion Proposal
 
-From progress.md and conversation context, I found the following promotable learnings:
+From `.claude/context/progress.md` and conversation context, I found the following promotable learnings:
 
 | # | Learning | Context / Rationale | Proposed Destination | Level | Initial Confidence |
 |---|----------|--------------------|--------------------|-------|--------------------|
@@ -43,7 +43,7 @@ Adjust any routing? (or "OK" to proceed)
 6. For quality rule candidates, invoke the `rule-evolution` skill:
    - Propose the rule to the human
    - If approved, add to the appropriate rules/ file with examples
-7. After confirmation, write to destinations with the `- **Confirmed**:` field and clean up promoted entries from `progress.md`
+7. After confirmation, write to destinations with the `- **Confirmed**:` field and clean up promoted entries from `.claude/context/progress.md`
 
 **Writing format**: Each promoted entry is written with four fields:
 ```markdown

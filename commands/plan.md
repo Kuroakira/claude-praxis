@@ -28,7 +28,7 @@ graph TD
     O -->|in-context| PRESENT[Present Plan +<br/>Cleanup]
 ```
 
-**Orchestrator principles**: Follow the orchestrator principles defined in `commands/implement.md` (file paths not contents, structural validation only, progress.md by orchestrator). Additionally:
+**Orchestrator principles**: Follow the orchestrator principles defined in `commands/implement.md` (file paths not contents, structural validation only, `.claude/context/progress.md` by orchestrator). Additionally:
 - Plan Presentation reads the plan file to present to the human (exception to structural-only validation)
 - All intermediate files (`reasoning-log-g1.md`) are written to `claudedocs/plans/wip/`. This directory is created at G0 and cleaned up at Plan Presentation. Permanent artifacts (plan file, axes-table, analysis report) go to their standard locations
 
@@ -193,13 +193,13 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >    - `## Alternatives Considered` — Approaches rejected and why
 >    - `## Rationale` — The reasoning chain for the chosen plan structure
 >
-> Do NOT write to progress.md — the orchestrator handles that.
+> Do NOT write to `.claude/context/progress.md` — the orchestrator handles that.
 
 ### Orchestrator post-G1
 
 After G1 completes:
 1. **Validate** output per the Validation Protocol (check plan file, axes-table file, analysis report, and reasoning-log-g1.md)
-2. **Record to progress.md**:
+2. **Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:plan: G1 complete — Planning Pipeline
@@ -226,7 +226,7 @@ Read the plan file — this is the one exception where the orchestrator reads fu
 
 **After the human acknowledges the plan**:
 
-1. **Record to progress.md**:
+1. **Record to `.claude/context/progress.md`**:
 
 ```markdown
 ## [timestamp] — /claude-praxis:plan: Plan complete — [topic]
@@ -259,7 +259,7 @@ To implement: run /claude-praxis:implement with this plan.
 |-------|---------------|-----------------|---------------|
 | G0 (in-context) | Topic from user, Design Doc path (optional) | Learnings context (stays in orchestrator), `claudedocs/plans/wip/` directory, health baseline (D/F dimensions or "no issues") | None |
 | G1 (subagent) | Topic, learnings context, health baseline, Design Doc path, rules constraints | Plan file (`claudedocs/plans/`), Axes Table file (`claudedocs/plans/`), analysis report (`claudedocs/analysis/`) | `reasoning-log-g1.md` |
-| Presentation (in-context) | Plan file path, axes-table path | progress.md entry, cleanup | None |
+| Presentation (in-context) | Plan file path, axes-table path | `.claude/context/progress.md` entry, cleanup | None |
 
 Inputs are passed as **file paths** in the subagent's task description. Subagents read input files independently — the orchestrator does not embed file contents in dispatch prompts. Exception: G1 receives topic and learnings as text (G0 output is lightweight and stays in orchestrator context).
 
@@ -277,4 +277,4 @@ Apply the Orchestrator Validation Protocol defined in `commands/implement.md`. T
 
 `reasoning-log-g1.md` is a temporary file recording the judgment chain within the G1 subagent. Format: `## Key Decisions`, `## Alternatives Considered`, `## Rationale`. Created by G1 in `claudedocs/plans/wip/`, deleted during Plan Presentation cleanup.
 
-**progress.md** entries are written by the orchestrator (not subagents) after G1 completes and after Plan Presentation. The format is shown in each section above.
+**`.claude/context/progress.md`** entries are written by the orchestrator (not subagents) after G1 completes and after Plan Presentation. The format is shown in each section above.
