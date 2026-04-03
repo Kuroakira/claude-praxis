@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { readStdin } from "./lib/io.js";
 import { getMarkerDir, cleanSessionMarkers } from "./lib/markers.js";
@@ -14,6 +15,7 @@ try {
   }
 
   const contextDir = path.join(process.cwd(), ".claude", "context");
+  fs.mkdirSync(contextDir, { recursive: true });
   const config = loadPraxisConfig(process.cwd());
   const globalLearningsPath = config.globalLearningsPath;
   const persistenceFiles = detectPersistenceFiles(
@@ -25,6 +27,9 @@ try {
 
   if (persistenceFiles.length > 0) {
     const fileLines = persistenceFiles.map((f) => {
+      const displayName = f.name === "global-learnings.md"
+        ? f.name
+        : `.claude/context/${f.name}`;
       const dateStr = f.mtime.toISOString().replace(/T/, " ").replace(/\..+/, "").slice(0, 16);
       if (f.entryCount !== undefined) {
         const parts = [`${f.entryCount} entries`];
@@ -35,9 +40,9 @@ try {
           parts.push(`${f.unverifiedCount} unverified`);
         }
         parts.push(`updated: ${dateStr}`);
-        return `- ${f.name} (${parts.join(", ")})`;
+        return `- ${displayName} (${parts.join(", ")})`;
       }
-      return `- ${f.name} (updated: ${dateStr})`;
+      return `- ${displayName} (updated: ${dateStr})`;
     });
 
     sections.push(

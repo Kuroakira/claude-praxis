@@ -43,6 +43,15 @@ describe("session-start integration", () => {
     };
   }
 
+  it("creates .claude/context/ directory on startup", () => {
+    const contextDir = path.join(tmpDir, ".claude", "context");
+    expect(fs.existsSync(contextDir)).toBe(false);
+
+    runHook({ session_id: "test-session" });
+
+    expect(fs.existsSync(contextDir)).toBe(true);
+  });
+
   it("outputs empty when no persistence files exist", () => {
     const result = runHook({ session_id: "test-session" });
     expect(result.exitCode).toBe(0);
@@ -80,16 +89,9 @@ describe("session-start integration", () => {
     );
 
     const result = runHook({ session_id: "test-session" });
-    const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.additionalContext).toContain(
-      "Persistence Files Available",
-    );
-    expect(output.hookSpecificOutput.additionalContext).toContain(
-      "task_plan.md",
-    );
-    expect(output.hookSpecificOutput.additionalContext).toContain(
-      "progress.md",
-    );
+    expect(result.stdout).toContain("Persistence Files Available");
+    expect(result.stdout).toContain(".claude/context/task_plan.md");
+    expect(result.stdout).toContain(".claude/context/progress.md");
   });
 
   it("shows entry count for progress.md", () => {
@@ -101,8 +103,7 @@ describe("session-start integration", () => {
     );
 
     const result = runHook({ session_id: "test-session" });
-    const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.additionalContext).toContain("3 entries");
+    expect(result.stdout).toContain("3 entries");
   });
 
   it("always exits 0", () => {
@@ -155,11 +156,9 @@ describe("session-start integration", () => {
     );
 
     const result = runHook({ session_id: "test-session" });
-    const output = JSON.parse(result.stdout);
-    const ctx = output.hookSpecificOutput.additionalContext;
-    expect(ctx).toContain("learnings-feature-spec.md (3 entries");
-    expect(ctx).toContain("learnings-design.md (2 entries");
-    expect(ctx).toContain("learnings-coding.md (1 entries");
+    expect(result.stdout).toContain(".claude/context/learnings-feature-spec.md (3 entries");
+    expect(result.stdout).toContain(".claude/context/learnings-design.md (2 entries");
+    expect(result.stdout).toContain(".claude/context/learnings-coding.md (1 entries");
   });
 
   it("shows both old and new learnings files during migration", () => {
@@ -172,10 +171,8 @@ describe("session-start integration", () => {
     );
 
     const result = runHook({ session_id: "test-session" });
-    const output = JSON.parse(result.stdout);
-    const ctx = output.hookSpecificOutput.additionalContext;
-    expect(ctx).toContain("learnings.md (updated:");
-    expect(ctx).toContain("learnings-coding.md (1 entries");
+    expect(result.stdout).toContain(".claude/context/learnings.md (updated:");
+    expect(result.stdout).toContain(".claude/context/learnings-coding.md (1 entries");
   });
 
   it("shows old learnings.md without entry count", () => {
@@ -184,10 +181,8 @@ describe("session-start integration", () => {
     fs.writeFileSync(path.join(contextDir, "learnings.md"), "# Learnings\n## E1\n## E2");
 
     const result = runHook({ session_id: "test-session" });
-    const output = JSON.parse(result.stdout);
-    const ctx = output.hookSpecificOutput.additionalContext;
-    expect(ctx).toMatch(/learnings\.md \(updated:/);
-    expect(ctx).not.toMatch(/learnings\.md \(\d+ entries/);
+    expect(result.stdout).toMatch(/\.claude\/context\/learnings\.md \(updated:/);
+    expect(result.stdout).not.toMatch(/\.claude\/context\/learnings\.md \(\d+ entries/);
   });
 
   it("shows avg confirmed for learnings file with Confirmed fields", () => {
@@ -205,9 +200,7 @@ describe("session-start integration", () => {
     fs.writeFileSync(path.join(contextDir, "learnings-coding.md"), content);
 
     const result = runHook({ session_id: "test-session" });
-    const output = JSON.parse(result.stdout);
-    const ctx = output.hookSpecificOutput.additionalContext;
-    expect(ctx).toContain("learnings-coding.md (2 entries, avg confirmed: 3.0");
+    expect(result.stdout).toContain(".claude/context/learnings-coding.md (2 entries, avg confirmed: 3.0");
   });
 
   it("shows unverified count when entries lack Confirmed field", () => {
@@ -223,9 +216,7 @@ describe("session-start integration", () => {
     fs.writeFileSync(path.join(contextDir, "learnings-design.md"), content);
 
     const result = runHook({ session_id: "test-session" });
-    const output = JSON.parse(result.stdout);
-    const ctx = output.hookSpecificOutput.additionalContext;
-    expect(ctx).toContain("learnings-design.md (2 entries, 2 unverified");
+    expect(result.stdout).toContain(".claude/context/learnings-design.md (2 entries, 2 unverified");
   });
 
   it("does not depend on getting-started skill file", () => {
@@ -235,13 +226,8 @@ describe("session-start integration", () => {
 
     const result = runHook({ session_id: "test-session" });
     expect(result.exitCode).toBe(0);
-    const output = JSON.parse(result.stdout);
-    expect(output.hookSpecificOutput.additionalContext).toContain(
-      "task_plan.md",
-    );
-    expect(output.hookSpecificOutput.additionalContext).not.toContain(
-      "Getting Started",
-    );
+    expect(result.stdout).toContain(".claude/context/task_plan.md");
+    expect(result.stdout).not.toContain("Getting Started");
   });
 
   describe("compact recovery guidance", () => {
@@ -259,11 +245,9 @@ describe("session-start integration", () => {
       );
 
       const result = runHook({ session_id: "test-session" });
-      const output = JSON.parse(result.stdout);
-      const ctx = output.hookSpecificOutput.additionalContext;
-      expect(ctx).toContain("Compact occurred");
-      expect(ctx).toContain("/claude-praxis:compound");
-      expect(ctx).toContain("not promoted");
+      expect(result.stdout).toContain("Compact occurred");
+      expect(result.stdout).toContain("/claude-praxis:compound");
+      expect(result.stdout).toContain("not promoted");
     });
 
     it("injects compound-already-run guidance when last-compact.json shows compoundRun true", () => {
@@ -280,10 +264,8 @@ describe("session-start integration", () => {
       );
 
       const result = runHook({ session_id: "test-session" });
-      const output = JSON.parse(result.stdout);
-      const ctx = output.hookSpecificOutput.additionalContext;
-      expect(ctx).toContain("Compact occurred");
-      expect(ctx).toContain("preserved");
+      expect(result.stdout).toContain("Compact occurred");
+      expect(result.stdout).toContain("preserved");
     });
 
     it("does not inject compact guidance when last-compact.json does not exist", () => {
@@ -320,10 +302,8 @@ describe("session-start integration", () => {
       );
 
       const result = runHook({ session_id: "test-session" });
-      const output = JSON.parse(result.stdout);
-      const ctx = output.hookSpecificOutput.additionalContext;
-      expect(ctx).toContain("5 entries");
-      expect(ctx).toContain("Implement auth");
+      expect(result.stdout).toContain("5 entries");
+      expect(result.stdout).toContain("Implement auth");
     });
   });
 });
