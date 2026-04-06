@@ -20,6 +20,9 @@ Establish a reliable way to trigger the problem.
 
 1. **Clarify the problem**: What is happening vs. what should be happening? Get specific symptoms, error messages, and reproduction steps from the user
 2. **Reproduce the problem**: Run the reproduction steps. Does the problem actually occur?
+
+   **When `--play` is specified**: Use Playwright MCP to reproduce the problem in the browser. Navigate to the relevant page, interact with UI elements to trigger the bug, take screenshots at each step, and collect console logs and network request errors. When encountering login gates, 2FA, CAPTCHA, or other steps requiring human credentials, **PAUSE** and ask the human to complete the step manually before continuing. Keep the browser session open for reuse in Phase 2.
+
 3. If not reproducible → gather more context (logs, environment, recent changes), don't guess
 4. **Document the reproduction**: exact command, input, expected vs actual output
 
@@ -31,6 +34,9 @@ Narrow down to the smallest scope that still fails.
 
 1. **Identify the scope**: Which component, module, or layer is responsible?
 2. **Eliminate irrelevant factors**: Remove unrelated code/config, simplify the input
+
+   **When `--play` is specified**: Test different scenarios in the browser to narrow down the trigger — different inputs, routes, application states. Take screenshots at each step to document visual state. Check console logs and network requests for errors at each scenario. Compare behavior across scenarios to identify the minimal conditions that reproduce the bug.
+
 3. **Check recent changes**: git log, git diff — what changed since the last known good state?
 4. **Find the boundary**: What's the minimal reproduction case?
 
