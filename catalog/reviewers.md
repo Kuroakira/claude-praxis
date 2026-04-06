@@ -179,6 +179,13 @@ EVERY point in the checklist file must appear. Missing points = unchecked items.
 - **Applicable Domains**: implement, debug
 - **Prompt**: Review for code readability — whether a developer unfamiliar with this code can understand it without unnecessary effort. First, read `catalog/readability-review-points.md` — this is your checklist with 22 concrete review points across 8 categories: (1) Bad identifier, (2) Incomplete or inadequate documentation, (3) Complex/long/inadequate logic, (4) Unnecessary code, (5) Inconsistent or disrupted formatting, (6) Wrong/missing/inadequate string expression, (7) Inadequate logging and monitoring, (8) Missing constant usage. For each changed file, systematically check every applicable point. When you find an issue, cite the specific point ID (e.g., "1-2: identifier does not match type") and provide a concrete improvement. **Key principle**: This review is about the reader's cognitive experience, not correctness or architecture. A function can be correct, well-typed, and well-structured but still hard to understand because its name is misleading, its comments are stale, or its logic is unnecessarily verbose. Check the "Not warranted when" sections before reporting — some points have explicit exclusion conditions. Severity-rate: high = actively misleading (wrong name, stale documentation, confusing logic), medium = unnecessary cognitive effort (verbose code, missing context), low = minor friction (formatting, style inconsistency).
 
+### `idiomatic-usage`
+
+- **Focus**: Framework and library best-practices compliance — whether the code uses APIs, patterns, and conventions recommended by official documentation
+- **Verification Source**: Context7 MCP (official documentation re-fetched at review time for each framework/library detected in the target files)
+- **Applicable Domains**: implement, debug
+- **Prompt**: Review whether the code follows framework and library best practices as documented in official sources. For each target file: (1) Identify which frameworks and libraries are imported or used (from import statements, package.json, or configuration files). (2) For each identified framework/library, fetch current official documentation via Context7 (`resolve-library-id` → `query-docs` with a query targeting the specific API patterns used in the file). (3) Compare the code's usage against official recommendations — check for deprecated APIs, anti-patterns explicitly warned against in docs, missing recommended configurations, and non-idiomatic usage patterns. (4) Report findings with the specific documentation reference (library name + relevant section). **Key principle**: This review checks alignment with external authority (official docs), not internal project rules (code-quality's job) or general readability (readability's job). A function can follow all project rules, be readable, and still use a deprecated API or ignore a framework's recommended pattern. Severity-rate: high = deprecated/removed API usage or documented anti-pattern, medium = non-idiomatic usage where official docs recommend a better approach, low = minor deviation from recommended conventions. **Skip condition**: If a file contains only pure language logic with no framework/library imports, report "N/A — no framework/library usage detected" and move on.
+
 > **Note**: The distinction sections below clarify boundaries for human readers and planner agents. Selection logic (which reviewers to pick for a given task) is determined by `skills/workflow-planner/SKILL.md`.
 
 ## Distinction: `general-review` vs `code-quality` vs `simplicity`
@@ -232,6 +239,14 @@ They form a three-way balance: `simplicity` prevents adding patterns where they 
 `structural-fitness` checks architecture fit: "Should we extend or restructure?"
 
 `axes-coherence` is uniquely positioned because it reads TWO artifacts — the Axes Table and the outline/plan — and cross-references them. Devils-advocate reads only the target and challenges from first-principles skepticism — questioning whether the problem, direction, and benefits are valid at all. Structural-fitness evaluates architecture without reference to prior axis decisions. Their verification sources differ (resolved Axes Table vs failure patterns vs coupling/cohesion metrics).
+
+## Distinction: `idiomatic-usage` vs `code-quality` vs `readability`
+
+`idiomatic-usage` asks "does this code follow what the framework/library authors recommend?" — deprecated APIs, documented anti-patterns, non-idiomatic usage, missing recommended configurations. Its verification source is external (official docs via Context7, re-fetched at review time).
+`code-quality` asks "does this code follow project rules?" — TDD, type safety, internal conventions. Its verification source is internal (project rules).
+`readability` asks "can a reader understand this code?" — naming, documentation, logic conciseness. Its verification source is empirical research.
+
+Code can pass both `code-quality` and `readability` while using a deprecated React lifecycle method, ignoring an Express security middleware recommended in docs, or using a Vitest API that was replaced in a recent version. `idiomatic-usage` catches these by consulting the authoritative source — the library's own documentation.
 
 ## Distinction: `readability` vs `code-quality` vs `general-review` vs `simplicity`
 

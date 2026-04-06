@@ -165,7 +165,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >    ```
 > 7. **Per-task Why field** (mandatory): Every Task must have a `**Why**:` line explaining its purpose. Tasks that implement a Design Doc decision describe the connection to that decision. Tasks that don't directly correspond to the Design Doc (refactoring prerequisites, test infrastructure, etc.) state the implementation reason. Why is descriptive prose — mechanical references like "Implements Proposal section 2.1" are forbidden; explain the purpose in the reader's terms
 > 8. Per-task review plan selection (all tasks get **thorough** tier):
->    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `readability` + `devils-advocate`
+>    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `readability` + `idiomatic-usage` + `devils-advocate`
 >    - API change / auth → add `security-perf`
 >    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
 >    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns` to ALL per-task reviews
