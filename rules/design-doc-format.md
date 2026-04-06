@@ -34,6 +34,38 @@ A newcomer reading the doc should NOT need to ask: "Why this approach over X?", 
 2. Review outline (argument flow, alternatives present, abstract-to-concrete)
 3. Write full doc from reviewed outline
 
+## Stock Document Principle
+
+Design Docs are **stock** (durable reference), not **flow** (temporal narrative). Write in a timeless voice.
+
+```
+❌ "現在〜が問題になっている" "最近〜が増えた" "今のところ〜"
+❌ "Currently X is causing issues" "Recently we noticed" "As of now"
+✅ "The system requires X because Y" "This design addresses the constraint that Z"
+```
+
+Time-dependent expressions decay. Write so the doc reads the same in 6 months.
+
+## Self-Contained Document
+
+The Design Doc must be readable **standalone** — no references to intermediate artifacts (Axes Table, synthesis, research notes). Axis evaluation conclusions are woven into Proposal and Alternatives naturally, not cited as external findings.
+
+```
+❌ "Axis評価の結果、Aを採用した" "synthesisで判明した通り"
+❌ "Per the axis evaluation..." "As identified in the synthesis..."
+✅ State the decision and rationale directly in-context
+```
+
+## Diagram-First Expression
+
+Concepts, relationships, and comparisons are expressed as **mermaid diagrams first, prose second**. Diagrams are not decoration — they are the primary vehicle for communicating structure.
+
+- **Proposal**: Must include at least one structural diagram showing the proposed design
+- **Alternatives Considered**: Include comparison diagrams when the difference between approaches is structural
+- **Context and Scope**: Use a diagram to show the problem space or system boundaries when helpful
+
+Prose accompanies diagrams to explain what the diagram cannot show (rationale, trade-offs, constraints). Do not repeat in prose what the diagram already communicates.
+
 ## Absolute Rules
 
 **No Local File Links** — Notion cannot resolve `./path`. Describe inline or link to shared URLs.

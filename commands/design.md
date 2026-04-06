@@ -327,6 +327,9 @@ Dispatch a `general-purpose` Task subagent.
 > 4. Write with the assumption this doc will NOT need editing — by focusing on WHY, the doc remains accurate even when implementation changes
 > 5. Ensure Alternatives Considered includes all candidate approaches from the synthesis, with reasoning for why the proposal is preferred and when to reconsider each alternative
 > 6. **Mermaid diagram constraint**: Every diagram ≤15 nodes, one abstraction level per diagram (per `rules/document-quality.md`)
+> 7. **Stock document**: Write in a timeless voice — no temporal expressions ("currently", "recently", "as of now", "なぜ今か"). The doc should read the same in 6 months
+> 8. **Self-contained**: Do NOT reference intermediate artifacts (Axes Table, synthesis, research notes). Weave conclusions naturally into Proposal and Alternatives. The reader should never see the scaffolding
+> 9. **Diagram-first**: Express concepts and relationships as mermaid diagrams first, prose second. Proposal MUST include at least one structural diagram. Use comparison diagrams in Alternatives when the difference is structural. Do not repeat in prose what the diagram already shows
 >
 > **Write output files**:
 >
