@@ -35,16 +35,16 @@ Identify all changed files (use `git diff --name-only` against the base branch o
 
 **If `--full` was specified**, skip tier determination and use all reviewers:
 - **Tier**: `thorough`
-- **Reviewers**: `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `error-resilience` + `devils-advocate` + `ts-patterns` (if TypeScript) + `regression-check`
+- **Reviewers**: `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `error-resilience` + `readability` + `devils-advocate` + `ts-patterns` (if TypeScript) + `regression-check`
 - Proceed directly to Step 4.
 
 **Otherwise**, apply the graduated tier model:
 
 | Condition | Tier | Typical Reviewers |
 |-----------|------|-------------------|
-| 1-3 files, single module, no security | **light** | `code-quality` + `devils-advocate` |
-| 4+ files, or cross-module, or new feature | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `devils-advocate` (+ `error-resilience` if external deps or recursive-graph data or malformed-data risk) |
-| Security-sensitive (auth, input validation, secrets) | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `devils-advocate` |
+| 1-3 files, single module, no security | **light** | `code-quality` + `readability` + `devils-advocate` |
+| 4+ files, or cross-module, or new feature | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `readability` + `devils-advocate` (+ `error-resilience` if external deps or recursive-graph data or malformed-data risk) |
+| Security-sensitive (auth, input validation, secrets) | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `readability` + `devils-advocate` |
 
 ### Light tier: add `beyond-diff` when diff contains external interaction signals
 

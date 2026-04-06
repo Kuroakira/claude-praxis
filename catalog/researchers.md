@@ -30,11 +30,11 @@ Specialists who gather information during investigation phases. Each entry has a
 
 ### `best-practices`
 
-- **Focus**: Industry standards, official documentation, reference implementations
+- **Focus**: Framework/language best practices, official documentation, reference implementations
 - **Agent Type**: `claude-praxis:researcher` (haiku)
-- **Verification Source**: Official documentation, standards specifications
+- **Verification Source**: Official documentation (via Context7), standards specifications, well-designed OSS implementations
 - **Applicable Domains**: design, implement, debug
-- **Prompt**: Research the ideal architecture and industry standards for [topic]. Focus on official documentation, standards specifications, and well-designed OSS implementations. Cite all sources with URLs.
+- **Prompt**: Research best practices for the frameworks and languages used in [topic]. First, use Context7 (`resolve-library-id` → `query-docs`) to fetch current official documentation for each relevant framework/library. Then supplement with web search for community best practices, recommended patterns, and known pitfalls. Focus on: (1) officially recommended patterns and APIs, (2) common anti-patterns to avoid, (3) performance and security best practices specific to the framework version in use. Cite all sources with URLs or Context7 library IDs.
 
 ### `counter-research`
 
