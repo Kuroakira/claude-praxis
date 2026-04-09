@@ -8,7 +8,7 @@ export const PHASE_LEARNINGS_MAP = {
     "feature-spec": ["feature-spec"],
     design: ["feature-spec", "design"],
     implement: ["design", "coding"],
-    debug: ["coding"],
+    investigate: ["coding"],
     review: ["design", "coding"],
     research: ALL_FILES,
     plan: ["design", "coding"],

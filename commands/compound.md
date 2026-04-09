@@ -37,7 +37,7 @@ Adjust any routing? (or "OK" to proceed)
 
 **Important**: Every learning MUST include its context/rationale — the WHY behind the decision or discovery. This context is what makes the learning reusable: when a similar situation arises later, we can ask "does the same rationale still apply?" instead of blindly repeating the same choice.
 
-**Initial Confidence column**: Only for `project learnings` destination. All new entries start at `1回 | {today's date} | {source phase}`. The promotion itself is the first confirmation. Replace `today` with the actual date (YYYY-MM-DD) and the source phase with the phase where the learning was discovered (e.g., implement, design, debug).
+**Initial Confidence column**: Only for `project learnings` destination. All new entries start at `1回 | {today's date} | {source phase}`. The promotion itself is the first confirmation. Replace `today` with the actual date (YYYY-MM-DD) and the source phase with the phase where the learning was discovered (e.g., implement, design, investigate).
 
 5. Wait for human confirmation or adjustments before writing
 6. For quality rule candidates, invoke the `rule-evolution` skill:

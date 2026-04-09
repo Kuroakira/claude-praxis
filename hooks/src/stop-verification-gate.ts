@@ -57,7 +57,7 @@ try {
   }
 
   // Non-blocking advisories: UC + compound (combined when both apply)
-  const workflowSkills = ["feature-spec", "design", "implement", "debug"];
+  const workflowSkills = ["feature-spec", "design", "implement", "investigate"];
   const workflowInvoked = workflowSkills.some((skill) =>
     hasSkill(markerDir, sessionId, skill),
   );

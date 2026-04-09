@@ -18,12 +18,12 @@ describe("detectPhase", () => {
   });
 
   describe("existing keyword detection (regression)", () => {
-    it("detects debug phase from English keyword", () => {
-      expect(detectPhase("I found a bug in the code")).toContain("Phase detected: debug");
+    it("detects investigate phase from English keyword", () => {
+      expect(detectPhase("I found a bug in the code")).toContain("Phase detected: investigate");
     });
 
-    it("detects debug phase from Japanese keyword", () => {
-      expect(detectPhase("バグがあります")).toContain("Phase detected: debug");
+    it("detects investigate phase from Japanese keyword", () => {
+      expect(detectPhase("バグがあります")).toContain("Phase detected: investigate");
     });
 
     it("detects feature-spec phase", () => {
@@ -123,7 +123,7 @@ describe("detectPhase", () => {
       expect(result).toContain("Design Doc with research, per-axis evaluation, and review");
     });
 
-    it("includes description for debug phase", () => {
+    it("includes description for investigate phase", () => {
       const result = detectPhase("バグがあります");
       expect(result).toContain("systematic diagnosis with parallel investigation");
     });

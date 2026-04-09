@@ -148,7 +148,7 @@ Report: surviving hypothesis with evidence, disproven hypotheses with reasons.
 
 Understand the surviving hypothesis. You should be able to explain: what caused the bug, why the other hypotheses were wrong, and what to watch for in the future. This understanding feeds into `/compound` as a learning.
 
-> **Note**: `/claude-praxis:debug` dispatches `hypothesis-investigator` agents directly via Task tool, without requiring agent teams or `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`. This section documents the agent-team pattern for standalone use or manual invocation. For command-level phase ordering, see `commands/debug.md`.
+> **Note**: `/claude-praxis:investigate` dispatches `hypothesis-investigator` agents directly via Task tool, without requiring agent teams or `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`. This section documents the agent-team pattern for standalone use or manual invocation. For command-level phase ordering, see `commands/investigate.md`.
 
 ## 4. Parallel Review Teams
 
@@ -186,7 +186,7 @@ Start with 3 teammates. Only go to 5 for debugging with many plausible hypothese
 - Review teams are used at every workflow review point: `/feature-spec` Draft Review, `/design` Auto-Review, `/implement` Final Review
 - Review output follows `requesting-code-review` format (severity ratings)
 - Debugging output feeds into fix implementation via `subagent-driven-development`
-- **Note**: `/claude-praxis:debug` no longer depends on this skill for hypothesis investigation. It dispatches `hypothesis-investigator` agents directly via Task tool
+- **Note**: `/claude-praxis:investigate` no longer depends on this skill for hypothesis investigation. It dispatches `hypothesis-investigator` agents directly via Task tool
 - All outputs feed into `/compound` — extract learnings from what agents discovered
 - **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across parallel agents when available
 - **Never use for implementation** — use `subagent-driven-development` instead

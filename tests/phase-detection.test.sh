@@ -100,7 +100,7 @@ if hooks and hooks[0].get('hooks'):
 
 assert_contains "mentions implement" "implement" "$PROMPT_CONTENT"
 assert_contains "mentions design" "design" "$PROMPT_CONTENT"
-assert_contains "mentions debug" "debug" "$PROMPT_CONTENT"
+assert_contains "mentions investigate" "investigate" "$PROMPT_CONTENT"
 assert_contains "mentions research" "research" "$PROMPT_CONTENT"
 assert_contains "mentions feature-spec" "feature-spec" "$PROMPT_CONTENT"
 

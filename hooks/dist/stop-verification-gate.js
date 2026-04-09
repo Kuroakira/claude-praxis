@@ -40,7 +40,7 @@ try {
         process.exit(0);
     }
     // Non-blocking advisories: UC + compound (combined when both apply)
-    const workflowSkills = ["feature-spec", "design", "implement", "debug"];
+    const workflowSkills = ["feature-spec", "design", "implement", "investigate"];
     const workflowInvoked = workflowSkills.some((skill) => hasSkill(markerDir, sessionId, skill));
     const suggestUC = workflowInvoked &&
         !hasSkill(markerDir, sessionId, "understanding-check");

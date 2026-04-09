@@ -27,7 +27,7 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 | `/feature-spec [feature]` | AI-driven interview to capture requirements, planner selects reviewers based on spec complexity (light → thorough) | Answer interview questions, approve the FeatureSpec |
 | `/design [topic]` | Planner-driven research + architecture analysis, writes the Design Doc, graduated review (light for outline, thorough for final) | Review and approve the final Design Doc |
 | `/implement [plan-path]` | TDD per task with per-task review selection, graduated final review (3+ reviewers). Accepts plan from `/plan` or performs inline breakdown | Approve inline breakdown (or provide plan), make decisions at implementation choice points |
-| `/debug [problem]` | Reproduces, isolates, diagnoses — for complex problems, planner dispatches parallel investigation agents | Provide context between phases, review the diagnosis |
+| `/investigate [problem]` | Reproduces, isolates, diagnoses — for complex problems, planner dispatches parallel investigation agents | Provide context between phases, review the diagnosis |
 
 ### Supporting Commands
 
@@ -111,7 +111,7 @@ rm ~/.claude/skills/claude-praxis
 | `/feature-spec [feature]` | **Main workflow**: AI-driven interview + parallel draft review → FeatureSpec |
 | `/design [topic]` | **Main workflow**: Parallel research team + outline + write + parallel review team → Design Doc |
 | `/implement [plan-path]` | **Main workflow**: TDD per task + parallel review team → verified code. Without plan path, performs inline breakdown |
-| `/debug [problem]` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
+| `/investigate [problem]` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
 | `/analyze [scope] [--thorough]` | Standalone: codebase architecture analysis → Markdown+mermaid report with quantitative health scoring |
 | `/guide [scope]` | Standalone: codebase walkthrough guide → multi-page HTML book |
 | `/compare [topic]` | Standalone: structured comparison of 2-4 options with axes evaluation |
@@ -129,7 +129,7 @@ rm ~/.claude/skills/claude-praxis
 | `[scope]` | `/analyze`, `/guide` | Target: module name, directory, cross-cutting concern, or `project` |
 | `[topic]` | `/design`, `/compare`, `/research`, `/plan` | Subject to design, compare, research, or plan |
 | `[feature]` | `/feature-spec` | Feature name or description (clarified interactively if omitted) |
-| `[problem]` | `/debug` | Problem description (clarified in Phase 1 if omitted) |
+| `[problem]` | `/investigate` | Problem description (clarified in Phase 1 if omitted) |
 | `[plan-path]` | `/implement` | Path to plan from `/plan` (e.g., `claudedocs/plans/feature-plan.md`). Omit for inline breakdown |
 | `[design-doc-path]` | `/plan` | Path to existing Design Doc to plan against |
 | `--thorough` | `/analyze` | Two-phase analysis: generates debt inventory, then user selects items for deep dive |

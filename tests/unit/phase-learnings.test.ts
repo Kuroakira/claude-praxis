@@ -26,7 +26,7 @@ describe("PHASE_LEARNINGS_MAP", () => {
       "feature-spec",
       "design",
       "implement",
-      "debug",
+      "investigate",
       "review",
       "research",
       "plan",
@@ -59,8 +59,8 @@ describe("getLearningsForPhase", () => {
     ]);
   });
 
-  it("returns coding file for debug phase", () => {
-    expect(getLearningsForPhase("debug")).toEqual(["learnings-coding.md"]);
+  it("returns coding file for investigate phase", () => {
+    expect(getLearningsForPhase("investigate")).toEqual(["learnings-coding.md"]);
   });
 
   it("returns design + coding files for review phase", () => {

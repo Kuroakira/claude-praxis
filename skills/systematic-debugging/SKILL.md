@@ -115,5 +115,5 @@ Form hypotheses and test them with parallel adversarial investigation.
 - **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads during investigation
 - **Playwright MCP**: Browser automation for frontend debugging (when `--play` is specified) — reproduction via navigation, screenshots, console logs in Phase 1; scenario-based isolation in Phase 2
 - **Parallel hypothesis investigation**: Phase 3 dispatches `hypothesis-investigator` agents (see `catalog/researchers.md`) via Task tool — one per hypothesis, always parallel
-- **`/claude-praxis:debug` command**: Orchestrates this skill's 3 phases and produces an Investigation Report
+- **`/claude-praxis:investigate` command**: Orchestrates this skill's 3 phases and produces an Investigation Report
 - **`/claude-praxis:implement` command**: After diagnosis, the fix is implemented via `/claude-praxis:implement` with TDD + review

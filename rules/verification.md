@@ -70,7 +70,7 @@ Understanding Check: [Y] of [X] key decisions explained, [Z] gaps discovered
 | /claude-praxis:design | → Ready for /claude-praxis:implement? |
 | /claude-praxis:plan | → Ready for /claude-praxis:implement? |
 | /claude-praxis:implement | → Run /claude-praxis:compound to capture learnings? |
-| /claude-praxis:debug | → Ready for /claude-praxis:implement to fix? |
+| /claude-praxis:investigate | → Ready for /claude-praxis:implement to fix? |
 | /claude-praxis:review | → Run /claude-praxis:compound to capture learnings? |
 | /claude-praxis:understanding-check | → Run /claude-praxis:compound to capture learnings? |
 | Non-phase task | → No next phase needed |

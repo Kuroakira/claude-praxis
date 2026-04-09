@@ -48,7 +48,7 @@ claude-praxis/
 │   ├── implement.md             # /implement — TDD per task + graduated review (accepts plan from /plan)
 │   ├── analyze.md               # /analyze — codebase architecture analysis + durable report
 │   ├── guide.md                 # /guide — codebase walkthrough guide for human understanding
-│   ├── debug.md                 # /debug — investigate + diagnose + document
+│   ├── investigate.md            # /investigate — reproduce + diagnose + document
 │   ├── research.md              # /research — standalone research
 │   ├── plan.md                  # /plan — thorough planning with Axes Table and architecture analysis
 │   ├── review.md                # /review — standalone code review
@@ -158,6 +158,6 @@ At the start of a complex task, call `get_session_map` to see what files have al
 - Implementation decision points are surfaced to the user — when multiple valid approaches exist, Claude presents options instead of choosing silently
 - Learnings are stored with context/rationale — enables "does the same assumption hold?" recall instead of blind repetition
 - Contextual recall uses judgment prompts, not quizzes — "same rationale applies here?" not "do you remember?"
-- Four orchestrating workflows (`/claude-praxis:feature-spec`, `/claude-praxis:design`, `/claude-praxis:implement`, and `/claude-praxis:debug`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. Supporting commands remain for direct invocation when the full workflow is not needed
+- Four orchestrating workflows (`/claude-praxis:feature-spec`, `/claude-praxis:design`, `/claude-praxis:implement`, and `/claude-praxis:investigate`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. Supporting commands remain for direct invocation when the full workflow is not needed
 - FeatureSpec owns "What and Why," Design Doc owns "How" — this boundary prevents requirements ambiguity from propagating into design. Phase detection automatically suggests FeatureSpec when requirements are vague
 - Planner-driven adaptive workflow: commands define phase structure and constraints, `workflow-planner` skill provides judgment on agent selection. Catalogs (`catalog/`) define the selection pool with independent verification sources per entry. Review tiers are graduated (none/light/thorough) based on stage and content. `dispatch-reviewers` is the canonical reviewer dispatch mechanism

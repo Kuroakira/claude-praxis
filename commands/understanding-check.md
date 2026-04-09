@@ -6,7 +6,7 @@ disable-model-invocation: false
 
 Begin the **Understanding Check**.
 
-This is a standalone command. Run it after completing a workflow (`/feature-spec`, `/design`, `/implement`, `/debug`) to verify you can explain the key decisions — not just approve them.
+This is a standalone command. Run it after completing a workflow (`/feature-spec`, `/design`, `/implement`, `/investigate`) to verify you can explain the key decisions — not just approve them.
 
 **Recommended**: Run in a **separate session** from the original workflow. This frees context window constraints and activates spacing effect (testing recall, not short-term memory).
 
@@ -34,7 +34,7 @@ Restore the context of the completed work:
 2. **Read the artifact** — the primary output of the workflow:
    - `/design` → Design Doc (`claudedocs/design-docs/[name].md`)
    - `/feature-spec` → FeatureSpec (`claudedocs/feature-specs/[name].md`)
-   - `/debug` → Investigation Report (`.claude/context/investigation-[name].md`)
+   - `/investigate` → Investigation Report (`.claude/context/investigation-[name].md`)
    - `/implement` → `git diff` of the implementation changes
 3. **Assess material sufficiency** — if `.claude/context/progress.md` lacks sufficient Decision/Rationale entries, inform the human and skip (do not generate degraded questions)
 

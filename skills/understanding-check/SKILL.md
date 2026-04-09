@@ -18,7 +18,7 @@ Showing the AI's rationale before the human explains creates anchoring — the h
 
 ## Prerequisites
 
-This skill requires **pre-recorded rationale** in `.claude/context/progress.md`. Each upstream command (`/design`, `/implement`, `/feature-spec`, `/debug`) records Decision/Rationale entries during execution. Understanding Check consumes these entries as comparison material.
+This skill requires **pre-recorded rationale** in `.claude/context/progress.md`. Each upstream command (`/design`, `/implement`, `/feature-spec`, `/investigate`) records Decision/Rationale entries during execution. Understanding Check consumes these entries as comparison material.
 
 **Material sufficiency check** — before generating questions, assess the available `.claude/context/progress.md` entries:
 
@@ -55,7 +55,7 @@ Generate questions from the pre-recorded rationale, then **PAUSE** for the human
 | `/design` | Design Doc (Alternatives Considered, design decisions) | "Why this design over alternatives?" |
 | `/implement` | `.claude/context/progress.md` entries + code diff | "What constraint drove this implementation choice?" |
 | `/feature-spec` | FeatureSpec (In/Out Scope, Problem Statement) | "Why was X scoped out?" |
-| `/debug` | Investigation Report (hypotheses, evidence) | "Why was this hypothesis retained over others?" |
+| `/investigate` | Investigation Report (hypotheses, evidence) | "Why was this hypothesis retained over others?" |
 
 **Present questions to the human:**
 

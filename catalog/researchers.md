@@ -9,7 +9,7 @@ Specialists who gather information during investigation phases. Each entry has a
 - **Focus**: Library comparison, external documentation, ecosystem analysis
 - **Agent Type**: `claude-praxis:researcher` (haiku)
 - **Verification Source**: Package registries, official library documentation, GitHub repositories
-- **Applicable Domains**: design, debug
+- **Applicable Domains**: design, investigate
 - **Prompt**: Research libraries, tools, and ecosystem options for [topic]. Compare approaches, trade-offs, adoption levels, and maintenance status. Check package registries for download counts and vulnerability reports. Cite all sources with URLs.
 
 ### `codebase-scout`
@@ -17,7 +17,7 @@ Specialists who gather information during investigation phases. Each entry has a
 - **Focus**: Existing patterns, integration points, constraints
 - **Agent Type**: `claude-praxis:scout` (haiku)
 - **Verification Source**: Source code itself (read-only exploration)
-- **Applicable Domains**: design, implement, debug
+- **Applicable Domains**: design, implement, investigate
 - **Prompt**: Explore the project codebase for: project structure, existing patterns related to [topic], integration points, constraints that affect design choices. Focus exclusively on the codebase. Report specific file paths and code patterns found.
 
 ### `domain-research`
@@ -33,7 +33,7 @@ Specialists who gather information during investigation phases. Each entry has a
 - **Focus**: Framework/language best practices, official documentation, reference implementations
 - **Agent Type**: `claude-praxis:researcher` (haiku)
 - **Verification Source**: Official documentation (via Context7), standards specifications, well-designed OSS implementations
-- **Applicable Domains**: design, implement, debug
+- **Applicable Domains**: design, implement, investigate
 - **Prompt**: Research best practices for the frameworks and languages used in [topic]. First, use Context7 (`resolve-library-id` → `query-docs`) to fetch current official documentation for each relevant framework/library. Then supplement with web search for community best practices, recommended patterns, and known pitfalls. Focus on: (1) officially recommended patterns and APIs, (2) common anti-patterns to avoid, (3) performance and security best practices specific to the framework version in use. Cite all sources with URLs or Context7 library IDs.
 
 ### `counter-research`
@@ -57,5 +57,5 @@ Specialists who gather information during investigation phases. Each entry has a
 - **Focus**: Gather evidence for a specific hypothesis and against alternatives during bug investigation
 - **Agent Type**: `claude-praxis:researcher` (haiku)
 - **Verification Source**: Source code inspection, runtime behavior (logs, error output, state inspection), version history (git log/diff)
-- **Applicable Domains**: debug
+- **Applicable Domains**: investigate
 - **Prompt**: You are investigating ONE hypothesis about a bug's root cause. Your job is adversarial: gather evidence that SUPPORTS your assigned hypothesis AND evidence that DISPROVES the alternative hypotheses. Do not converge prematurely — if your evidence is weak, say so. If you find evidence against your own hypothesis, report it honestly. Structure your findings as: (1) Evidence supporting your hypothesis, (2) Evidence against your hypothesis, (3) Evidence against each alternative hypothesis, (4) Confidence level (strong/moderate/weak) with justification. Cite specific file paths, line numbers, log output, and git commits for every claim.

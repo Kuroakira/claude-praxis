@@ -66,6 +66,6 @@ Contextual recall is for decisions that depend on project context, trade-offs, o
 
 ## Integration
 
-- **Invoked by**: `commands/implement.md`, `commands/design.md`, `commands/feature-spec.md`, `commands/debug.md`
+- **Invoked by**: `commands/implement.md`, `commands/design.md`, `commands/feature-spec.md`, `commands/investigate.md`
 - **Reads files from**: `.claude/context/` (project-level learnings written by `/compound`)
 - **Related**: `context-persistence` (manages the Stock/Flow files this skill reads)

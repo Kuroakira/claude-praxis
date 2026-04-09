@@ -38,8 +38,8 @@ const COMPOUND_OVERRIDES: CompoundOverride[] = [
 
 export const PHASE_PATTERNS: PhasePattern[] = [
   {
-    phase: "debug",
-    command: "/claude-praxis:debug",
+    phase: "investigate",
+    command: "/claude-praxis:investigate",
     description: "systematic diagnosis with parallel investigation",
     patterns: [
       /\bbug\b/i, /\berror\b/i, /\bcrash/i, /\bfail/i, /\bbroken\b/i,
@@ -114,7 +114,7 @@ export const PHASE_PATTERNS: PhasePattern[] = [
 ];
 
 const SLASH_COMMAND_RE =
-  /^\s*\/(design|implement|debug|feature-spec|research|plan|review|compound)\b/i;
+  /^\s*\/(design|implement|investigate|feature-spec|research|plan|review|compound)\b/i;
 
 function formatOutput(phase: string, command: string, description: string): string {
   return description

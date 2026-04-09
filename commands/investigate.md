@@ -1,5 +1,5 @@
 ---
-name: debug
+name: investigate
 description: Investigate a problem systematically — reproduce, isolate, diagnose, document findings
 disable-model-invocation: false
 ---
@@ -56,7 +56,7 @@ Form hypotheses, then test ALL of them in parallel with adversarial investigator
 
 ### Step 2: Parallel Investigation Dispatch
 
-> **Note**: The investigator dispatch procedure below is defined inline because `debug.md` dispatches investigators directly via Task tool without invoking `systematic-debugging` for Phase 3. The skill handles Phases 1-2 procedure definition; the command adds the parallel dispatch model.
+> **Note**: The investigator dispatch procedure below is defined inline because `investigate.md` dispatches investigators directly via Task tool without invoking `systematic-debugging` for Phase 3. The skill handles Phases 1-2 procedure definition; the command adds the parallel dispatch model.
 
 Dispatch one `hypothesis-investigator` (see `catalog/researchers.md`) per hypothesis using the Task tool. All investigators launch in **parallel** (single message with multiple Task tool calls).
 
@@ -149,7 +149,7 @@ After all investigators return:
 **Record to `.claude/context/progress.md`**: Append an entry with the root cause and why it was hard to find. Include hypothesis adoption/rejection decisions with evidence — these entries serve as comparison material for `/understanding-check`.
 
 ```markdown
-## [timestamp] — /claude-praxis:debug: Diagnosis complete
+## [timestamp] — /claude-praxis:investigate: Diagnosis complete
 - Decision: [root cause identified]
 - Rationale: [why this was hard to find, what made it non-obvious]
 - Hypotheses tested: [H1: verdict, H2: verdict, ...]
