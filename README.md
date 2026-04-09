@@ -55,14 +55,23 @@ Commands are auto-suggested based on context. You can also invoke any command di
 
 ## Installation
 
-### Via Plugin Marketplace (Recommended)
+### Via CLI (Recommended)
 
-1. Open **Manage Plugins** (Claude Code settings)
-2. Go to the **Marketplaces** tab
-3. Enter `Kuroakira/claude-praxis` and click **Add**
-4. Switch to the **Plugins** tab and install `claude-praxis`
+```bash
+claude plugin add Kuroakira/claude-praxis
+```
 
-To update or uninstall, use the same **Plugins** tab.
+To update:
+
+```bash
+claude plugin update claude-praxis
+```
+
+To uninstall:
+
+```bash
+claude plugin remove claude-praxis
+```
 
 ### Manual Installation (Alternative)
 
