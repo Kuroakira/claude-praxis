@@ -15,7 +15,7 @@ claude-praxis/
 │   ├── design-doc-format.md     # WHY over HOW, Notion format, outline-first
 │   └── verification.md          # No claims without evidence, completion report
 ├── catalog/                     # Shared agent catalogs and review-point checklists
-│   ├── reviewers.md             # 19 reviewer types with independent verification sources
+│   ├── reviewers.md             # 2 broad (quality, correctness) + 3 specialist + 8 non-code reviewers
 │   ├── researchers.md           # 7 researcher types with agent types and verification sources
 │   ├── code-quality-review-points.md    # 12 categories, code quality checklist (OSS committer-sourced)
 │   ├── general-review-points.md         # 10 categories, bug detection checklist

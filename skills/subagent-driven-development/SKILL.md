@@ -138,7 +138,7 @@ This budget is a safety valve for edge cases (e.g., a plan where many large file
 After each task implementation, dispatch reviews using `dispatch-reviewers`:
 
 - **Stage 1 (Spec compliance)**: Invoke `dispatch-reviewers` with `reviewers: [spec-compliance]`, `tier: light`, `target: [changed file paths]`
-- **Stage 2 (Code quality)**: Only after Stage 1 passes. Invoke `dispatch-reviewers` with `reviewers: [code-quality]`, `tier: light`, `target: [changed file paths]`
+- **Stage 2 (Quality + Correctness)**: Only after Stage 1 passes. Invoke `dispatch-reviewers` with `reviewers: [quality, correctness]`, `tier: light`, `target: [changed file paths]`
 
 Reviewers read files independently per the Context Isolation Rule in `catalog/reviewers.md`.
 

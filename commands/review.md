@@ -8,7 +8,7 @@ Orchestrate a **standalone code review** with graduated tier selection.
 
 ## Options
 
-- `--full`: Skip tier determination and dispatch **all** reviewers. Use when maximum coverage is needed regardless of diff size.
+- `--full`: Skip tier determination and dispatch all **code-oriented** reviewers (quality + correctness + devils-advocate + security-perf + ts-patterns when TypeScript). Domain-specific reviewers like `architecture`, `spec-compliance`, and `structural-fitness` are still only added when their trigger conditions apply. Use when maximum code coverage is needed regardless of diff size.
 
 ## Step 1: Verify
 
@@ -35,31 +35,21 @@ Identify all changed files (use `git diff --name-only` against the base branch o
 
 **If `--full` was specified**, skip tier determination and use all reviewers:
 - **Tier**: `thorough`
-- **Reviewers**: `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `error-resilience` + `readability` + `idiomatic-usage` + `devils-advocate` + `ts-patterns` (if TypeScript) + `regression-check`
+- **Reviewers**: `quality` + `correctness` + `devils-advocate` + `security-perf` + `ts-patterns` (if TypeScript)
 - Proceed directly to Step 4.
 
 **Otherwise**, apply the graduated tier model:
 
-| Condition | Tier | Typical Reviewers |
-|-----------|------|-------------------|
-| 1-3 files, single module, no security | **light** | `code-quality` + `readability` + `idiomatic-usage` + `devils-advocate` |
-| 4+ files, or cross-module, or new feature | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `readability` + `idiomatic-usage` + `devils-advocate` (+ `error-resilience` if external deps or recursive-graph data or malformed-data risk) |
-| Security-sensitive (auth, input validation, secrets) | **thorough** | `code-quality` + `simplicity` + `general-review` + `security-perf` + `beyond-diff` + `readability` + `idiomatic-usage` + `devils-advocate` |
-
-### Light tier: add `beyond-diff` when diff contains external interaction signals
-
-Scan the diff for these patterns. If **any** match, add `beyond-diff` to the light tier:
-- HTTP calls: `fetch`, `axios`, `got`, `request`, `ky`, `ofetch`, `$fetch`
-- Auth/session: `signIn`, `signOut`, `token`, `session`, `refresh`, `credential`, `auth`, `JWT`, `OAuth`
-- State across requests: `expiry`, `expire`, `ttl`, `cache`, `retry`, `poll`
-- External SDK calls: API client method invocations (e.g., `stripe.`, `supabase.`, `prisma.`)
+| Condition | Tier | Reviewers |
+|-----------|------|-----------|
+| 1-3 files, single module, no security | **light** | `quality` + `correctness` |
+| 4+ files, or cross-module, or new feature | **thorough** | `quality` + `correctness` + `devils-advocate` (+ `security-perf` if auth/security, + `ts-patterns` if TypeScript) |
+| Security-sensitive (auth, input validation, secrets) | **thorough** | `quality` + `correctness` + `devils-advocate` + `security-perf` (+ `ts-patterns` if TypeScript) |
 
 Adjust based on the specific changes:
 - API changes → add `spec-compliance`
 - Architecture changes → add `architecture`
 - New hook/utility patterns → add `structural-fitness`
-- Complex conditional logic (scattered type-dispatching, state-dependent branching, responsibility mixing) → add `structural-patterns`
-- **TypeScript project** (tsconfig.json exists) → add `ts-patterns` to ALL tiers
 
 ## Step 4: Dispatch
 
@@ -67,6 +57,7 @@ Invoke `dispatch-reviewers` with:
 - `reviewers`: selected reviewer IDs from Step 3
 - `tier`: determined tier from Step 3
 - `target`: **changed file paths only** (from Step 2)
+- `diff`: output of `git diff` against the base branch or last clean commit — required so `correctness` can perform regression detection
 - `reasoning`: brief rationale for tier and reviewer selection (human-facing only)
 
 ## Step 5: Address Feedback

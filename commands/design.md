@@ -79,7 +79,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > | `domain` | design |
 > | `domain_context` | Research strategy, architecture patterns, document structure. New technology selection → add counter-research + oss-research. Known pattern → codebase-scout + best-practices only. Cross-cutting change → full researcher team. When researching a feature/system design, codebase-scout should evaluate whether existing code has structural patterns that the design should leverage, consolidate, or restructure — this informs whether "extend current structure" vs "restructure first" is a relevant design axis. The mandatory Design Axes Table in Synthesis Rules structurally prevents conflating "What" clarity with "How" clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
 > | `constraints` | (1) Research must produce a synthesis with findings and contradictions. (2) Synthesis must include a Design Axes Table — every design decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (3) If Design Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before returning. (4) Design Doc format rules (`rules/design-doc-format.md`) must be followed. |
-> | `catalog_scope` | Reviewers: architecture, document-quality, simplicity, structural-patterns, feasibility, user-impact, security-perf, structural-fitness, axes-coherence, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, axis-evaluator). |
+> | `catalog_scope` | Reviewers: architecture, document-quality, quality, feasibility, user-impact, security-perf, structural-fitness, axes-coherence, devils-advocate. Researchers: all (oss-research, codebase-scout, domain-research, best-practices, counter-research, axis-evaluator). |
 >
 > The planner will:
 > 1. Analyze the topic and select relevant researchers from the catalog
@@ -380,11 +380,11 @@ Dispatch a `general-purpose` Task subagent.
 > This is a **thorough** review — structural floor applies (3+ reviewers including `devils-advocate`).
 >
 > Invoke `dispatch-reviewers` with:
-> - **Reviewers**: `architecture` + `document-quality` + `simplicity` + `devils-advocate` (+ `user-impact` if the design affects users)
+> - **Reviewers**: `architecture` + `document-quality` + `quality` + `devils-advocate` (+ `user-impact` if the design affects users)
 > - **Tier**: thorough
 > - **Target**: `[design-doc path]`
 >
-> `simplicity` reviews Design Docs for architectural over-complexity — unnecessary layers, premature generalization, and whether simpler alternatives would meet the same goals.
+> `quality` reviews Design Docs for architectural over-complexity — unnecessary layers, premature generalization, and whether simpler alternatives would meet the same goals.
 >
 > Do NOT include summaries or design rationale in the reviewer dispatch — reviewers read the document independently.
 >

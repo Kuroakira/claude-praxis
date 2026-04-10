@@ -50,7 +50,7 @@ A plan file path is provided as input (e.g., from a prior `/plan` run).
 
 1. **Validate the existing plan structurally**: Check the plan file exists, contains task definitions with file paths, and includes "Final Review" as the last task. The plan may use flat task headers (`## Task N:`) or hierarchical headers (`## Phase N:` / `### Group N:` / `#### Task N:`). Both formats are valid — recognize whichever is present
 2. **Verify topic alignment**: Confirm the plan's topic matches the current implementation request. If the plan targets a different feature or Design Doc, fall through to inline breakdown
-3. **Check per-task review plans**: Verify that each task in the plan contains a per-task review specification (e.g., `### Per-Task Review` with reviewer IDs and tier). If any tasks lack per-task review plans, warn the human: "Plan lacks per-task review specifications for [N] tasks. Phase 2 Step C will apply baseline reviewers (code-quality + simplicity + general-review + devils-advocate)." Proceed — the Step C fallback handles missing review specs
+3. **Check per-task review plans**: Verify that each task in the plan contains a per-task review specification (e.g., `### Per-Task Review` with reviewer IDs and tier). If any tasks lack per-task review plans, warn the human: "Plan lacks per-task review specifications for [N] tasks. Phase 2 Step C will apply baseline reviewers (quality + correctness)." Proceed — the Step C fallback handles missing review specs
 4. If an axes-table file exists alongside the plan, delete it (it's a planning artifact, not needed for execution)
 5. **`[DONE]` marking for hierarchical plans**: When marking completed tasks, prepend `[DONE]` to the Task-level heading regardless of hierarchy depth. For flat plans: `## [DONE] Task 1:`. For hierarchical plans: `#### [DONE] Task 1:`. Phase and Group headers are never marked `[DONE]` — only individual Tasks
 6. Proceed directly to **Phase 2**
@@ -87,11 +87,7 @@ Perform a lightweight task breakdown in-context:
 5. **TDD ordering**: Within each step, list test files before implementation files. The test is the first deliverable, not an afterthought
 6. **Milestones within tasks**: If a step spans multiple files, add a `### Milestones` section listing ordered sub-steps (one file's TDD cycle per milestone). Single-file steps do not need milestones
 7. Always include "Final Review" as the last task
-8. **Per-task review**: Apply baseline reviewers for all tasks:
-   - Baseline (ALL tasks): `code-quality` + `simplicity` + `structural-fitness` + `general-review` + `beyond-diff` + `readability` + `idiomatic-usage` + `devils-advocate`
-   - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
-   - API change / auth → add `security-perf`
-   - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
+8. **Per-task review**: Apply the canonical baseline defined in Phase 2 Step C (see below). The inline breakdown uses the same rule — do not duplicate the reviewer list here
 9. Present the breakdown (including the Structural Fitness Evaluation) to the human for acknowledgment before proceeding to Phase 2
 
 ## Phase 2: Task Execution Loop (in-context)
@@ -135,11 +131,12 @@ After verification passes, invoke the per-task review. This step cannot be skipp
 
 **Determine reviewers**: Read the task's per-task review plan from the plan file (typically a `### Per-Task Review` section within each task). If the plan specifies reviewers, use them. If the plan does not specify per-task reviewers for this task, apply the baseline:
 
-- Baseline (ALL tasks): `code-quality` + `simplicity` + `structural-fitness` + `general-review` + `beyond-diff` + `devils-advocate`
+- Baseline (ALL tasks): `quality` + `correctness`
+- 4+ files or cross-module → add `devils-advocate`
 - API change / auth → add `security-perf`
-- External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
+- **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
 
-Invoke `dispatch-reviewers` with the determined reviewers, tier (**thorough** for all tasks), and the **changed file paths** as target (e.g., `[src/auth.ts, src/auth.test.ts]`). Do NOT include task descriptions or implementation rationale — reviewers read the files independently.
+Invoke `dispatch-reviewers` with the determined reviewers, tier (`light` for baseline, `thorough` when devils-advocate is included), the **changed file paths** as target (e.g., `[src/auth.ts, src/auth.test.ts]`), and the **task's diff** as the `diff` parameter so `correctness` can perform regression detection. Do NOT include task descriptions or implementation rationale — reviewers read the files independently.
 
 Self-review checklist (applies regardless of tier):
 
@@ -261,11 +258,10 @@ Dispatch a `general-purpose` Task subagent.
 > This is a **thorough** review — structural floor applies (3+ reviewers including `devils-advocate`).
 >
 > Invoke `dispatch-reviewers` with:
-> - **Reviewers**: `spec-compliance` + `code-quality` + `simplicity` + `structural-fitness` + `general-review` + `readability` + `idiomatic-usage` + `devils-advocate` (+ `ts-patterns` if tsconfig.json exists, + `security-perf` if the implementation touches auth/security, + `error-resilience` if external dependencies or recursive-graph data or malformed-data risk)
+> - **Reviewers**: `quality` + `correctness` + `devils-advocate` (+ `ts-patterns` if tsconfig.json exists, + `security-perf` if the implementation touches auth/security, + `spec-compliance` if a Design Doc exists)
 > - **Tier**: thorough
 > - **Target**: All changed file paths from the changed-files list
->
-> `simplicity` is mandatory in final reviews — it catches accumulated over-engineering across tasks.
+> - **diff**: output of `git diff` against the base branch — required so `correctness` can perform regression detection
 >
 > Do NOT include summaries or implementation rationale in the reviewer dispatch — reviewers read the files independently.
 >

@@ -98,9 +98,9 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > |-----------|-------|
 > | `task` | Plan implementation of [topic] |
 > | `domain` | implement |
-> | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. **System-wide overlap scouting**: Scout must look beyond the target scope to find existing code that overlaps with or is similar to the planned feature — duplicate logic, similar patterns, structures that should be consolidated before adding the feature. This informs refactoring-first task creation. Security-sensitive change → add security-perf to per-task review. Internal refactor → code-quality only. External dependency/infra OR recursive/graph data structures OR input parsing OR functions where malformed data could cause unbounded behavior → add error-resilience. State management across requests OR external API calls → add beyond-diff. Change that extends or modifies existing architecture → add structural-fitness. The mandatory Implementation Axes Table structurally prevents conflating Design Doc clarity with implementation approach clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
+> | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. **System-wide overlap scouting**: Scout must look beyond the target scope to find existing code that overlaps with or is similar to the planned feature — duplicate logic, similar patterns, structures that should be consolidated before adding the feature. This informs refactoring-first task creation. Security-sensitive change → add security-perf to per-task review. Change that extends or modifies existing architecture → add structural-fitness. The mandatory Implementation Axes Table structurally prevents conflating Design Doc clarity with implementation approach clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
 > | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. (5) Context gathering must produce an Implementation Axes Table — every implementation decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (6) If Implementation Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before plan creation. |
-> | `catalog_scope` | Reviewers: spec-compliance, code-quality, simplicity, general-review, security-perf, structural-fitness, structural-patterns, axes-coherence, error-resilience, beyond-diff, regression-check, ts-patterns, devils-advocate. Researchers: codebase-scout, best-practices, axis-evaluator. |
+> | `catalog_scope` | Reviewers: quality, correctness, spec-compliance, security-perf, ts-patterns, devils-advocate, structural-fitness, axes-coherence. Researchers: codebase-scout, best-practices, axis-evaluator. |
 >
 > The planner will dispatch `codebase-scout` to explore the codebase AND `best-practices` to research framework/language best practices. The `best-practices` researcher identifies the frameworks and languages involved in the implementation scope (from package.json, import statements, or project configuration) and fetches current official documentation via Context7 and web search. Its findings — recommended patterns, anti-patterns to avoid, version-specific guidance — feed into Axes Table verdicts and per-task implementation notes.
 >
@@ -164,12 +164,11 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >    2. **M2: [file/scope]** — [what this milestone produces, building on M1]
 >    ```
 > 7. **Per-task Why field** (mandatory): Every Task must have a `**Why**:` line explaining its purpose. Tasks that implement a Design Doc decision describe the connection to that decision. Tasks that don't directly correspond to the Design Doc (refactoring prerequisites, test infrastructure, etc.) state the implementation reason. Why is descriptive prose — mechanical references like "Implements Proposal section 2.1" are forbidden; explain the purpose in the reader's terms
-> 8. Per-task review plan selection (all tasks get **thorough** tier):
->    - Baseline (ALL tasks): `code-quality` + `simplicity` + `general-review` + `readability` + `idiomatic-usage` + `devils-advocate`
+> 8. Per-task review plan selection:
+>    - Baseline (ALL tasks): `quality` + `correctness`
+>    - 4+ files or cross-module → add `devils-advocate`
 >    - API change / auth → add `security-perf`
->    - External dependency / infra / recursive-graph data / input parsing / malformed-data risk → add `error-resilience`
->    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns` to ALL per-task reviews
->    - `simplicity`, `general-review`, and `devils-advocate` are included in ALL per-task reviews
+>    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
 > 9. TDD ordering: list test files before implementation files within each step
 > 10. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
 > 11. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
@@ -179,7 +178,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > Save the plan to `claudedocs/plans/[name]-plan.md` and the resolved Axes Table to `claudedocs/plans/[name]-axes-table.md`.
 >
 > Invoke `dispatch-reviewers` with:
-> - **Reviewers**: `axes-coherence` + `simplicity` + `devils-advocate` + `spec-compliance` (if Design Doc exists) + `structural-fitness` (if the plan involves extending or restructuring existing architecture)
+> - **Reviewers**: `axes-coherence` + `quality` + `devils-advocate` + `spec-compliance` (if Design Doc exists) + `structural-fitness` (if the plan involves extending or restructuring existing architecture)
 > - **Tier**: thorough
 > - **Target**: both file paths (plan + axes table)
 >

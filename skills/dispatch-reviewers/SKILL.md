@@ -20,18 +20,18 @@ This skill is invoked with:
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
-| `reviewers` | Yes | List of catalog IDs (e.g., `[code-quality, security-perf, devils-advocate]`) |
-| `tier` | Yes | `light` (1-2 reviewers) or `thorough` (3-8 reviewers) |
+| `reviewers` | Yes | List of catalog IDs (e.g., `[quality, correctness, devils-advocate]`) |
+| `tier` | Yes | `light` (2 reviewers) or `thorough` (3+ reviewers) |
 | `target` | Yes | **File paths only** — list of files to review (e.g., `[src/auth.ts, src/auth.test.ts]` or `claudedocs/design-docs/auth.md`). Do NOT include descriptions, rationale, or implementation context. Reviewers read the files themselves |
 | `reasoning` | No | Why this tier and these reviewers were chosen (from planner). **Human-facing only** — displayed before dispatch but NOT included in reviewer prompts |
-| `diff` | No | Git diff output (staged or branch diff). **Required when `regression-check` is in reviewers list**. Only passed to the `regression-check` reviewer — other reviewers never receive diff content |
+| `diff` | No | Git diff output (staged or branch diff). When provided, passed to `correctness` reviewer for regression detection analysis. Other reviewers never receive diff content |
 
 ## Review Tiers
 
 | Tier | Reviewers | Devil's Advocate | Use When |
 |------|-----------|-----------------|----------|
-| **light** | 1-2 | Optional | Drafts, outlines, low-risk intermediate steps |
-| **thorough** | 3-8 | **Mandatory** | Final outputs, high-risk decisions, human-facing deliverables |
+| **light** | 2 | No | Quick iterative checks — bug fixes, small changes |
+| **thorough** | 3+ | **Mandatory** | Final outputs, high-risk decisions, cross-module changes |
 
 ### Structural Floor (thorough tier)
 
@@ -44,7 +44,7 @@ If the `reviewers` list for a thorough review has fewer than 3 entries or omits 
 ## Dispatch Procedure
 
 1. **Validate reviewer IDs**: Check each ID against `catalog/reviewers.md`. If an ID is not found, warn:
-   > ⚠️ Unknown reviewer ID '[id]' — skipping. Available: architecture, spec-compliance, document-quality, code-quality, ts-patterns, general-review, simplicity, security-perf, error-resilience, beyond-diff, devils-advocate, requirements, feasibility, user-impact, structural-fitness, structural-patterns, axes-coherence, regression-check, readability, idiomatic-usage
+   > ⚠️ Unknown reviewer ID '[id]' — skipping. Available: quality, correctness, security-perf, ts-patterns, devils-advocate, architecture, spec-compliance, document-quality, requirements, feasibility, user-impact, structural-fitness, axes-coherence
 
 2. **Enforce structural floor**: For thorough tier, ensure 3+ reviewers and devils-advocate presence
 
@@ -60,15 +60,9 @@ If the `reviewers` list for a thorough review has fewer than 3 entries or omits 
      2. **Catalog Prompt**: The `Prompt` field from the catalog entry
      3. **Target files**: "Review the following files: [file path list from `target` parameter]"
      4. **Verification source**: The reviewer's verification source from the catalog
-     5. **Checklist Output Format** (checklist-based reviewers only): If the reviewer ID is one of `code-quality`, `security-perf`, `error-resilience`, `simplicity`, `ts-patterns`, `general-review`, `beyond-diff`, `readability`, append the Checklist Output Format from `catalog/reviewers.md`. Non-checklist reviewers (architecture, devils-advocate, spec-compliance, etc.) use free-form output.
+     5. **Unified Output Format** (checklist-based reviewers only): If the reviewer ID is one of `quality`, `correctness`, `security-perf`, `ts-patterns`, append the Unified Output Format from `catalog/reviewers.md`. Non-checklist reviewers (architecture, devils-advocate, spec-compliance, etc.) use free-form output.
    - Do NOT include: `reasoning`, implementation context, task descriptions, or any conversation-derived content
-   - **Exception — `regression-check`**: This reviewer receives `diff` content instead of file paths. Prompt structure:
-     1. Context Isolation preamble (same as above, but replace "target files" with "the diff provided below")
-     2. Catalog Prompt
-     3. **Diff content**: "Review the following diff:\n```\n[diff parameter content]\n```"
-     4. Verification source
-   - If `regression-check` is in the reviewer list but `diff` parameter is missing, warn:
-     > ⚠️ `regression-check` requires `diff` parameter. Skipping this reviewer.
+   - **Diff passthrough for `correctness`**: If the `diff` parameter is provided and `correctness` is in the reviewer list, append the diff content to the `correctness` reviewer's prompt: "Additionally, review the following diff for regression detection:\n```\n[diff parameter content]\n```". Other reviewers never receive diff content
 
 5. **Launch all reviewers in parallel**: Use Task tool with all reviewer calls in a single message
 
@@ -93,6 +87,10 @@ When dismissing a reviewer finding, verify the dismissal reasoning against these
 | "Standard/well-known pattern" | A pattern being standard doesn't mean it's correctly applied in this context. `e.target === e.currentTarget` is a valid background-click pattern, but only when the parent has exposed clickable area. Verify preconditions for the pattern. |
 
 **Rule**: When dismissing a finding, state not just why the issue appears safe, but also the specific condition under which the issue would reappear. If that condition is plausible (e.g., "safe unless the user re-enters the mode" — which they will), the finding is valid.
+
+## Output Consolidation
+
+After all reviewers return, merge their findings tables into a single consolidated table sorted by severity (Critical → Important → Minor). Deduplicate: if two reviewers flag the same location for the same issue, keep the one with more detail. Present the consolidated table to the caller.
 
 ## Integration
 
