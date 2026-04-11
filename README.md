@@ -57,8 +57,11 @@ Commands are auto-suggested based on context. You can also invoke any command di
 
 ### Via CLI (Recommended)
 
+Add the marketplace, then install the plugin:
+
 ```bash
-claude plugin add Kuroakira/claude-praxis
+claude plugin marketplace add Kuroakira/claude-praxis
+claude plugin install claude-praxis@claude-praxis
 ```
 
 To update:
@@ -70,7 +73,7 @@ claude plugin update claude-praxis
 To uninstall:
 
 ```bash
-claude plugin remove claude-praxis
+claude plugin uninstall claude-praxis
 ```
 
 ### Manual Installation (Alternative)
