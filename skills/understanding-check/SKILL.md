@@ -18,7 +18,7 @@ Showing the AI's rationale before the human explains creates anchoring — the h
 
 ## Prerequisites
 
-This skill requires **pre-recorded rationale** in `.claude/context/progress.md`. Each upstream command (`/design`, `/implement`, `/feature-spec`, `/investigate`) records Decision/Rationale entries during execution. Understanding Check consumes these entries as comparison material.
+This skill requires **pre-recorded rationale** in `.claude/context/progress.md`. Each upstream command (`/design`, `/feature-spec`, `/investigate`, `/plan`) records Decision/Rationale entries during execution. Understanding Check consumes these entries as comparison material.
 
 **Material sufficiency check** — before generating questions, assess the available `.claude/context/progress.md` entries:
 
@@ -45,7 +45,7 @@ Generate questions from the pre-recorded rationale, then **PAUSE** for the human
 **Question selection criteria** (when more than 5 candidate questions exist):
 
 1. **Prioritize decisions where alternatives were rejected** — "Why X not Y?" questions probe the deepest understanding
-2. **Deprioritize decisions where the human directly participated** (decision points in `/implement`) — the human already engaged with these choices
+2. **Deprioritize decisions where the human directly participated** (decision points in `/plan`) — the human already engaged with these choices
 3. **Prioritize cross-step decisions** — decisions that span multiple workflow phases have wider impact and are more likely to be misunderstood
 
 **Workflow-specific material adaptation:**
@@ -53,7 +53,7 @@ Generate questions from the pre-recorded rationale, then **PAUSE** for the human
 | Workflow | Primary Material | Question Character |
 |----------|-----------------|-------------------|
 | `/design` | Design Doc (Alternatives Considered, design decisions) | "Why this design over alternatives?" |
-| `/implement` | `.claude/context/progress.md` entries + code diff | "What constraint drove this implementation choice?" |
+| `/plan` | `.claude/context/progress.md` entries + plan decisions | "What constraint drove this planning choice?" |
 | `/feature-spec` | FeatureSpec (In/Out Scope, Problem Statement) | "Why was X scoped out?" |
 | `/investigate` | Investigation Report (hypotheses, evidence) | "Why was this hypothesis retained over others?" |
 
@@ -84,7 +84,7 @@ After the human answers, present a structured comparison using the pre-recorded 
 - **Divergent**: The human's reasoning differs from the recorded rationale — this may indicate a gap OR may indicate the AI's rationale was wrong
 - **Aligned**: The human's explanation covers the essential reasoning
 
-**Anti-sycophancy rules** (adapted from `receiving-code-review`):
+**Anti-sycophancy rules** (adapted from `superpowers:receiving-code-review`):
 
 - **Never** use softening language: "You mostly captured it, but...", "That's nearly correct, just one addition..."
 - **Explicitly state** what the human's explanation omitted — do not hint or imply
@@ -96,7 +96,7 @@ After the human answers, present a structured comparison using the pre-recorded 
 Differences do not always mean the human is wrong. The AI's recorded rationale may have been suboptimal. When the human's explanation reveals a perspective the AI didn't consider:
 
 1. Acknowledge this explicitly: "This difference may reflect a limitation in the AI's original reasoning, not a gap in your understanding"
-2. Record it as a gap anyway — both "domain learning" and "when to question AI" are valuable for `/compound`
+2. Record it as a gap anyway — both "domain learning" and "when to question AI" are valuable for `/eval`
 
 ### Phase 3: Discover
 
@@ -128,7 +128,7 @@ This status is included in the completion report **only when Understanding Check
 Understanding Check often runs when context is most constrained (after a long workflow). Minimize context consumption:
 
 - **3-5 questions maximum** — hard limit
-- **Standalone mode recommended** especially after `/implement` — separate session has no context constraint + spacing effect
+- **Standalone mode recommended** especially after long workflows — separate session has no context constraint + spacing effect
 - **Skip on insufficient material** — do not generate filler questions to hit the minimum
 
 ## Integration
@@ -136,6 +136,6 @@ Understanding Check often runs when context is most constrained (after a long wo
 - **Invoked by**: `commands/understanding-check.md`
 - **Consumes**: `.claude/context/progress.md` Decision/Rationale entries (pre-recorded by upstream commands)
 - **Produces**: `.claude/context/progress.md` Gap entries, Understanding Status for completion report
-- **Anti-sycophancy source**: `receiving-code-review` skill patterns
-- **Downstream**: `/compound` promotes Gap entries to learnings files
+- **Anti-sycophancy source**: `superpowers:receiving-code-review` skill patterns
+- **Downstream**: `/eval` promotes Gap entries to learnings files
 - **Rule**: `rules/verification.md` defines the Understanding Status field in completion report

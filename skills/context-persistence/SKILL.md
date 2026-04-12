@@ -61,7 +61,7 @@ Append new entries at the top. When entries exceed 10, delete the oldest.
 - **Context**: [when/why this matters]
 ```
 
-Three files by knowledge level: `learnings-feature-spec.md` (requirements/scope), `learnings-design.md` (architecture/design), `learnings-coding.md` (implementation patterns). Only promote from progress.md when knowledge is reusable. Use `/claude-praxis:compound` for deliberate promotion with level classification.
+Three files by knowledge level: `learnings-feature-spec.md` (requirements/scope), `learnings-design.md` (architecture/design), `learnings-coding.md` (implementation patterns). Only promote from progress.md when knowledge is reusable. Use `/claude-praxis:eval` for deliberate promotion with level classification.
 
 ## Read Rules
 
@@ -80,7 +80,7 @@ Three files by knowledge level: `learnings-feature-spec.md` (requirements/scope)
 ├── learnings-feature-spec.md   ← Stock: requirements/scope knowledge
 ├── learnings-design.md         ← Stock: design/architecture knowledge
 ├── learnings-coding.md         ← Stock: implementation patterns
-├── compound-last-run.json      ← Marker: last /compound execution time + count
+├── compound-last-run.json      ← Marker: last /eval execution time + count
 ├── last-compact.json           ← Marker: last compact metadata (written by PreCompact)
 └── context-pressure.json       ← Marker: context usage % (written by StatusLine Bridge)
 
@@ -103,7 +103,7 @@ SessionStart reads `last-compact.json` after compact to inject recovery guidance
 
 ## StatusLine Bridge (Optional Enhancement)
 
-StatusLine can write context usage data to `context-pressure.json`, enabling proactive /compound suggestions before compact occurs. This is an optional enhancement — without it, Layer 1 (phase boundary suggestions) and Layer 3 (compact recovery) still provide basic knowledge preservation.
+StatusLine can write context usage data to `context-pressure.json`, enabling proactive /eval suggestions before compact occurs. This is an optional enhancement — without it, Layer 1 (phase boundary suggestions) and Layer 3 (compact recovery) still provide basic knowledge preservation.
 
 To enable, configure your StatusLine script in `~/.claude/settings.json` to write `{repo}/.claude/context/context-pressure.json` on every status update:
 - Write `{ "usedPercentage": N, "timestamp": "...", "lastNotifiedLevel": "none" }` with current usage percentage
@@ -130,8 +130,7 @@ The `lastNotifiedLevel` field tracks notification throttling — the StatusLine 
 ## Integration
 
 - **session-start hook**: SessionStart notifies file existence + compact recovery guidance
-- **`/claude-praxis:compound` command**: Promotes Flow → Stock with LLM judgment, writes `compound-last-run.json` marker
-- **rule-evolution skill**: Universal quality learnings route to self-evolution protocol
+- **`/claude-praxis:eval` command**: Promotes Flow → Stock with LLM judgment, writes `compound-last-run.json` marker
 - **PreCompact hook**: Mechanical Flow cleanup + writes `last-compact.json` with state metadata
-- **Stop hook**: Suggests /compound when progress.md has unpromoted entries (non-blocking advisory)
-- **UserPromptSubmit hook**: Reads `context-pressure.json` for proactive /compound suggestions (requires StatusLine Bridge)
+- **Stop hook**: Suggests /eval when progress.md has unpromoted entries (non-blocking advisory)
+- **UserPromptSubmit hook**: Reads `context-pressure.json` for proactive /eval suggestions (requires StatusLine Bridge)
