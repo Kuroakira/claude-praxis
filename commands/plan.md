@@ -4,8 +4,8 @@ description: >-
   Create a thorough implementation plan — Axes Table, per-axis evaluation,
   architecture analysis, codebase scouting, and plan review.
   Use when: a Design Doc exists (or scope is clear) and you want to plan
-  before implementing. Produces a plan consumable by /implement.
-  After approval, run /implement with the plan path to execute.
+  before implementing. Produces a plan consumable by superpowers.
+  After approval, pass the plan to superpowers:writing-plans for execution.
 disable-model-invocation: false
 ---
 
@@ -13,7 +13,30 @@ Orchestrate the **Planning Workflow** using Phase Group Subagents.
 
 This command produces a thorough implementation plan — with Axes Table, per-axis evaluation, architecture analysis, and plan review — then terminates after presenting the plan to the user. No code is written.
 
-The plan file produced here is directly consumable by `/implement`, which skips inline breakdown and proceeds straight to implementation.
+The plan file produced here is directly consumable by superpowers — pass it to `superpowers:writing-plans` for execution.
+
+## Plan Granularity Contract
+
+| Item | Standard |
+|---|---|
+| Size | 100-200 lines, readable in 30 minutes |
+| Task count | 4-8 tasks |
+| Include | Function names, file paths, task ordering, TDD order instructions, out-of-scope items, risks, per-task review plan |
+| Exclude | Actual code blocks, line-by-line changes, micro-steps (2-5 min granularity) |
+| Per-task required fields | Why, changed files, estimated size, test targets, TDD order |
+
+### TDD Order
+
+Each task must specify which tests to write first and what behavior each test validates. This is ordering guidance, not the actual test code — execution is handled by superpowers.
+
+## superpowers Handoff
+
+Each task in the plan serves as spec input for `superpowers:writing-plans`. One praxis task = one superpowers plan.
+
+To execute the plan:
+1. Pass the plan file to `superpowers:writing-plans` (one task at a time, or the full plan)
+2. superpowers generates micro-step plans with actual code
+3. Execute via `superpowers:subagent-driven-development` or `superpowers:executing-plans`
 
 ## Phase Group Architecture
 
@@ -28,7 +51,7 @@ graph TD
     O -->|in-context| PRESENT[Present Plan +<br/>Cleanup]
 ```
 
-**Orchestrator principles**: Follow the orchestrator principles defined in `commands/implement.md` (file paths not contents, structural validation only, `.claude/context/progress.md` by orchestrator). Additionally:
+**Orchestrator principles**: Pass file paths (not contents) to subagents. Validate subagent output structurally only (file exists, sections present, non-empty). Write progress to `.claude/context/progress.md` from orchestrator only. Additionally:
 - Plan Presentation reads the plan file to present to the human (exception to structural-only validation)
 - All intermediate files (`reasoning-log-g1.md`) are written to `claudedocs/plans/wip/`. This directory is created at G0 and cleaned up at Plan Presentation. Permanent artifacts (plan file, axes-table, analysis report) go to their standard locations
 
@@ -169,7 +192,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >    - 4+ files or cross-module → add `devils-advocate`
 >    - API change / auth → add `security-perf`
 >    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
-> 9. TDD ordering: list test files before implementation files within each step
+> 9. **TDD order**: For each task, specify which tests to write first and what behavior each test validates. This is ordering guidance — list test files before implementation files, describe what each test should verify. Actual test code execution is handled by superpowers
 > 10. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
 > 11. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
 >
@@ -249,7 +272,9 @@ Read the plan file — this is the one exception where the orchestrator reads fu
 Plan ready at `claudedocs/plans/[name]-plan.md`.
 Axes Table at `claudedocs/plans/[name]-axes-table.md`.
 
-To implement: run /claude-praxis:implement with this plan.
+To execute: pass the plan to superpowers:writing-plans (one task at a time, or the full plan).
+superpowers generates micro-step plans with actual code, then executes via
+superpowers:subagent-driven-development or superpowers:executing-plans.
 ```
 
 ---
@@ -266,7 +291,7 @@ Inputs are passed as **file paths** in the subagent's task description. Subagent
 
 ## Orchestrator Validation Protocol
 
-Apply the Orchestrator Validation Protocol defined in `commands/implement.md`. The validation checks (file existence, section headers, non-empty) and error recovery (cleanup → re-dispatch → escalate) are identical across all orchestrating commands.
+After each subagent completes, validate its output structurally: check that expected files exist, required section headers are present, and content is non-empty. On validation failure: cleanup partial output → re-dispatch the subagent → escalate to user if second attempt fails.
 
 ### Required outputs
 
