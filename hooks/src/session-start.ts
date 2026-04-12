@@ -53,20 +53,9 @@ try {
   // Compact recovery guidance
   const lastCompact = readLastCompact(contextDir);
   if (lastCompact) {
-    const { compoundRun, progressSummary } = lastCompact;
-    const headingsList = progressSummary.recentHeadings.length > 0
-      ? ` Recent work: ${progressSummary.recentHeadings.join(", ")}.`
-      : "";
-
-    if (compoundRun) {
-      sections.push(
-        `## Compact Recovery\nCompact occurred. Learnings preserved via /compound. Read persistence files to resume.`,
-      );
-    } else {
-      sections.push(
-        `## Compact Recovery\nCompact occurred. ${progressSummary.entryCount} entries in progress.md were not promoted to learnings.${headingsList} Run /claude-praxis:compound to review and preserve knowledge.`,
-      );
-    }
+    sections.push(
+      `## Compact Recovery\nCompact occurred. Read persistence files to resume.`,
+    );
   }
 
   if (sections.length > 0) {

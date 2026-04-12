@@ -47,7 +47,7 @@ describe("context-pressure-check integration", () => {
     const output = JSON.parse(result.stdout);
     expect(output.hookSpecificOutput.additionalContext).toContain("60%");
     expect(output.hookSpecificOutput.additionalContext).toContain(
-      "/claude-praxis:compound",
+      "saving important context",
     );
   });
 

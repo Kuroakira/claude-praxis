@@ -28,7 +28,7 @@ export interface ConfidenceSummary {
 
 export interface LastCompact {
   timestamp: string;
-  compoundRun: boolean;
+  compoundRun?: boolean;
   progressSummary: ProgressSummary;
   confidenceSummary: ConfidenceSummary;
 }
@@ -155,7 +155,7 @@ function isCompoundLastRun(data: unknown): data is CompoundLastRun {
 
 function isLastCompact(data: unknown): data is LastCompact {
   if (!isRecord(data)) return false;
-  if (typeof data.timestamp !== "string" || typeof data.compoundRun !== "boolean") return false;
+  if (typeof data.timestamp !== "string") return false;
   if (!isRecord(data.progressSummary)) return false;
   const ps = data.progressSummary;
   if (typeof ps.entryCount !== "number" || !Array.isArray(ps.recentHeadings)) return false;

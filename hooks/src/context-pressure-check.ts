@@ -26,7 +26,7 @@ if (usedPercentage >= THRESHOLD_URGENT && lastNotifiedLevel !== "urgent") {
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",
       additionalContext:
-        `Context usage is above ${THRESHOLD_URGENT}% (${usedPercentage}%). Auto-compact is approaching — this is urgent. Run /claude-praxis:compound to preserve knowledge before compact occurs.`,
+        `Context usage is above ${THRESHOLD_URGENT}% (${usedPercentage}%). Auto-compact is approaching — this is urgent. Consider saving important context before compact occurs.`,
     },
   });
 } else if (
@@ -38,7 +38,7 @@ if (usedPercentage >= THRESHOLD_URGENT && lastNotifiedLevel !== "urgent") {
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",
       additionalContext:
-        `Context usage is above ${THRESHOLD_INFO}% (${usedPercentage}%). Consider running /claude-praxis:compound at the next natural break point to preserve learnings.`,
+        `Context usage is above ${THRESHOLD_INFO}% (${usedPercentage}%). Consider saving important context at the next natural break point.`,
     },
   });
 }

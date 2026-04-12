@@ -128,51 +128,12 @@ describe("pre-compact integration", () => {
       );
     });
 
-    it("sets compoundRun false when compound-last-run.json does not exist", () => {
+    it("does not include compoundRun in last-compact.json", () => {
       runHook({ session_id: "test" });
       const data = JSON.parse(
         fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
       );
-      expect(data.compoundRun).toBe(false);
-    });
-
-    it("sets compoundRun true when compound-last-run.json is newer than last-compact.json", () => {
-      fs.writeFileSync(
-        path.join(contextDir, "compound-last-run.json"),
-        JSON.stringify({
-          timestamp: new Date().toISOString(),
-          promotedCount: 2,
-        }),
-      );
-      runHook({ session_id: "test" });
-      const data = JSON.parse(
-        fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
-      );
-      expect(data.compoundRun).toBe(true);
-    });
-
-    it("sets compoundRun false when compound-last-run.json is older than last compact", () => {
-      fs.writeFileSync(
-        path.join(contextDir, "last-compact.json"),
-        JSON.stringify({
-          timestamp: "2026-02-20T12:00:00Z",
-          compoundRun: true,
-          progressSummary: { entryCount: 0, recentHeadings: [] },
-          confidenceSummary: { totalEntries: 0, avgConfirmed: 0, unverifiedCount: 0 },
-        }),
-      );
-      fs.writeFileSync(
-        path.join(contextDir, "compound-last-run.json"),
-        JSON.stringify({
-          timestamp: "2026-02-19T00:00:00Z",
-          promotedCount: 1,
-        }),
-      );
-      runHook({ session_id: "test" });
-      const data = JSON.parse(
-        fs.readFileSync(path.join(contextDir, "last-compact.json"), "utf-8"),
-      );
-      expect(data.compoundRun).toBe(false);
+      expect(data.compoundRun).toBeUndefined();
     });
 
     it("includes progressSummary with entry count and recent headings", () => {
