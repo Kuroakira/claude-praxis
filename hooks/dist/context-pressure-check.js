@@ -20,7 +20,7 @@ if (usedPercentage >= THRESHOLD_URGENT && lastNotifiedLevel !== "urgent") {
     writeJson({
         hookSpecificOutput: {
             hookEventName: "UserPromptSubmit",
-            additionalContext: `Context usage is above ${THRESHOLD_URGENT}% (${usedPercentage}%). Auto-compact is approaching — this is urgent. Run /claude-praxis:compound to preserve knowledge before compact occurs.`,
+            additionalContext: `Context usage is above ${THRESHOLD_URGENT}% (${usedPercentage}%). Auto-compact is approaching — this is urgent. Consider saving important context before compact occurs.`,
         },
     });
 }
@@ -30,7 +30,7 @@ else if (usedPercentage >= THRESHOLD_INFO &&
     writeJson({
         hookSpecificOutput: {
             hookEventName: "UserPromptSubmit",
-            additionalContext: `Context usage is above ${THRESHOLD_INFO}% (${usedPercentage}%). Consider running /claude-praxis:compound at the next natural break point to preserve learnings.`,
+            additionalContext: `Context usage is above ${THRESHOLD_INFO}% (${usedPercentage}%). Consider saving important context at the next natural break point.`,
         },
     });
 }

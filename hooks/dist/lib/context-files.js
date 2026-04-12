@@ -99,7 +99,7 @@ function isCompoundLastRun(data) {
 function isLastCompact(data) {
     if (!isRecord(data))
         return false;
-    if (typeof data.timestamp !== "string" || typeof data.compoundRun !== "boolean")
+    if (typeof data.timestamp !== "string")
         return false;
     if (!isRecord(data.progressSummary))
         return false;

@@ -20,7 +20,7 @@ export interface ConfidenceSummary {
 }
 export interface LastCompact {
     timestamp: string;
-    compoundRun: boolean;
+    compoundRun?: boolean;
     progressSummary: ProgressSummary;
     confidenceSummary: ConfidenceSummary;
 }

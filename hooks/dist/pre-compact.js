@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { readStdin, writeJson } from "./lib/io.js";
-import { trimProgressFile, updateCompactTimestamp, readCompoundLastRun, writeLastCompact, getProgressSummary, } from "./lib/context-files.js";
+import { trimProgressFile, updateCompactTimestamp, writeLastCompact, getProgressSummary, } from "./lib/context-files.js";
 import { parseFileConfidence } from "./lib/confidence-parser.js";
 import * as fs from "node:fs";
 try {
@@ -15,19 +15,6 @@ const progressSummary = getProgressSummary(path.join(contextDir, "progress.md"),
 // Existing behavior: trim and timestamp
 trimProgressFile(path.join(contextDir, "progress.md"), 10);
 updateCompactTimestamp(path.join(contextDir, "task_plan.md"));
-// Determine if /compound was run since last compact
-const compoundLastRun = readCompoundLastRun(contextDir);
-let compoundRun = false;
-if (compoundLastRun) {
-    const lastCompactPath = path.join(contextDir, "last-compact.json");
-    if (fs.existsSync(lastCompactPath)) {
-        const stat = fs.statSync(lastCompactPath);
-        compoundRun = new Date(compoundLastRun.timestamp) > stat.mtime;
-    }
-    else {
-        compoundRun = true;
-    }
-}
 // Aggregate confidence summary across all learnings files
 const learningsFiles = [
     "learnings-feature-spec.md",
@@ -54,7 +41,6 @@ const avgConfirmed = confirmedEntries > 0 ? totalConfirmed / confirmedEntries : 
 // Write last-compact.json
 writeLastCompact(contextDir, {
     timestamp: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
-    compoundRun,
     progressSummary,
     confidenceSummary: {
         totalEntries,
