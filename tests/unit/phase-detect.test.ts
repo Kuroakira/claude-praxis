@@ -3,17 +3,13 @@ import { detectPhase } from "../../hooks/src/lib/phase-patterns.js";
 
 describe("detectPhase", () => {
   describe("slash command detection (highest priority)", () => {
-    it("detects /implement slash command", () => {
-      expect(detectPhase("/implement")).toContain("Phase detected: implement");
-    });
-
     it("detects /design slash command", () => {
       expect(detectPhase("/design")).toContain("Phase detected: design");
     });
 
     it("prioritizes slash command over keyword patterns", () => {
-      const result = detectPhase("/implement this design doc");
-      expect(result).toContain("Phase detected: implement");
+      const result = detectPhase("/design this plan");
+      expect(result).toContain("Phase detected: design");
     });
   });
 
@@ -42,34 +38,25 @@ describe("detectPhase", () => {
       expect(detectPhase("Please review this code")).toContain("Phase detected: review");
     });
 
-    it("detects compound phase", () => {
-      expect(detectPhase("Let's do a retrospective")).toContain("Phase detected: compound");
-    });
-
     it("returns empty string for unmatched input", () => {
       expect(detectPhase("hello world")).toBe("");
     });
   });
 
   describe("DD4: compound pattern detection", () => {
-    it("detects implement when 'Design Doc' + implementation intent (Japanese)", () => {
+    it("detects plan when 'Design Doc' + implementation intent (Japanese)", () => {
       const result = detectPhase("Design Docに従って実装プランを作成して");
-      expect(result).toContain("Phase detected: implement");
+      expect(result).toContain("Phase detected: plan");
     });
 
-    it("detects implement when 'DesignDoc' (no space) + implementation intent (Japanese)", () => {
-      const result = detectPhase("このDesignDocの実装プランをclaudedocs/implementationsに作成して");
-      expect(result).toContain("Phase detected: implement");
-    });
-
-    it("detects implement when 'design doc' + 'implement' (English)", () => {
+    it("detects plan when 'design doc' + 'implement' (English)", () => {
       const result = detectPhase("Follow the design doc and implement the plan");
-      expect(result).toContain("Phase detected: implement");
+      expect(result).toContain("Phase detected: plan");
     });
 
-    it("detects implement when 'design doc' + 'implementation' keyword (English)", () => {
-      const result = detectPhase("Based on the design doc, create an implementation plan");
-      expect(result).toContain("Phase detected: implement");
+    it("detects plan for Japanese implementation request", () => {
+      const result = detectPhase("実装して");
+      expect(result).toContain("Phase detected: plan");
     });
 
     it("detects design when creation intent is present (Japanese)", () => {
@@ -82,40 +69,27 @@ describe("detectPhase", () => {
       expect(result).toContain("Phase detected: design");
     });
 
-    it("detects implement for Japanese implementation request", () => {
-      const result = detectPhase("実装して");
-      expect(result).toContain("Phase detected: implement");
-    });
-
-    it("detects design for 'build a design system' (design + system, not implement)", () => {
+    it("detects design for 'build a design system' (design + system, not plan)", () => {
       const result = detectPhase("Design a system API for authentication");
       expect(result).toContain("Phase detected: design");
     });
   });
 
   describe("DD4: known ambiguities (advisory-only, documented trade-offs)", () => {
-    // When both compound overrides match, implement wins by array position.
-    // This prioritizes the more common case ("Design Doc に従って実装プラン")
-    // over the less common case ("Create a design doc for the implementation").
-    // Acceptable because phase detection is advisory-only (not blocking).
-    it("resolves to implement when design doc creation + implementation topic overlap", () => {
-      const result = detectPhase("Create a design doc for the implementation");
-      expect(result).toContain("Phase detected: implement");
-    });
-
-    // Design Doc line 142: "実装の設計 Design Doc を作成して" is ambiguous
-    // Contains both "design doc + implement" and "design + create" signals
-    it("resolves 'implement design doc creation' per override priority", () => {
+    // "design doc" + implementation intent (実装) → plan wins over design override
+    // "実装の設計 Design Doc を作成して" contains both signals; plan override is first.
+    // Advisory-only so misclassification has limited impact.
+    it("resolves 'implement design doc creation' to plan (plan override takes priority)", () => {
       const result = detectPhase("実装の設計 Design Docを作成して");
-      expect(result).toContain("Phase detected: implement");
+      expect(result).toContain("Phase detected: plan");
     });
   });
 
   describe("DD5: advisory message includes description", () => {
-    it("includes description for implement phase", () => {
+    it("includes description for plan phase (from implementation keyword)", () => {
       const result = detectPhase("実装して");
       expect(result).toContain(" — ");
-      expect(result).toContain("TDD-driven development with graduated review");
+      expect(result).toContain("thorough implementation plan");
     });
 
     it("includes description for design phase", () => {
@@ -128,9 +102,47 @@ describe("detectPhase", () => {
       expect(result).toContain("systematic diagnosis with parallel investigation");
     });
 
-    it("includes description in slash command output", () => {
+    it("includes description for eval phase", () => {
+      const result = detectPhase("evaluate the last command");
+      expect(result).toContain("evaluate and improve framework skills");
+    });
+  });
+
+  describe("design-review pivot: implement/compound removed, eval added", () => {
+    it("no longer detects /implement slash command", () => {
       const result = detectPhase("/implement");
-      expect(result).toContain("TDD-driven development with graduated review");
+      expect(result).not.toContain("Phase detected: implement");
+    });
+
+    it("no longer detects /compound slash command", () => {
+      const result = detectPhase("/compound");
+      expect(result).not.toContain("Phase detected: compound");
+    });
+
+    it("detects eval phase from English keyword", () => {
+      const result = detectPhase("Let's evaluate the last command");
+      expect(result).toContain("Phase detected: eval");
+      expect(result).toContain("/claude-praxis:eval");
+    });
+
+    it("detects eval phase from Japanese keyword", () => {
+      const result = detectPhase("スキルを改善して");
+      expect(result).toContain("Phase detected: eval");
+    });
+
+    it("detects /eval slash command", () => {
+      const result = detectPhase("/eval");
+      expect(result).toContain("Phase detected: eval");
+    });
+
+    it("implementation keywords now route to plan phase", () => {
+      const result = detectPhase("build a new authentication feature");
+      expect(result).toContain("Phase detected: plan");
+    });
+
+    it("routes Japanese implementation request to plan", () => {
+      const result = detectPhase("実装して");
+      expect(result).toContain("Phase detected: plan");
     });
   });
 });
