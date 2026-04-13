@@ -24,9 +24,9 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 
 | Workflow | What Happens | What You Do |
 |----------|-------------|-------------|
-| `/feature-spec [feature]` | AI-driven interview to capture requirements, planner selects reviewers based on spec complexity (light → thorough) | Answer interview questions, approve the FeatureSpec |
-| `/design [topic]` | Planner-driven research + architecture analysis, writes the Design Doc, graduated review (light for outline, thorough for final) | Review and approve the final Design Doc |
-| `/implement [plan-path]` | TDD per task with per-task review selection, graduated final review (3+ reviewers). Accepts plan from `/plan` or performs inline breakdown | Approve inline breakdown (or provide plan), make decisions at implementation choice points |
+| `/feature-spec [feature]` | Brainstorm-driven interview: one question at a time, 2-3 proposals, incremental section approval → FeatureSpec | Answer questions, choose proposals, approve each section |
+| `/design [topic]` | Brainstorm-driven architecture dialogue: key decisions with concrete choices, incremental section approval → Design Doc | Make architecture decisions, approve each section |
+| `/plan [topic] [design-doc-path]` | Implementation plan with Axes Table, architecture analysis, Granularity Contract → plan for superpowers | Review plan, hand off to superpowers for execution |
 | `/investigate [problem]` | Reproduces, isolates, diagnoses — for complex problems, planner dispatches parallel investigation agents | Provide context between phases, review the diagnosis |
 
 ### Supporting Commands
@@ -37,18 +37,17 @@ Just describe what you want to do. Claude detects the appropriate phase and sugg
 | `/guide [scope]` | Generate a codebase walkthrough guide as a multi-page HTML book |
 | `/compare [topic]` | Structured comparison of 2-4 options with axes evaluation — when facing a decision with multiple viable approaches |
 | `/research [topic]` | Explore a problem space without committing to a Design Doc |
-| `/plan [topic] [design-doc-path]` | Create a thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
 | `/review [--full]` | Code review on existing code outside the implementation flow. `--full` skips tier detection and dispatches all reviewers |
 | `/review-guide [--base branch] [--doc path]` | Generate a self-review guide for AI-generated code — test-first reading order with attention points and design rationale |
-| `/compound` | Extract and classify learnings from completed work |
+| `/eval` | Evaluate the most recent command execution and improve framework skills/commands/rules |
 | `/understanding-check` | Verify you can explain key decisions in AI-generated work (recommended: separate session) |
 
 Commands are auto-suggested based on context. You can also invoke any command directly.
 
 ## Key Mechanisms
 
-- **Self-Evolving Quality Rules** - Discover issues during implementation, propose rule additions. Rules grow from YOUR experience, not abstract best practices.
-- **Compound Learning** - `/compound` promotes valuable knowledge from work logs to permanent learnings, routed to project-specific or cross-project storage.
+- **`/eval` Framework Self-Improvement** - Evaluate recent execution and improve framework files directly. Rules and skills grow from YOUR experience, not abstract best practices.
+- **superpowers Integration** - `/plan` produces plans at the right granularity for superpowers execution. The handoff: `/plan` → superpowers `writing-plans` → superpowers executes with TDD.
 - **Context Persistence** - Stock/Flow memory model survives compact/clear. Flow (progress) is pruned; Stock (learnings) persists forever.
 - **Structured Understanding** - Design Docs force you to articulate alternatives and WHY you chose this path. That reasoning becomes reusable.
 - **Verification Before Completion** - No claims without fresh evidence. Proves understanding, not just output.
@@ -94,18 +93,13 @@ rm ~/.claude/skills/claude-praxis
 |-------|-------------|
 | `workflow-planner` | Analyze task content, select agents from shared catalogs, generate execution plan |
 | `dispatch-reviewers` | Dispatch reviewers by catalog ID with graduated tiers |
-| `subagent-driven-development` | Fresh agent per task + two-stage review (implementation) |
 | `agent-team-execution` | Parallel exploration (research, review teams, debugging) with independent verification sources |
 | `architecture-analysis` | Multi-pass codebase analysis with durable Markdown+mermaid reports and quantitative health scoring (TypeScript) |
 | `guide-generation` | Multi-pass codebase exploration + single-narrator guide as HTML book |
 | `systematic-debugging` | 3-phase root cause analysis (reproduce, isolate, diagnose) |
 | `context-persistence` | Stock/Flow memory model for context survival across compact/clear |
 | `check-past-learnings` | Recall relevant learnings at the start of any workflow phase |
-| `rule-evolution` | TDD-based protocol for proposing and adding quality rules |
-| `tdd-cycle` | RED-GREEN-REFACTOR cycle enforcement |
 | `understanding-check` | Explain-Compare-Discover procedure for verifying understanding |
-| `requesting-code-review` | Dispatch reviewer after implementation |
-| `receiving-code-review` | Handle review feedback (no sycophancy) |
 
 ### Always-On Rules (loaded via @import in CLAUDE.md)
 
@@ -120,18 +114,17 @@ rm ~/.claude/skills/claude-praxis
 
 | Command | Purpose |
 |---------|---------|
-| `/feature-spec [feature]` | **Main workflow**: AI-driven interview + parallel draft review → FeatureSpec |
-| `/design [topic]` | **Main workflow**: Parallel research team + outline + write + parallel review team → Design Doc |
-| `/implement [plan-path]` | **Main workflow**: TDD per task + parallel review team → verified code. Without plan path, performs inline breakdown |
+| `/feature-spec [feature]` | **Main workflow**: Brainstorm-driven interview, one question at a time → FeatureSpec |
+| `/design [topic]` | **Main workflow**: Brainstorm-driven architecture dialogue, incremental section approval → Design Doc |
+| `/plan [topic] [design-doc-path]` | **Main workflow**: Implementation plan with Axes Table, Granularity Contract → plan for superpowers |
 | `/investigate [problem]` | **Main workflow**: Reproduce + isolate + diagnose + document findings |
 | `/analyze [scope] [--thorough]` | Standalone: codebase architecture analysis → Markdown+mermaid report with quantitative health scoring |
 | `/guide [scope]` | Standalone: codebase walkthrough guide → multi-page HTML book |
 | `/compare [topic]` | Standalone: structured comparison of 2-4 options with axes evaluation |
 | `/research [topic]` | Standalone: explore a problem space without committing to a Design Doc |
-| `/plan [topic] [design-doc-path]` | Standalone: thorough implementation plan (Axes Table, architecture analysis) without starting implementation |
 | `/review [--full]` | Standalone: code review on existing code (scope auto-detected from git diff). `--full` dispatches all reviewers |
 | `/review-guide [--base branch] [--doc path]` | Standalone: self-review guide for AI-generated code (test-first reading order + attention points) |
-| `/compound` | Extract learnings and carry them to the next project |
+| `/eval` | Evaluate the most recent command execution and improve framework skills/commands/rules |
 | `/understanding-check` | Standalone: verify understanding of AI-generated work |
 
 ### Command Options Reference
@@ -142,7 +135,6 @@ rm ~/.claude/skills/claude-praxis
 | `[topic]` | `/design`, `/compare`, `/research`, `/plan` | Subject to design, compare, research, or plan |
 | `[feature]` | `/feature-spec` | Feature name or description (clarified interactively if omitted) |
 | `[problem]` | `/investigate` | Problem description (clarified in Phase 1 if omitted) |
-| `[plan-path]` | `/implement` | Path to plan from `/plan` (e.g., `claudedocs/plans/feature-plan.md`). Omit for inline breakdown |
 | `[design-doc-path]` | `/plan` | Path to existing Design Doc to plan against |
 | `--thorough` | `/analyze` | Two-phase analysis: generates debt inventory, then user selects items for deep dive |
 | `--full` | `/review` | Skip tier determination and dispatch all reviewers for maximum coverage |
@@ -166,7 +158,7 @@ rm ~/.claude/skills/claude-praxis
 | MCP Server | Purpose | Install |
 |------------|---------|---------|
 | [session-cache-mcp](https://www.npmjs.com/package/session-cache-mcp) | Eliminates redundant file reads across subagents via shared in-memory cache. Provides `check_cache`, `record_read`, `get_session_map` tools. | `claude mcp add session-cache -s user -- npx -y session-cache-mcp` |
-| [sekko-arch](https://www.npmjs.com/package/sekko-arch) | Quantitative architecture health scoring across 24 dimensions for TypeScript projects. Used by `/analyze` and `/implement` for health grades and degradation detection. | `claude mcp add sekko-arch -s user -- npx -y sekko-arch` |
+| [sekko-arch](https://www.npmjs.com/package/sekko-arch) | Quantitative architecture health scoring across 24 dimensions for TypeScript projects. Used by `/analyze` for health grades and degradation detection. | `claude mcp add sekko-arch -s user -- npx -y sekko-arch` |
 
 ## Planned
 
