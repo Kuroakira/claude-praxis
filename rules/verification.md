@@ -67,12 +67,11 @@ Understanding Check: [Y] of [X] key decisions explained, [Z] gaps discovered
 |----------------|-----------------|
 | /claude-praxis:feature-spec | → Ready for /claude-praxis:research or /claude-praxis:design? |
 | /claude-praxis:research | → Ready for /claude-praxis:design? |
-| /claude-praxis:design | → Ready for /claude-praxis:implement? |
-| /claude-praxis:plan | → Ready for /claude-praxis:implement? |
-| /claude-praxis:implement | → Run /claude-praxis:compound to capture learnings? |
-| /claude-praxis:investigate | → Ready for /claude-praxis:implement to fix? |
-| /claude-praxis:review | → Run /claude-praxis:compound to capture learnings? |
-| /claude-praxis:understanding-check | → Run /claude-praxis:compound to capture learnings? |
+| /claude-praxis:design | → Ready for /claude-praxis:plan? |
+| /claude-praxis:plan | → Pass plan to superpowers for execution |
+| /claude-praxis:investigate | → Ready for /claude-praxis:plan to fix? |
+| /claude-praxis:review | → Run /claude-praxis:eval to improve framework? |
+| /claude-praxis:understanding-check | → Run /claude-praxis:eval to improve framework? |
 | Non-phase task | → No next phase needed |
 
 ## Red Flags (stop and verify)

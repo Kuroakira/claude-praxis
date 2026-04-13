@@ -10,11 +10,6 @@ export interface PersistenceFileInfo {
   unverifiedCount?: number;
 }
 
-export interface CompoundLastRun {
-  timestamp: string;
-  promotedCount: number;
-}
-
 export interface ProgressSummary {
   entryCount: number;
   recentHeadings: string[];
@@ -28,7 +23,6 @@ export interface ConfidenceSummary {
 
 export interface LastCompact {
   timestamp: string;
-  compoundRun?: boolean;
   progressSummary: ProgressSummary;
   confidenceSummary: ConfidenceSummary;
 }
@@ -46,7 +40,6 @@ const TRACKED_FILES = [
   "learnings-feature-spec.md",
   "learnings-design.md",
   "learnings-coding.md",
-  "compound-last-run.json",
   "last-compact.json",
   "context-pressure.json",
 ];
@@ -148,11 +141,6 @@ function writeJsonFile(dir: string, fileName: string, data: unknown): void {
   fs.writeFileSync(path.join(dir, fileName), JSON.stringify(data, null, 2));
 }
 
-function isCompoundLastRun(data: unknown): data is CompoundLastRun {
-  if (!isRecord(data)) return false;
-  return typeof data.timestamp === "string" && typeof data.promotedCount === "number";
-}
-
 function isLastCompact(data: unknown): data is LastCompact {
   if (!isRecord(data)) return false;
   if (typeof data.timestamp !== "string") return false;
@@ -172,20 +160,6 @@ function isContextPressure(data: unknown): data is ContextPressure {
   const validLevels = ["none", "info", "urgent"];
   if (!validLevels.includes(data.lastNotifiedLevel)) return false;
   return true;
-}
-
-export function readCompoundLastRun(
-  contextDir: string,
-): CompoundLastRun | null {
-  const data = readJsonFile(path.join(contextDir, "compound-last-run.json"));
-  return isCompoundLastRun(data) ? data : null;
-}
-
-export function writeCompoundLastRun(
-  contextDir: string,
-  data: CompoundLastRun,
-): void {
-  writeJsonFile(contextDir, "compound-last-run.json", data);
 }
 
 export function readLastCompact(contextDir: string): LastCompact | null {

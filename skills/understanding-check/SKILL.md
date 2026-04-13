@@ -121,7 +121,7 @@ This status is included in the completion report **only when Understanding Check
 
 **Next step suggestion:**
 
-> Gaps have been recorded in `.claude/context/progress.md`. Run `/claude-praxis:compound` to promote these learnings for future sessions.
+> Gaps have been recorded in `.claude/context/progress.md`. Run `/claude-praxis:eval` to improve the framework from this session.
 
 ## Context Window Management
 

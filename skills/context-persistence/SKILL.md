@@ -95,11 +95,11 @@ Fires automatically before compact (~83.5% context). Performs mechanical cleanup
 1. Capture progress summary (entry count + recent 3 headings) before trimming
 2. Trim `progress.md` to last 10 entries
 3. Update timestamp in `task_plan.md`
-4. Write `last-compact.json` with compact metadata (timestamp, compound execution status, progress summary, learnings confidence summary)
+4. Write `last-compact.json` with compact metadata (timestamp, progress summary, learnings confidence summary)
 
-SessionStart reads `last-compact.json` after compact to inject recovery guidance — including whether `/claude-praxis:compound` was run before compact.
+SessionStart reads `last-compact.json` after compact to inject recovery guidance.
 
-**LLM-judged promotion (Flow → Stock) is NOT done here.** That is `/claude-praxis:compound`'s job.
+**LLM-judged promotion (Flow → Stock) is NOT done here.** That is `/claude-praxis:eval`'s job.
 
 ## StatusLine Bridge (Optional Enhancement)
 

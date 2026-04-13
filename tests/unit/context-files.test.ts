@@ -6,8 +6,6 @@ import {
   detectPersistenceFiles,
   trimProgressFile,
   updateCompactTimestamp,
-  readCompoundLastRun,
-  writeCompoundLastRun,
   readLastCompact,
   writeLastCompact,
   readContextPressure,
@@ -15,7 +13,6 @@ import {
   getProgressSummary,
 } from "../../hooks/src/lib/context-files.js";
 import type {
-  CompoundLastRun,
   LastCompact,
   ContextPressure,
 } from "../../hooks/src/lib/context-files.js";
@@ -242,67 +239,12 @@ describe("context-files", () => {
     });
   });
 
-  describe("readCompoundLastRun", () => {
-    it("returns data from valid compound-last-run.json", () => {
-      const data: CompoundLastRun = {
-        timestamp: "2026-02-20T12:00:00Z",
-        promotedCount: 3,
-      };
-      fs.writeFileSync(
-        path.join(contextDir, "compound-last-run.json"),
-        JSON.stringify(data),
-      );
-      const result = readCompoundLastRun(contextDir);
-      expect(result).toEqual(data);
-    });
-
-    it("returns null when file does not exist", () => {
-      const result = readCompoundLastRun(contextDir);
-      expect(result).toBeNull();
-    });
-
-    it("returns null when file contains invalid JSON", () => {
-      fs.writeFileSync(
-        path.join(contextDir, "compound-last-run.json"),
-        "not json",
-      );
-      const result = readCompoundLastRun(contextDir);
-      expect(result).toBeNull();
-    });
-  });
-
-  describe("writeCompoundLastRun", () => {
-    it("writes compound-last-run.json with timestamp and count", () => {
-      const data: CompoundLastRun = {
-        timestamp: "2026-02-20T12:00:00Z",
-        promotedCount: 5,
-      };
-      writeCompoundLastRun(contextDir, data);
-      const content = fs.readFileSync(
-        path.join(contextDir, "compound-last-run.json"),
-        "utf-8",
-      );
-      expect(JSON.parse(content)).toEqual(data);
-    });
-
-    it("creates context directory if it does not exist", () => {
-      const newDir = path.join(tmpDir, "new", ".claude", "context");
-      const data: CompoundLastRun = {
-        timestamp: "2026-02-20T12:00:00Z",
-        promotedCount: 0,
-      };
-      writeCompoundLastRun(newDir, data);
-      expect(fs.existsSync(path.join(newDir, "compound-last-run.json"))).toBe(
-        true,
-      );
-    });
-  });
 
   describe("readLastCompact", () => {
     it("returns data from valid last-compact.json", () => {
       const data: LastCompact = {
         timestamp: "2026-02-20T12:00:00Z",
-        compoundRun: false,
+
         progressSummary: {
           entryCount: 5,
           recentHeadings: ["Task 3", "Task 2", "Task 1"],
@@ -338,7 +280,7 @@ describe("context-files", () => {
     it("returns null when progressSummary is missing", () => {
       fs.writeFileSync(
         path.join(contextDir, "last-compact.json"),
-        JSON.stringify({ timestamp: "2026-02-20T12:00:00Z", compoundRun: false }),
+        JSON.stringify({ timestamp: "2026-02-20T12:00:00Z" }),
       );
       const result = readLastCompact(contextDir);
       expect(result).toBeNull();
@@ -349,7 +291,7 @@ describe("context-files", () => {
         path.join(contextDir, "last-compact.json"),
         JSON.stringify({
           timestamp: "2026-02-20T12:00:00Z",
-          compoundRun: false,
+  
           progressSummary: { entryCount: 0, recentHeadings: [] },
         }),
       );
@@ -362,7 +304,7 @@ describe("context-files", () => {
     it("writes last-compact.json with full metadata", () => {
       const data: LastCompact = {
         timestamp: "2026-02-20T12:00:00Z",
-        compoundRun: true,
+
         progressSummary: {
           entryCount: 2,
           recentHeadings: ["Done A"],
@@ -505,15 +447,6 @@ describe("context-files", () => {
   });
 
   describe("detectPersistenceFiles with marker files", () => {
-    it("detects compound-last-run.json", () => {
-      fs.writeFileSync(
-        path.join(contextDir, "compound-last-run.json"),
-        JSON.stringify({ timestamp: "2026-02-20T12:00:00Z", promotedCount: 1 }),
-      );
-      const result = detectPersistenceFiles(contextDir);
-      expect(result.map((f) => f.name)).toContain("compound-last-run.json");
-    });
-
     it("detects last-compact.json", () => {
       fs.writeFileSync(
         path.join(contextDir, "last-compact.json"),
