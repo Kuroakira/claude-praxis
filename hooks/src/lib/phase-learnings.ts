@@ -11,12 +11,11 @@ const ALL_FILES: LearningsLevel[] = ["feature-spec", "design", "coding"];
 export const PHASE_LEARNINGS_MAP: Record<string, LearningsLevel[]> = {
   "feature-spec": ["feature-spec"],
   design: ["feature-spec", "design"],
-  implement: ["design", "coding"],
   investigate: ["coding"],
   review: ["design", "coding"],
   research: ALL_FILES,
   plan: ["design", "coding"],
-  compound: ALL_FILES,
+  eval: ALL_FILES,
 };
 
 export function getLearningsForPhase(phase: string): string[] {

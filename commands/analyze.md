@@ -6,7 +6,7 @@ description: >-
   Supports --thorough mode for comprehensive debt inventory with staged interaction.
   TRIGGER when: user asks to analyze, understand, or examine the architecture of code —
   a module, directory, concern, or the whole project.
-  Also invoked as a workflow phase within /design and /implement (see those commands).
+  Also invoked as a workflow phase within /design and /plan (see those commands).
 disable-model-invocation: false
 ---
 
@@ -124,4 +124,4 @@ The report at `claudedocs/analysis/[scope-name]-thorough.md` is already assemble
    - Pattern opportunities (if any)
    - What was NOT assessed (from Confidence Boundary)
 
-The report is now available for the user to read and for subsequent `/design` or `/implement` workflows to consume as input.
+The report is now available for the user to read and for subsequent `/design` or `/plan` workflows to consume as input.

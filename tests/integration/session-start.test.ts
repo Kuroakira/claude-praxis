@@ -231,14 +231,13 @@ describe("session-start integration", () => {
   });
 
   describe("compact recovery guidance", () => {
-    it("injects compound-not-run guidance when last-compact.json shows compoundRun false", () => {
+    it("injects compact recovery guidance when last-compact.json exists", () => {
       const contextDir = path.join(tmpDir, ".claude", "context");
       fs.mkdirSync(contextDir, { recursive: true });
       fs.writeFileSync(
         path.join(contextDir, "last-compact.json"),
         JSON.stringify({
           timestamp: "2026-02-20T12:00:00Z",
-          compoundRun: false,
           progressSummary: { entryCount: 5, recentHeadings: ["Task A", "Task B"] },
           confidenceSummary: { totalEntries: 3, avgConfirmed: 1.5, unverifiedCount: 1 },
         }),
@@ -246,26 +245,7 @@ describe("session-start integration", () => {
 
       const result = runHook({ session_id: "test-session" });
       expect(result.stdout).toContain("Compact occurred");
-      expect(result.stdout).toContain("/claude-praxis:compound");
-      expect(result.stdout).toContain("not promoted");
-    });
-
-    it("injects compound-already-run guidance when last-compact.json shows compoundRun true", () => {
-      const contextDir = path.join(tmpDir, ".claude", "context");
-      fs.mkdirSync(contextDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(contextDir, "last-compact.json"),
-        JSON.stringify({
-          timestamp: "2026-02-20T12:00:00Z",
-          compoundRun: true,
-          progressSummary: { entryCount: 2, recentHeadings: ["Task A"] },
-          confidenceSummary: { totalEntries: 5, avgConfirmed: 2.0, unverifiedCount: 0 },
-        }),
-      );
-
-      const result = runHook({ session_id: "test-session" });
-      expect(result.stdout).toContain("Compact occurred");
-      expect(result.stdout).toContain("preserved");
+      expect(result.stdout).toContain("Read persistence files to resume");
     });
 
     it("does not inject compact guidance when last-compact.json does not exist", () => {
@@ -285,25 +265,20 @@ describe("session-start integration", () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it("includes progress summary in compact guidance", () => {
+    it("does not mention /compound in compact recovery guidance", () => {
       const contextDir = path.join(tmpDir, ".claude", "context");
       fs.mkdirSync(contextDir, { recursive: true });
       fs.writeFileSync(
         path.join(contextDir, "last-compact.json"),
         JSON.stringify({
           timestamp: "2026-02-20T12:00:00Z",
-          compoundRun: false,
-          progressSummary: {
-            entryCount: 5,
-            recentHeadings: ["Implement auth", "Fix bug"],
-          },
+          progressSummary: { entryCount: 5, recentHeadings: ["Implement auth", "Fix bug"] },
           confidenceSummary: { totalEntries: 0, avgConfirmed: 0, unverifiedCount: 0 },
         }),
       );
 
       const result = runHook({ session_id: "test-session" });
-      expect(result.stdout).toContain("5 entries");
-      expect(result.stdout).toContain("Implement auth");
+      expect(result.stdout).not.toContain("/claude-praxis:compound");
     });
   });
 });

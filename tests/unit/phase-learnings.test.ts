@@ -21,20 +21,27 @@ describe("LEARNINGS_FILES", () => {
 });
 
 describe("PHASE_LEARNINGS_MAP", () => {
-  it("covers all 8 phases", () => {
+  it("covers all 7 phases (implement and compound removed)", () => {
     const phases = [
       "feature-spec",
       "design",
-      "implement",
       "investigate",
       "review",
       "research",
       "plan",
-      "compound",
+      "eval",
     ];
     for (const phase of phases) {
       expect(PHASE_LEARNINGS_MAP).toHaveProperty(phase);
     }
+  });
+
+  it("does not have implement entry", () => {
+    expect(PHASE_LEARNINGS_MAP).not.toHaveProperty("implement");
+  });
+
+  it("does not have compound entry", () => {
+    expect(PHASE_LEARNINGS_MAP).not.toHaveProperty("compound");
   });
 });
 
@@ -49,13 +56,6 @@ describe("getLearningsForPhase", () => {
     expect(getLearningsForPhase("design")).toEqual([
       "learnings-feature-spec.md",
       "learnings-design.md",
-    ]);
-  });
-
-  it("returns design + coding files for implement phase", () => {
-    expect(getLearningsForPhase("implement")).toEqual([
-      "learnings-design.md",
-      "learnings-coding.md",
     ]);
   });
 
@@ -85,8 +85,8 @@ describe("getLearningsForPhase", () => {
     ]);
   });
 
-  it("returns all 3 files for compound phase", () => {
-    expect(getLearningsForPhase("compound")).toEqual([
+  it("has eval entry mapping to all files", () => {
+    expect(getLearningsForPhase("eval")).toEqual([
       "learnings-feature-spec.md",
       "learnings-design.md",
       "learnings-coding.md",

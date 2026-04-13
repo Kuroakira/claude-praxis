@@ -21,7 +21,7 @@ This skill is invoked by commands with:
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `task` | Yes | Description of what needs to be accomplished |
-| `domain` | Yes | Which command invoked the planner (`feature-spec`, `design`, `implement`, `investigate`) |
+| `domain` | Yes | Which command invoked the planner (`feature-spec`, `design`, `investigate`, `plan`) |
 | `domain_context` | Yes | Domain-specific judgment guidelines (injected by calling command) |
 | `constraints` | Yes | Non-negotiable requirements from the command (e.g., TDD mandatory, final review mandatory) |
 | `catalog_scope` | Yes | Which catalog entries are visible to this domain (reviewer IDs + researcher IDs) |
@@ -53,7 +53,7 @@ Rules:
 - "Clear winner" = one choice is objectively better with stated rationale
 - A verdict of "0 axes require exploration" needs explicit justification
 
-**Structural fitness axis (mandatory for `implement` and `design` domains)**:
+**Structural fitness axis (mandatory for `plan` and `design` domains)**:
 
 - **What to evaluate**: "Does the existing structure naturally support this change, or would restructuring first make the implementation simpler?"
 - **Axis format**: Choices like "A: Extend current structure / B: Restructure [specific area] first, then add feature"
@@ -247,7 +247,7 @@ The planner operates within the command's guardrails. It adds judgment to agent 
 
 ## Integration
 
-- **Invoked by**: `commands/design.md`, `commands/implement.md`, `commands/feature-spec.md`, `commands/investigate.md`
+- **Invoked by**: `commands/design.md`, `commands/feature-spec.md`, `commands/investigate.md`, `commands/plan.md`
 - **Catalogs**: `catalog/reviewers.md`, `catalog/researchers.md` (including `axis-evaluator` for per-axis evaluation)
 - **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for quantitative structural fitness evaluation in Step 1
 - **Dispatches**: `dispatch-reviewers` for review steps, Task tool for researcher/scout/axis-evaluator dispatch

@@ -7,12 +7,11 @@ const ALL_FILES = ["feature-spec", "design", "coding"];
 export const PHASE_LEARNINGS_MAP = {
     "feature-spec": ["feature-spec"],
     design: ["feature-spec", "design"],
-    implement: ["design", "coding"],
     investigate: ["coding"],
     review: ["design", "coding"],
     research: ALL_FILES,
     plan: ["design", "coding"],
-    compound: ALL_FILES,
+    eval: ALL_FILES,
 };
 export function getLearningsForPhase(phase) {
     const levels = PHASE_LEARNINGS_MAP[phase] ?? ALL_FILES;

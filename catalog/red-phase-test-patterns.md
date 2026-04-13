@@ -2,7 +2,7 @@
 
 Curated test design prompts for the TDD RED phase. Each entry answers: "What test should I write that I wouldn't have written otherwise?"
 
-Read once per implementation session (not per TDD cycle). Referenced by `skills/tdd-cycle/SKILL.md` trigger questions.
+Read once per implementation session. Referenced by TDD RED phase trigger questions during implementation.
 
 ---
 

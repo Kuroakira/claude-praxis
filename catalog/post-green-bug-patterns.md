@@ -2,7 +2,7 @@
 
 Curated latent bug patterns for the TDD VERIFY phase. Each entry describes a pattern where code passes tests but contains hidden issues detectable through code reading.
 
-Read once per implementation session (not per TDD cycle). Referenced by `skills/tdd-cycle/SKILL.md` VERIFY phase.
+Read once per implementation session. Referenced by TDD VERIFY phase during implementation.
 
 ---
 

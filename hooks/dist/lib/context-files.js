@@ -8,7 +8,6 @@ const TRACKED_FILES = [
     "learnings-feature-spec.md",
     "learnings-design.md",
     "learnings-coding.md",
-    "compound-last-run.json",
     "last-compact.json",
     "context-pressure.json",
 ];
@@ -91,15 +90,10 @@ function writeJsonFile(dir, fileName, data) {
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, fileName), JSON.stringify(data, null, 2));
 }
-function isCompoundLastRun(data) {
-    if (!isRecord(data))
-        return false;
-    return typeof data.timestamp === "string" && typeof data.promotedCount === "number";
-}
 function isLastCompact(data) {
     if (!isRecord(data))
         return false;
-    if (typeof data.timestamp !== "string" || typeof data.compoundRun !== "boolean")
+    if (typeof data.timestamp !== "string")
         return false;
     if (!isRecord(data.progressSummary))
         return false;
@@ -124,13 +118,6 @@ function isContextPressure(data) {
     if (!validLevels.includes(data.lastNotifiedLevel))
         return false;
     return true;
-}
-export function readCompoundLastRun(contextDir) {
-    const data = readJsonFile(path.join(contextDir, "compound-last-run.json"));
-    return isCompoundLastRun(data) ? data : null;
-}
-export function writeCompoundLastRun(contextDir, data) {
-    writeJsonFile(contextDir, "compound-last-run.json", data);
 }
 export function readLastCompact(contextDir) {
     const data = readJsonFile(path.join(contextDir, "last-compact.json"));

@@ -43,18 +43,17 @@ claude-praxis/
 │       ├── phase-detect.ts      # Semantic phase detection (UserPromptSubmit)
 │       └── context-pressure-check.ts  # Context usage monitoring (UserPromptSubmit)
 ├── commands/
-│   ├── feature-spec.md          # /feature-spec — AI-driven interview to capture requirements
-│   ├── design.md                # /design — planner-driven research + outline + write Design Doc
-│   ├── implement.md             # /implement — TDD per task + graduated review (accepts plan from /plan)
+│   ├── feature-spec.md          # /feature-spec — brainstorm-driven interview to capture requirements
+│   ├── design.md                # /design — brainstorm-driven architecture → Design Doc
 │   ├── analyze.md               # /analyze — codebase architecture analysis + durable report
 │   ├── guide.md                 # /guide — codebase walkthrough guide for human understanding
 │   ├── investigate.md            # /investigate — reproduce + diagnose + document
 │   ├── research.md              # /research — standalone research
-│   ├── plan.md                  # /plan — thorough planning with Axes Table and architecture analysis
+│   ├── plan.md                  # /plan — implementation plan with Granularity Contract + superpowers handoff
 │   ├── review.md                # /review — standalone code review
 │   ├── review-guide.md          # /review-guide — self-review guide for AI-generated code
 │   ├── compare.md               # /compare — structured multi-option comparison + selection
-│   ├── compound.md              # /compound — extract and accumulate learnings
+│   ├── eval.md                  # /eval — evaluate and improve framework from recent execution
 │   └── understanding-check.md   # /understanding-check — verify understanding of AI-generated work
 ├── skills/
 │   ├── workflow-planner/        # Analyze task, select agents from catalogs, generate execution plan
@@ -62,17 +61,11 @@ claude-praxis/
 │   ├── architecture-analysis/   # Multi-pass codebase analysis with durable reports + quantitative health scoring
 │   ├── guide-generation/        # Multi-pass codebase exploration + single-narrator guide writing
 │   ├── check-past-learnings/    # Recall relevant learnings before starting work
-│   ├── tdd-cycle/               # RED-GREEN-REFACTOR procedure + decision points
-│   ├── milestone-review/        # Cross-milestone consistency self-review at milestone boundaries
-│   ├── rule-evolution/          # Propose and add new rules from discovered issues
-│   ├── subagent-driven-development/     # Fresh agent per task + 2-stage review
 │   ├── agent-team-execution/    # Parallel exploration: research, review teams, debugging
 │   ├── systematic-debugging/    # 3-phase root cause analysis (reproduce, isolate, diagnose)
 │   ├── context-persistence/     # Stock/Flow memory model for context survival
-│   ├── understanding-check/     # Explain-Compare-Discover for understanding verification
-│   ├── requesting-code-review/  # Dispatch reviewer after tasks
-│   └── receiving-code-review/   # Handle feedback (no sycophancy)
-├── claudedocs/                  # Analysis reports, design docs, plans, implementation records
+│   └── understanding-check/     # Explain-Compare-Discover for understanding verification
+├── claudedocs/                  # Analysis reports, design docs, plans
 ├── tests/                       # Unit and integration tests for hooks
 ├── README.md
 └── CLAUDE.md                    # This file
@@ -124,6 +117,10 @@ If the same fact appears in 2+ places, one must become a reference ("see X") not
 
 See `README.md` for workflow details, installation, and feature list. Commands are loaded on-demand when invoked. Quality rules are loaded via `@import` above.
 
+### superpowers Integration
+
+Implementation is delegated to superpowers. The handoff: `/plan` produces a plan → superpowers `writing-plans` generates micro-step plans → superpowers executes with TDD.
+
 ## Session Cache MCP
 
 Before reading any file, call `check_cache` from the session-cache server with the file path. If the cache returns a hit, use the summary instead of re-reading the file unless you need details not covered by the summary.
@@ -149,7 +146,7 @@ At the start of a complex task, call `get_session_map` to see what files have al
 ## Design Decisions
 
 - Distributed as Claude Code plugin via marketplace system (install/uninstall/update with one command)
-- Quality rules live in `rules/` as always-on constraints; procedural skills (`tdd-cycle`, `rule-evolution`) handle the "how"
+- Quality rules live in `rules/` as always-on constraints; `/eval` improves the framework from observed execution friction
 - Notion integration handled through format rules (API integration for future consideration)
 - SessionStart hook cleans markers and injects context (rules auto-apply via @import)
 - Skill descriptions contain ONLY trigger conditions (CSO — prevents shortcut behavior)
@@ -158,6 +155,7 @@ At the start of a complex task, call `get_session_map` to see what files have al
 - Implementation decision points are surfaced to the user — when multiple valid approaches exist, Claude presents options instead of choosing silently
 - Learnings are stored with context/rationale — enables "does the same assumption hold?" recall instead of blind repetition
 - Contextual recall uses judgment prompts, not quizzes — "same rationale applies here?" not "do you remember?"
-- Four orchestrating workflows (`/claude-praxis:feature-spec`, `/claude-praxis:design`, `/claude-praxis:implement`, and `/claude-praxis:investigate`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. Supporting commands remain for direct invocation when the full workflow is not needed
+- Three orchestrating workflows (`/claude-praxis:feature-spec`, `/claude-praxis:design`, and `/claude-praxis:investigate`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. `/plan` produces plans consumed by superpowers for execution. Supporting commands remain for direct invocation when the full workflow is not needed
+- `/eval` directly improves framework files instead of accumulating separate knowledge — `/compound` and `rule-evolution` successor
 - FeatureSpec owns "What and Why," Design Doc owns "How" — this boundary prevents requirements ambiguity from propagating into design. Phase detection automatically suggests FeatureSpec when requirements are vague
 - Planner-driven adaptive workflow: commands define phase structure and constraints, `workflow-planner` skill provides judgment on agent selection. Catalogs (`catalog/`) define the selection pool with independent verification sources per entry. Review tiers are graduated (none/light/thorough) based on stage and content. `dispatch-reviewers` is the canonical reviewer dispatch mechanism

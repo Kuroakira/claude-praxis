@@ -25,7 +25,7 @@ If the `session-cache:session-cache-protocol` skill is available, invoke it befo
 | Sequential / dependent tasks | **No** | Coordination overhead exceeds benefit |
 | Simple / small tasks | **No** | Single session or subagent is sufficient |
 
-**Implementation stays in subagent-driven-development.** Agent teams are for exploration, not production.
+**Implementation stays with superpowers for implementation tasks.** Agent teams are for exploration, not production.
 
 ## 1. Parallel Research
 
@@ -103,7 +103,7 @@ perspective. Synthesize into a unified review with agreed severity ratings.
 
 ### Your Role After Review
 
-Read the findings. For each issue, understand **why** it's a problem, not just that it is one. When you fix an issue, you should be able to explain the vulnerability/bottleneck to a teammate. Issues you didn't understand become `/compound` candidates.
+Read the findings. For each issue, understand **why** it's a problem, not just that it is one. When you fix an issue, you should be able to explain the vulnerability/bottleneck to a teammate. Issues you didn't understand become `/eval` candidates.
 
 ## 3. Competing Hypothesis Debugging
 
@@ -146,7 +146,7 @@ Report: surviving hypothesis with evidence, disproven hypotheses with reasons.
 
 ### Your Role After Debugging
 
-Understand the surviving hypothesis. You should be able to explain: what caused the bug, why the other hypotheses were wrong, and what to watch for in the future. This understanding feeds into `/compound` as a learning.
+Understand the surviving hypothesis. You should be able to explain: what caused the bug, why the other hypotheses were wrong, and what to watch for in the future. This understanding feeds into `/eval` as a learning.
 
 > **Note**: `/claude-praxis:investigate` dispatches `hypothesis-investigator` agents directly via Task tool, without requiring agent teams or `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`. This section documents the agent-team pattern for standalone use or manual invocation. For command-level phase ordering, see `commands/investigate.md`.
 
@@ -183,10 +183,10 @@ Start with 3 teammates. Only go to 5 for debugging with many plausible hypothese
 ## Integration
 
 - Research output feeds into `/design` phase — **you** write the Design Doc from findings
-- Review teams are used at every workflow review point: `/feature-spec` Draft Review, `/design` Auto-Review, `/implement` Final Review
-- Review output follows `requesting-code-review` format (severity ratings)
-- Debugging output feeds into fix implementation via `subagent-driven-development`
+- Review teams are used at every workflow review point: `/feature-spec` Draft Review, `/design` Auto-Review
+- Review output uses severity ratings from `catalog/reviewers.md`
+- Debugging output feeds into fix implementation via superpowers for implementation tasks
 - **Note**: `/claude-praxis:investigate` no longer depends on this skill for hypothesis investigation. It dispatches `hypothesis-investigator` agents directly via Task tool
-- All outputs feed into `/compound` — extract learnings from what agents discovered
+- All outputs feed into `/eval` — extract learnings from what agents discovered
 - **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across parallel agents when available
-- **Never use for implementation** — use `subagent-driven-development` instead
+- **Never use for implementation** — use superpowers for implementation tasks instead

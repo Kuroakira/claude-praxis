@@ -62,7 +62,7 @@ Invoke `dispatch-reviewers` with:
 
 ## Step 5: Address Feedback
 
-Handle review results using `receiving-code-review` skill:
+Handle review results:
 1. **Critical/Important issues** — fix before proceeding
 2. **Minor issues** — note for human judgment
 3. **Conflicting opinions** — resolve explicitly (state which adopted and why)

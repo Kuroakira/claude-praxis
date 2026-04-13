@@ -1,19 +1,13 @@
-// Order matters: when both overrides match, the first wins.
-// Override[0] (implement) is ordered first because "Design Doc に従って実装プラン"
-// (referencing a Design Doc to create an implementation plan) is more common than
-// "Create a design doc for the implementation" (creating a Design Doc about implementation).
-// This is an intentional trade-off — regex cannot disambiguate semantic intent when
-// both "design doc" and implementation keywords appear. Advisory-only, so misclassification
-// has limited impact.
 const COMPOUND_OVERRIDES = [
     {
-        // "design doc" / "DesignDoc" + implementation intent → implement (not design)
+        // "design doc" + implementation intent → plan (not design)
+        // "Design Doc に従って実装プランを作成して" means follow the doc and make a plan
         condition: (msg) => /\bdesign\s*doc\b/i.test(msg) &&
             (/\bimplement/i.test(msg) || /実装/.test(msg) || /プラン/.test(msg)),
-        phase: "implement",
+        phase: "plan",
     },
     {
-        // "design/設計" + creation intent → design (prevents implement's /create/ from stealing)
+        // "design/設計" + creation intent → design (prevents plan's /create/ from stealing)
         condition: (msg) => (/\bdesign\b/i.test(msg) || /設計/.test(msg)) &&
             (/\bcreate\b/i.test(msg) || /作成/.test(msg)),
         phase: "design",
@@ -37,16 +31,6 @@ export const PHASE_PATTERNS = [
         patterns: [
             /\bfeature\s+spec/i, /\brequirement/i, /\bspec\b/i,
             /要件/, /仕様/, /何を作/, /機能.*定義/,
-        ],
-    },
-    // DD4: implement BEFORE design to reduce false design matches
-    {
-        phase: "implement",
-        command: "/claude-praxis:implement",
-        description: "TDD-driven development with graduated review (accepts plan from /plan)",
-        patterns: [
-            /\bimplement/i, /\bbuild\b/i, /\bcreate\b/i, /\badd\b.*\b(feature|function|component)\b/i,
-            /実装/, /作って/, /追加/, /修正して/, /コード.*書/,
         ],
     },
     {
@@ -73,7 +57,9 @@ export const PHASE_PATTERNS = [
         description: "thorough implementation plan with Axes Table and architecture analysis",
         patterns: [
             /\bplan\b/i, /\bbreak\s*down/i, /\bstrateg/i,
+            /\bimplement/i, /\bbuild\b/i, /\bcreate\b/i, /\badd\b.*\b(feature|function|component)\b/i,
             /計画/, /分解/, /ステップ/, /段階/,
+            /実装/, /作って/, /追加/,
         ],
     },
     {
@@ -86,16 +72,16 @@ export const PHASE_PATTERNS = [
         ],
     },
     {
-        phase: "compound",
-        command: "/claude-praxis:compound",
-        description: "extract and accumulate learnings",
+        phase: "eval",
+        command: "/claude-praxis:eval",
+        description: "evaluate and improve framework skills from recent execution",
         patterns: [
-            /\bcompound\b/i, /\blearning/i, /\bretrospect/i,
-            /振り返/, /学び/, /知見/,
+            /\beval\b/i, /\bevaluat/i, /\bimprove\s+(skill|command|rule)/i,
+            /改善/, /スキル.*改善/, /振り返.*改善/,
         ],
     },
 ];
-const SLASH_COMMAND_RE = /^\s*\/(design|implement|investigate|feature-spec|research|plan|review|compound)\b/i;
+const SLASH_COMMAND_RE = /^\s*\/(design|investigate|feature-spec|research|plan|review|eval)\b/i;
 function formatOutput(phase, command, description) {
     return description
         ? `Phase detected: ${phase}. Suggested command: ${command} — ${description}`

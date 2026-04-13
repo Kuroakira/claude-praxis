@@ -22,7 +22,6 @@ Commands invoke this skill with a role that determines which learnings files to 
 |------|-------|-------------|
 | requirements | `learnings-feature-spec.md` | Does the same context apply? |
 | design | `learnings-feature-spec.md`, `learnings-design.md` | Does the same assumption hold? |
-| implementation | `learnings-design.md`, `learnings-coding.md` | Does the same assumption hold? |
 | investigation | `learnings-coding.md` | Could the same mechanism be at play? |
 
 If the role is not recognized, read all learnings files as a safe fallback.
@@ -66,6 +65,6 @@ Contextual recall is for decisions that depend on project context, trade-offs, o
 
 ## Integration
 
-- **Invoked by**: `commands/implement.md`, `commands/design.md`, `commands/feature-spec.md`, `commands/investigate.md`
-- **Reads files from**: `.claude/context/` (project-level learnings written by `/compound`)
+- **Invoked by**: `commands/design.md`, `commands/feature-spec.md`, `commands/investigate.md`, `commands/plan.md`
+- **Reads files from**: `.claude/context/` (project-level learnings)
 - **Related**: `context-persistence` (manages the Stock/Flow files this skill reads)

@@ -4,8 +4,8 @@ description: >-
   Create a thorough implementation plan — Axes Table, per-axis evaluation,
   architecture analysis, codebase scouting, and plan review.
   Use when: a Design Doc exists (or scope is clear) and you want to plan
-  before implementing. Produces a plan consumable by /implement.
-  After approval, run /implement with the plan path to execute.
+  before implementing. Produces a plan consumable by superpowers.
+  After approval, pass the plan to superpowers:writing-plans for execution.
 disable-model-invocation: false
 ---
 
@@ -13,7 +13,30 @@ Orchestrate the **Planning Workflow** using Phase Group Subagents.
 
 This command produces a thorough implementation plan — with Axes Table, per-axis evaluation, architecture analysis, and plan review — then terminates after presenting the plan to the user. No code is written.
 
-The plan file produced here is directly consumable by `/implement`, which skips inline breakdown and proceeds straight to implementation.
+The plan file produced here is directly consumable by superpowers — pass it to `superpowers:writing-plans` for execution.
+
+## Plan Granularity Contract
+
+| Item | Standard |
+|---|---|
+| Size | 100-200 lines, readable in 30 minutes |
+| Task count | 4-8 tasks |
+| Include | Function names, file paths, task ordering, TDD order instructions, out-of-scope items, risks, per-task review plan |
+| Exclude | Actual code blocks, line-by-line changes, micro-steps (2-5 min granularity) |
+| Per-task required fields | Why, changed files, estimated size, test targets, TDD order |
+
+### TDD Order
+
+Each task must specify which tests to write first and what behavior each test validates. This is ordering guidance, not the actual test code — execution is handled by superpowers.
+
+## superpowers Handoff
+
+Each task in the plan serves as spec input for `superpowers:writing-plans`. One praxis task = one superpowers plan.
+
+To execute the plan:
+1. Pass the plan file to `superpowers:writing-plans` (one task at a time, or the full plan)
+2. superpowers generates micro-step plans with actual code
+3. Execute via `superpowers:subagent-driven-development` or `superpowers:executing-plans`
 
 ## Phase Group Architecture
 
@@ -28,7 +51,7 @@ graph TD
     O -->|in-context| PRESENT[Present Plan +<br/>Cleanup]
 ```
 
-**Orchestrator principles**: Follow the orchestrator principles defined in `commands/implement.md` (file paths not contents, structural validation only, `.claude/context/progress.md` by orchestrator). Additionally:
+**Orchestrator principles**: Pass file paths (not contents) to subagents. Validate subagent output structurally only (file exists, sections present, non-empty). Write progress to `.claude/context/progress.md` from orchestrator only. Additionally:
 - Plan Presentation reads the plan file to present to the human (exception to structural-only validation)
 - All intermediate files (`reasoning-log-g1.md`) are written to `claudedocs/plans/wip/`. This directory is created at G0 and cleaned up at Plan Presentation. Permanent artifacts (plan file, axes-table, analysis report) go to their standard locations
 
@@ -40,7 +63,7 @@ Runs in the orchestrator's context. Three responsibilities: initialize the works
 
 **Learnings check**: Invoke `check-past-learnings` (role: implementation). Carry relevant learnings forward into G1's dispatch prompt as constraints or starting points.
 
-**Architecture health baseline** (TypeScript only): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__scan` with the project path. If the implementation scope is known (from Design Doc or user request), pass the `include` filter matching the scope directories. This is a scoped, point-in-time assessment for planning — distinct from `/implement` G0's `session_start` (full-project baseline for before/after comparison). Extract dimensions scoring D or F — these are refactoring candidates. Pass the results to G1 as `health_baseline` context:
+**Architecture health baseline** (TypeScript only): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__scan` with the project path. If the implementation scope is known (from Design Doc or user request), pass the `include` filter matching the scope directories. This is a scoped, point-in-time assessment for planning. Extract dimensions scoring D or F — these are refactoring candidates. Pass the results to G1 as `health_baseline` context:
 
 - If D/F dimensions exist: include dimension names, grades, and affected scope as refactoring context for G1
 - If no D/F dimensions: pass `health_baseline: no issues detected` to G1
@@ -97,7 +120,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 > | Parameter | Value |
 > |-----------|-------|
 > | `task` | Plan implementation of [topic] |
-> | `domain` | implement |
+> | `domain` | plan |
 > | `domain_context` | Task decomposition (PR-sized ~500 lines), dependency analysis, TDD. **System-wide overlap scouting**: Scout must look beyond the target scope to find existing code that overlaps with or is similar to the planned feature — duplicate logic, similar patterns, structures that should be consolidated before adding the feature. This informs refactoring-first task creation. Security-sensitive change → add security-perf to per-task review. Change that extends or modifies existing architecture → add structural-fitness. The mandatory Implementation Axes Table structurally prevents conflating Design Doc clarity with implementation approach clarity. Axes marked "Requires exploration" trigger Independent Axis Evaluation (per-axis parallel agents) — see workflow-planner. |
 > | `constraints` | (1) TDD mandatory for all tasks. (2) Final review mandatory with 3+ reviewers including devils-advocate. (3) Each task produces a reviewable, self-contained change (~500 lines). (4) Scout findings are required input for the plan. (5) Context gathering must produce an Implementation Axes Table — every implementation decision with multiple valid approaches must be enumerated with verdict (Clear winner / Requires exploration). (6) If Implementation Axes Table has "Requires exploration" axes, planner executes Independent Axis Evaluation to resolve them before plan creation. |
 > | `catalog_scope` | Reviewers: quality, correctness, spec-compliance, security-perf, ts-patterns, devils-advocate, structural-fitness, axes-coherence. Researchers: codebase-scout, best-practices, axis-evaluator. |
@@ -157,7 +180,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >>
 >>    All refactoring tasks are self-contained — the codebase should be in a better state even if feature implementation is deferred. Present these as "Refactoring (pre-implementation)" in the plan
 > 5. For each step specify: exact file paths, existing patterns (cite Scout findings), applicable best practices (cite best-practices findings — recommended patterns, anti-patterns to avoid, version-specific APIs), tests to write FIRST (TDD), expected line count, verification steps, dependencies, per-task review plan
-> 6. **Milestones within tasks** (when a task spans multiple files): If a task contains multiple files that each require their own TDD cycle, add a `### Milestones` section listing ordered sub-steps. Each milestone represents a focused unit of work — typically one file's TDD cycle and implementation. During execution, `implement.md` invokes `milestone-review` at each milestone boundary for cross-milestone consistency checking. The default granularity is one file per milestone, but the planner can combine small files into one milestone or split large files across milestones. Tasks with a single file do not need milestones. Example format:
+> 6. **Milestones within tasks** (when a task spans multiple files): If a task contains multiple files that each require their own TDD cycle, add a `### Milestones` section listing ordered sub-steps. Each milestone represents a focused unit of work — typically one file's TDD cycle and implementation. During execution, each milestone boundary is a natural review point for cross-milestone consistency checking. The default granularity is one file per milestone, but the planner can combine small files into one milestone or split large files across milestones. Tasks with a single file do not need milestones. Example format:
 >    ```
 >    ### Milestones
 >    1. **M1: [file/scope]** — [what this milestone produces]
@@ -169,8 +192,8 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >    - 4+ files or cross-module → add `devils-advocate`
 >    - API change / auth → add `security-perf`
 >    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
-> 9. TDD ordering: list test files before implementation files within each step
-> 10. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
+> 9. **TDD order**: For each task, specify which tests to write first and what behavior each test validates. This is ordering guidance — list test files before implementation files, describe what each test should verify. Actual test code execution is handled by superpowers
+> 10. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: note "parallelizable". If 1-2: note "sequential execution"
 > 11. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
 >
 > **Step 6: Plan Review**
@@ -249,7 +272,9 @@ Read the plan file — this is the one exception where the orchestrator reads fu
 Plan ready at `claudedocs/plans/[name]-plan.md`.
 Axes Table at `claudedocs/plans/[name]-axes-table.md`.
 
-To implement: run /claude-praxis:implement with this plan.
+To execute: pass the plan to superpowers:writing-plans (one task at a time, or the full plan).
+superpowers generates micro-step plans with actual code, then executes via
+superpowers:subagent-driven-development or superpowers:executing-plans.
 ```
 
 ---
@@ -266,7 +291,7 @@ Inputs are passed as **file paths** in the subagent's task description. Subagent
 
 ## Orchestrator Validation Protocol
 
-Apply the Orchestrator Validation Protocol defined in `commands/implement.md`. The validation checks (file existence, section headers, non-empty) and error recovery (cleanup → re-dispatch → escalate) are identical across all orchestrating commands.
+After each subagent completes, validate its output structurally: check that expected files exist, required section headers are present, and content is non-empty. On validation failure: cleanup partial output → re-dispatch the subagent → escalate to user if second attempt fails.
 
 ### Required outputs
 
