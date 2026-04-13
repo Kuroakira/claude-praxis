@@ -63,7 +63,7 @@ Runs in the orchestrator's context. Three responsibilities: initialize the works
 
 **Learnings check**: Invoke `check-past-learnings` (role: implementation). Carry relevant learnings forward into G1's dispatch prompt as constraints or starting points.
 
-**Architecture health baseline** (TypeScript only): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__scan` with the project path. If the implementation scope is known (from Design Doc or user request), pass the `include` filter matching the scope directories. This is a scoped, point-in-time assessment for planning — distinct from `/implement` G0's `session_start` (full-project baseline for before/after comparison). Extract dimensions scoring D or F — these are refactoring candidates. Pass the results to G1 as `health_baseline` context:
+**Architecture health baseline** (TypeScript only): If `tsconfig.json` exists at the project root, call `mcp__plugin_sekko-arch_sekko-arch__scan` with the project path. If the implementation scope is known (from Design Doc or user request), pass the `include` filter matching the scope directories. This is a scoped, point-in-time assessment for planning. Extract dimensions scoring D or F — these are refactoring candidates. Pass the results to G1 as `health_baseline` context:
 
 - If D/F dimensions exist: include dimension names, grades, and affected scope as refactoring context for G1
 - If no D/F dimensions: pass `health_baseline: no issues detected` to G1
@@ -180,7 +180,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >>
 >>    All refactoring tasks are self-contained — the codebase should be in a better state even if feature implementation is deferred. Present these as "Refactoring (pre-implementation)" in the plan
 > 5. For each step specify: exact file paths, existing patterns (cite Scout findings), applicable best practices (cite best-practices findings — recommended patterns, anti-patterns to avoid, version-specific APIs), tests to write FIRST (TDD), expected line count, verification steps, dependencies, per-task review plan
-> 6. **Milestones within tasks** (when a task spans multiple files): If a task contains multiple files that each require their own TDD cycle, add a `### Milestones` section listing ordered sub-steps. Each milestone represents a focused unit of work — typically one file's TDD cycle and implementation. During execution, `implement.md` invokes `milestone-review` at each milestone boundary for cross-milestone consistency checking. The default granularity is one file per milestone, but the planner can combine small files into one milestone or split large files across milestones. Tasks with a single file do not need milestones. Example format:
+> 6. **Milestones within tasks** (when a task spans multiple files): If a task contains multiple files that each require their own TDD cycle, add a `### Milestones` section listing ordered sub-steps. Each milestone represents a focused unit of work — typically one file's TDD cycle and implementation. During execution, each milestone boundary is a natural review point for cross-milestone consistency checking. The default granularity is one file per milestone, but the planner can combine small files into one milestone or split large files across milestones. Tasks with a single file do not need milestones. Example format:
 >    ```
 >    ### Milestones
 >    1. **M1: [file/scope]** — [what this milestone produces]
@@ -193,7 +193,7 @@ Dispatch a `general-purpose` Task subagent with the following task prompt. The p
 >    - API change / auth → add `security-perf`
 >    - **TypeScript project** (tsconfig.json exists) → add `ts-patterns`
 > 9. **TDD order**: For each task, specify which tests to write first and what behavior each test validates. This is ordering guidance — list test files before implementation files, describe what each test should verify. Actual test code execution is handled by superpowers
-> 10. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: evaluate `subagent-driven-development`. If 1-2: note "sequential execution"
+> 10. Dependency analysis: identify sequential vs parallel tasks. If 3+ independent: note "parallelizable". If 1-2: note "sequential execution"
 > 11. Always include "Final Review (dispatch-reviewers, thorough)" as the last task
 >
 > **Step 6: Plan Review**

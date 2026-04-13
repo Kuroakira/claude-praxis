@@ -4,7 +4,7 @@ Always-applied constraints. Violate = delete and redo.
 
 ## TDD Required
 
-Wrote production code before tests? → **Delete and redo.** For the detailed RED-GREEN-REFACTOR procedure, see `tdd-cycle` skill.
+Wrote production code before tests? → **Delete and redo.** Follow the RED-GREEN-REFACTOR cycle: failing test → minimal code to pass → refactor.
 
 ```
 ❌ Write code first, add tests later
