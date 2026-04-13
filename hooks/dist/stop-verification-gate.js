@@ -22,9 +22,7 @@ try {
     }
     if (advisories.length > 0) {
         writeJson({
-            hookSpecificOutput: {
-                additionalContext: advisories.join("\n\n"),
-            },
+            systemMessage: advisories.join("\n\n"),
         });
         process.exit(0);
     }
