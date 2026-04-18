@@ -29,7 +29,6 @@ claude-praxis/
 │   ├── red-phase-test-patterns.md      # 12 points, RED phase test design prompts (mini-catalog)
 │   └── post-green-bug-patterns.md      # 16 points, post-GREEN latent bug patterns (mini-catalog)
 ├── agents/
-│   ├── implementer.md           # Implementation agent
 │   ├── reviewer.md              # Code review agent (read-only)
 │   ├── researcher.md            # Research agent (haiku, lightweight)
 │   └── scout.md                 # Codebase exploration agent (haiku, read-only)
