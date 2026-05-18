@@ -97,7 +97,6 @@ rm ~/.claude/skills/claude-praxis
 | `architecture-analysis` | Multi-pass codebase analysis with durable Markdown+mermaid reports and quantitative health scoring (TypeScript) |
 | `guide-generation` | Multi-pass codebase exploration + single-narrator guide as HTML book |
 | `systematic-debugging` | 3-phase root cause analysis (reproduce, isolate, diagnose) |
-| `context-persistence` | Stock/Flow memory model for context survival across compact/clear |
 | `check-past-learnings` | Recall relevant learnings at the start of any workflow phase |
 | `understanding-check` | Explain-Compare-Discover procedure for verifying understanding |
 

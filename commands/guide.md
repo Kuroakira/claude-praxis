@@ -15,11 +15,11 @@ This command produces a durable walkthrough guide saved to `claudedocs/guides/[s
 ## Step 1: Determine Scope
 
 Ask the user what to guide if not already specified. Scope can be:
-- A module or directory (e.g., "the hooks system", "skills/workflow-planner")
+- A module or directory (e.g., "the catalog system", "skills/workflow-planner")
 - A cross-cutting concern (e.g., "how review dispatch flows across commands")
 - The whole project ("project" — produces overview-level guide only; use `/guide [module]` for deep dives)
 
-If the user has already specified the scope (e.g., `/guide hooks`), proceed directly.
+If the user has already specified the scope (e.g., `/guide catalog`), proceed directly.
 
 ## Step 2: Generate Guide
 

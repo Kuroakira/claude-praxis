@@ -32,15 +32,6 @@ claude-praxis/
 │   ├── reviewer.md              # Code review agent (read-only)
 │   ├── researcher.md            # Research agent (haiku, lightweight)
 │   └── scout.md                 # Codebase exploration agent (haiku, read-only)
-├── hooks/
-│   ├── hooks.json               # SessionStart + PreCompact + PostToolUse + Stop + UserPromptSubmit hook config
-│   └── src/
-│       ├── session-start.ts     # Cleans markers + injects context
-│       ├── pre-compact.ts       # Trims Flow files before compact
-│       ├── mark-skill-invoked.ts  # Records Skill invocations to session markers
-│       ├── stop-verification-gate.ts  # Completion verification gate (warns if unchecked)
-│       ├── phase-detect.ts      # Semantic phase detection (UserPromptSubmit)
-│       └── context-pressure-check.ts  # Context usage monitoring (UserPromptSubmit)
 ├── commands/
 │   ├── feature-spec.md          # /feature-spec — brainstorm-driven interview to capture requirements
 │   ├── design.md                # /design — brainstorm-driven architecture → Design Doc
@@ -62,27 +53,24 @@ claude-praxis/
 │   ├── check-past-learnings/    # Recall relevant learnings before starting work
 │   ├── agent-team-execution/    # Parallel exploration: research, review teams, debugging
 │   ├── systematic-debugging/    # 3-phase root cause analysis (reproduce, isolate, diagnose)
-│   ├── context-persistence/     # Stock/Flow memory model for context survival
 │   └── understanding-check/     # Explain-Compare-Discover for understanding verification
 ├── claudedocs/                  # Analysis reports, design docs, plans
-├── tests/                       # Unit and integration tests for hooks
 ├── README.md
 └── CLAUDE.md                    # This file
 ```
 
 ## Layer Architecture
 
-7 layers, each answering one question. **One fact lives in one place only** — other layers reference, never duplicate.
+6 layers, each answering one question. **One fact lives in one place only** — other layers reference, never duplicate.
 
 | Layer | Question | Contains | Does NOT Contain |
 |-------|----------|----------|------------------|
-| **CLAUDE.md** | What is this project, how to use it? | Project info, workflow overview, skill/agent catalog | Rule details, procedures, hook logic |
+| **CLAUDE.md** | What is this project, how to use it? | Project info, workflow overview, skill/agent catalog | Rule details, procedures |
 | **Rule** (`rules/`) | What must always be followed? | Constraints, prohibitions, quality standards (with examples) | Procedures, workflows, self-evolution logic |
 | **Catalog** (`catalog/`) | What agents are available to select from? What do they check? | Agent types with IDs, focus areas, independent verification sources, applicable domains. Review-point checklists referenced by reviewer prompts | Procedures, phase ordering, selection logic (Skill's job) |
 | **Command** (`commands/`) | In what order, by whom, where does the human decide? | Phase sequence, PAUSE points, skill invocations, planner invocation with domain context + constraints | Procedure bodies (delegate to Skill), constraints (delegate to Rule) |
 | **Skill** (`skills/`) | How to do it? (reusable procedure) | Step-by-step procedures, templates, decision criteria | Constraints (Rule's job), phase ordering (Command's job) |
 | **Agent** (`agents/`) | Who does it? | Role, tools, model, maxTurns | Procedures (Skill's job), constraints (Rule's job) |
-| **Hook** (`hooks/`) | What to auto-detect and notify? | Event detection, warn/remind, marker management | Rule content re-statements, procedure duplication |
 
 ### Loading Model
 
@@ -90,12 +78,10 @@ claude-praxis/
 Always-on (session start, every session):
   CLAUDE.md + @rules/*.md  →  constraints always in context
   Skill descriptions        →  name + trigger only (~100 tokens/skill)
-  SessionStart hook output  →  session state facts
 
 On-demand (when invoked):
   Skill full content        →  loaded on invoke (~2000+ tokens/skill)
   Command content           →  loaded on slash command
-  Hooks                     →  fire on events (UserPromptSubmit, Stop, etc.)
 ```
 
 ### Boundary Rule
@@ -107,7 +93,6 @@ When adding or moving information, ask: "Which layer's question does this answer
 - A procedure (how to do it) → `skills/`
 - Phase ordering or human checkpoints → `commands/`
 - Who executes with what tools → `agents/`
-- Automatic detection/notification → `hooks/`
 - Project overview or catalog → `CLAUDE.md`
 
 If the same fact appears in 2+ places, one must become a reference ("see X") not a copy.
@@ -147,14 +132,12 @@ At the start of a complex task, call `get_session_map` to see what files have al
 - Distributed as Claude Code plugin via marketplace system (install/uninstall/update with one command)
 - Quality rules live in `rules/` as always-on constraints; `/eval` improves the framework from observed execution friction
 - Notion integration handled through format rules (API integration for future consideration)
-- SessionStart hook cleans markers and injects context (rules auto-apply via @import)
 - Skill descriptions contain ONLY trigger conditions (CSO — prevents shortcut behavior)
-- Context persistence follows "Write Auto, Read Manual" — never auto-inject content into context
-- Phase progression uses "Auto-detect, Suggest, User decides" — commands exist for explicit use, but Claude proactively suggests the right phase based on context. Praxis lives in the phase content (articulating "why"), not in remembering to type commands
+- Phase progression uses "commands exist for explicit use" — the user invokes the right phase based on context. Praxis lives in the phase content (articulating "why")
 - Implementation decision points are surfaced to the user — when multiple valid approaches exist, Claude presents options instead of choosing silently
 - Learnings are stored with context/rationale — enables "does the same assumption hold?" recall instead of blind repetition
 - Contextual recall uses judgment prompts, not quizzes — "same rationale applies here?" not "do you remember?"
 - Three orchestrating workflows (`/claude-praxis:feature-spec`, `/claude-praxis:design`, and `/claude-praxis:investigate`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. `/plan` produces plans consumed by superpowers for execution. Supporting commands remain for direct invocation when the full workflow is not needed
 - `/eval` directly improves framework files instead of accumulating separate knowledge — `/compound` and `rule-evolution` successor
-- FeatureSpec owns "What and Why," Design Doc owns "How" — this boundary prevents requirements ambiguity from propagating into design. Phase detection automatically suggests FeatureSpec when requirements are vague
+- FeatureSpec owns "What and Why," Design Doc owns "How" — this boundary prevents requirements ambiguity from propagating into design
 - Planner-driven adaptive workflow: commands define phase structure and constraints, `workflow-planner` skill provides judgment on agent selection. Catalogs (`catalog/`) define the selection pool with independent verification sources per entry. Review tiers are graduated (none/light/thorough) based on stage and content. `dispatch-reviewers` is the canonical reviewer dispatch mechanism

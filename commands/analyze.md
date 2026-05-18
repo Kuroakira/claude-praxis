@@ -17,11 +17,11 @@ This command produces a durable architecture report saved to `claudedocs/analysi
 ## Step 1: Determine Scope
 
 Ask the user what to analyze if not already specified. Scope can be:
-- A module or directory (e.g., "the hooks system", "skills/workflow-planner")
+- A module or directory (e.g., "the catalog system", "skills/workflow-planner")
 - A cross-cutting concern (e.g., "how review dispatch works across commands")
 - The whole project ("project")
 
-If the user has already specified the scope (e.g., `/analyze hooks`), proceed directly.
+If the user has already specified the scope (e.g., `/analyze catalog`), proceed directly.
 
 Check for `--thorough` flag. If present, set mode to `thorough`. If an unrecognized flag is provided, warn and proceed with normal mode:
 
