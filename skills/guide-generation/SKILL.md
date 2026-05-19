@@ -1,296 +1,226 @@
 ---
 name: guide-generation
-description: Use when generating codebase walkthrough guides — produces durable HTML book output (multi-page folder with navigation) for human understanding. Invoked by /guide command.
+description: Use when generating single-file interactive HTML walkthroughs of a code topic — produces one self-contained .html with prose, diagrams, sequence player, and (when applicable) a live interactive demo. Invoked by /guide command.
 user-invocable: false
 ---
 
 # Guide Generation
 
-Multi-pass codebase exploration followed by single-narrator writing that produces a durable walkthrough guide as a multi-page HTML book. The guide serves as a human learning companion — read alongside the code to build understanding step by step. mermaid diagrams render as interactive visuals, code blocks get syntax highlighting, and hub-and-spoke navigation lets readers zoom in and out of focus areas.
+This skill produces ONE single-file HTML per topic, modeled after deep-investigation walkthroughs. The output is a self-contained `.html` file — no external CSS or JS files. CDN-loaded libraries (Mermaid via jsDelivr, highlight.js via cdnjs) are the only external dependencies. The writer inlines all styles and scripts in the file itself.
 
 ## The Iron Law
 
 ```
-DRILL TO SOURCE — EVERY EXPLANATION REFERENCES SPECIFIC FILE PATHS AND SYMBOLS
+EVERY EXPLANATION CITES FILE PATH + SYMBOL OR LINE NUMBER.
+THE READER MUST BE ABLE TO OPEN THE CODE AND VERIFY EACH CLAIM.
 ```
 
-No vague claims. Every code explanation must include a file path and symbol name so the reader can open the code and verify the explanation. The guide is a hypothesis document — explanations say "this appears to handle" rather than "this handles."
-
-## Semantic-First Approach
-
-Use Serena's semantic analysis tools as the primary source for structural data. Serena provides LSP-backed precision — symbol hierarchy from `get_symbols_overview`, cross-file reference chains from `find_referencing_symbols`. No guessing from grep patterns.
-
-Scout agents complement Serena with broader context that semantic tools don't capture: entry point identification, component responsibilities, data flow narrative, directory organization, and architectural intent.
-
-**Division of labor**: Serena (main agent) → structural facts (symbols, references). Scouts → contextual interpretation (what it means, how it flows, why it's designed this way).
+No vague descriptions. Every code claim includes a `<span class="file-ref">filename.ts:line-or-symbol</span>` inline.
 
 ## Parameters
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
-| `scope` | Yes | What to guide: a module path, directory, cross-cutting concern name, or "project" for whole-project overview |
+| `scope` | Yes | Directory or file path to investigate (e.g., `frontend/src/features/board/`) |
+| `intent` | Yes | One-line topic statement framing what to deep-dive (e.g., "interaction state がどう遷移するか") |
 
 ## Procedure
 
-### Pre-step: Session Cache (Optional)
+### Phase 1: Structured Investigation (mandatory before any HTML)
 
-If the `session-cache:session-cache-protocol` skill is available, invoke it before starting file reads. This reduces redundant file reads when the same scope has been partially read earlier in the session. If unavailable, proceed without — this step is an optimization, not a requirement.
+Complete all 5 substeps before writing a single line of HTML. The investigation builds the mental model the writer draws on.
 
-### Pass 1: Overview Scan
+**1a. Entry points** — Use Serena `get_symbols_overview` on the scope. Identify what triggers the behavior the intent describes: event handlers, route handlers, public API functions, exported hooks. Record file paths and symbol names.
 
-**Step 1a — Semantic Structure (Main Agent, Serena)**
+**1b. Event sources** — Use Serena `find_referencing_symbols` from the entry points outward. Map who calls what: which components wire up the event handlers, which hooks consume the public API. Trace at least two levels of the call chain.
 
-Use Serena's `get_symbols_overview` on key files/directories within the scope to get the precise symbol hierarchy (classes, functions, methods, and their nesting). This provides the structural map that scouts build upon.
+**1c. State shape** — Locate state holders: atoms, stores, `useState`/`useReducer` hooks, class fields, module-level variables. Extract their initial values and all sites where they are updated. Record file path + line range for each.
 
-- Project-wide scope: scan each top-level module/directory
-- Module scope: scan all files in the module
+**1d. Happy path trace** — Pick one representative interaction the intent describes. Walk the full call chain from event source through every function to the final render or output. List each function visited with its file path and line range. This trace becomes the sequence player content.
 
-The output is a structured symbol map: what symbols exist, where, and how they nest.
+**1e. Cross-cuts** — Find places where this scope leaks into other modules: imports of scope's symbols from outside, scope's imports of external state or context. Note boundary crossings that the reader should know about.
 
-**Step 1b — Broad Context (Scout Agent)**
+Output: a structured internal mental model. Optionally save to `claudedocs/scout-reports/[topic-slug]-investigation.md` as a working artifact; this is not required.
 
-Dispatch one scout agent (subagent_type: `claude-praxis:scout`) with the symbol map from Step 1a as context. The scout adds what Serena doesn't capture: entry point identification (CLI commands, API endpoints, UI routes), component responsibilities, key data flows from entry points through the system, directory organization, import patterns, and public interface surfaces. Every finding must reference specific file paths.
+### Phase 2: Demo Feasibility Assessment (AI auto-judgment)
 
-**Output**: A structured map of entry points, components, data flows, and their relationships — enriched by both Serena symbols and scout observations.
+After Phase 1, decide whether to include an interactive demo. ALL of the following must be true:
 
-### Pass 2: Targeted Deep Dives
+- The scope contains state that updates in response to events (state machine, interactive UI, mode toggles, form state).
+- The state can be modeled in vanilla JS without external dependencies — no need to replicate React reconciliation, network calls, or persistent storage.
+- The intent benefits from "touching it" over reading about it — the state transitions are the point.
 
-Based on Pass 1 findings, select the most important data flow paths starting from identified entry points. One path at a time, up to a maximum of 5. Prioritize by: (1) paths from the primary entry point, (2) paths that touch the most components.
+If **no demo**: proceed to Phase 3 with sequence player only.
 
-**Step 2a — Reference Chain Analysis (Main Agent, Serena)**
+If **yes demo**: extract the state machine spec from Phase 1c findings into a small JS-replicable representation. Verify the spec against the actual code one more time before writing. Note which pattern from Appendix B applies.
 
-For each deep-dive path, use `find_referencing_symbols` on the key symbols along the path to trace precise cross-file reference chains. This gives exact data flow data: which files reference which symbols, how data moves between components, and the coupling direction.
+### Phase 3: Outline Generation (internal — not shown to user)
 
-**Step 2b — Deep Dive (Scout Agent)**
+Produce a section outline following the abstract-to-concrete rule from `rules/document-quality.md`:
 
-Dispatch one scout agent per path (subagent_type: `claude-praxis:scout`) with the reference chain data from Step 2a. Each agent reads function bodies, traces the full data flow through the path, and notes: what each step does, why it exists, how it connects to the next step, and what design decisions are visible. Every finding must reference specific file paths and symbol names.
+- **Section 1**: Topic overview — intent restated as section title, one-paragraph summary of what the scope does and why it matters.
+- **Section 2**: State shape — what the state IS, with file refs. Table or list of state variants and their payloads.
+- **Section 3**: State machine / flow overview — mermaid `stateDiagram-v2` or `graph LR` plus one paragraph of prose.
+- **Section 4+**: One section per major flow identified in Phase 1d, each with a sequence player showing the step-by-step call chain.
+- **Section N-1**: Cross-cuts and constraints — where this design creates friction or has known limitations. Material for downstream design work.
+- **Section N**: Interactive Demo — included only when Phase 2 said yes.
 
-For "project" scope: deep dives cover top-level component interactions and important internal implementation patterns that reveal design intent. Show how key components work internally (e.g., the main processing logic, critical algorithms, state management) — not just their public interfaces. Individual modules can still be explored in more depth via separate `/guide [module]` invocations.
+### Phase 4: Write the HTML (one-shot, single narrator)
 
-If the scope is small enough that Pass 1 already covers the full data flow, skip Pass 2. State this in the guide's Coverage Boundary.
+The main agent writes the entire HTML in one turn. No subagent delegation for writing. Required structure:
 
-### Pass 3: Write Guide (HTML Book)
+**`<head>`**: Copy from `assets/head.html`, substitute `{{TITLE}}` with the intent (Japanese OK).
 
-The main agent (not a subagent) writes the complete guide as a multi-page HTML book using scout findings as input. This pass produces the output folder following the HTML Page Structure below.
+**Inline `<style>` block**: Paste the full contents of `assets/style.css` into a `<style>` element in `<head>`. Do not reference `style.css` as an external file — the output must be self-contained.
 
-Key writing responsibilities:
-- **Locate assets**: Use Glob with pattern `**/guide-generation/assets/style.css` to find the skill's asset directory. This resolves the correct path whether claude-praxis is the current project or installed as a plugin
-- **Copy CSS**: Copy the located `style.css` to the output folder using bash `cp` — do not generate CSS manually
-- **Embed head**: Read the located `head.html` from the same assets directory and use its content as the `<head>` for every HTML page, replacing `{{TITLE}}` with the page title (e.g., `Guide: [Scope Name]` for index, `[Focus Area Name]` for chapters)
-- Write `index.html` (Big Picture hub page) using analogies and plain language
-- Write each chapter page (`NN-[focus-area].html`) following the zoom-in/zoom-out rhythm
-- Include mermaid diagrams as `<div class="mermaid">` blocks (rendered client-side)
-- Include code references as `<pre><code class="language-[lang]">` blocks (highlighted client-side)
-- Write navigation elements (sidebar TOC, prev/next links, "Back to the Big Picture" links)
-- Write the Coverage Boundary section in the last chapter or as a dedicated page
-- Optionally generate concept visuals via image generation MCP (see below)
+**`<body>` per outline**: Each section uses:
+- `<h2>` for section title
+- `<p>` for prose
+- `<div class="mermaid">` for diagrams
+- `<pre><code class="language-typescript">` for code references
+- `<span class="file-ref">filename.ts:line-range</span>` for inline file references
+- `<div class="note">` for gotchas and non-obvious constraints
+- `<div class="insight">` for design decisions and "why not X" explanations
 
-**Single narrator requirement**: The main agent writes the entire guide to maintain a consistent voice, tone, and level of detail throughout. Do not delegate writing to subagents.
+**Sequence player**: For each flow section (Phase 1d trace), include the player markup and inline JS from Appendix A. Adapt the steps array to the actual call chain. Each step specifies a prose explanation visible when that step is current.
 
-**Short guide rule**: If the scope has 2 or fewer Focus Areas, write a single `index.html` containing all content (no chapter split). The sidebar TOC links to sections within the same page via anchor links. The style.css is still copied separately.
+**Interactive demo** (only when Phase 2 said yes): Include the demo container markup, inline JS state machine, and event handlers wired to clickable elements. Use the pattern from Appendix B that matches the real code. Demo state transitions must match the actual reducer/state machine logic found in Phase 1c.
 
-### Content Density Requirements
+## Output Path
 
-Guides must feel information-rich. Prose alone is thin — density comes from real codebase examples, structured comparisons, visual callouts, and design rationale interspersed with narrative.
+Filename: `claudedocs/investigations/YYYY-MM-DD-[topic-slug].html` where:
+- `YYYY-MM-DD` is today's date (check the session's current date).
+- `[topic-slug]` is a kebab-case slug derived from the intent, max 60 chars.
+- If a file with that name already exists, append `-2`, `-3`, etc.
 
-**Show real code from the codebase**: Every code example must come from the actual codebase being documented — not hypothetical illustrations. Include the file path as a comment or preceding text so readers can open the file alongside the guide. Show the code, then explain what it does and why.
+The skill writes ONE file. No accompanying CSS/JS files, no folder.
 
-**One concept, one code example**: After each concept explanation (2-3 sentences), include a code example (3-15 lines) showing the actual implementation, interface, or pattern. Mark the "point" of each example with a comment. Larger examples (up to 25 lines) are acceptable when showing a complete data flow path or critical algorithm.
+## Long-output Overflow Rule
 
-**Type signatures and interfaces**: Display public interfaces and key types in dedicated code blocks. Include not just the signatures but brief inline annotations explaining non-obvious fields or parameters. Types are the most information-dense elements — readers can infer behavior from them.
+If the final HTML would exceed 1500 lines, split into a multi-page bundle at `claudedocs/investigations/YYYY-MM-DD-[topic-slug]/` with `index.html` plus `NN-[section].html` files. This is rare — most topics fit in one file. Do not pre-emptively split; only split when the single-file estimate actually exceeds the threshold.
 
-**Comparison tables**: Use `<table>` for component responsibilities, pattern tradeoffs, "what vs why vs where" breakdowns, or cross-component relationship maps. Tables compress information more than bullet lists. Use them liberally.
+## Appendix A: Sequence Player Template
 
-**Callout boxes**: Use `<div class="callout callout-note/warning/tip">` for:
-- Gotchas discovered during deep dives (warning)
-- Design decisions that surprised you or are non-obvious (note)
-- Practical tips for working with the code (tip)
-- "Why not X?" explanations for rejected alternatives (note)
-
-**Before/After pairs**: For design decisions, show the naive approach, then the actual approach, then explain why the actual is better.
-
-**Progressive complexity**: Start with the simplest happy path through each component. Then layer in error handling, edge cases, and optimizations.
-
-**Cross-references with context**: When one component depends on another, show the specific integration point — the function call, the import, the shared type. Don't just say "A uses B"; show how.
-
-**Mermaid diagram structure** (mirrors document hierarchy):
-- **Big Picture (index.html)**: One overview diagram showing high-level components (5-8 nodes max). Each node represents a Focus Area or major component — no internal details
-- **Chapter pages**: Focused diagrams showing internals of that chapter's focus area (up to 15 nodes). These drill into the abstract nodes from the overview
-- **Never**: A single diagram trying to show the entire system at full detail. If a chapter's diagram exceeds 15 nodes, split the chapter or raise the abstraction level of the diagram
-- The diagram hierarchy matches the guide's zoom-in/zoom-out navigation: overview diagram → chapter diagram → code examples
-
-**Minimum density targets** (MUST — not aspirational):
-- Each chapter page must have at least 4 code examples, 2 tables, and 2 callouts
-- The Big Picture (index.html) must have at least 1 mermaid diagram (high-level overview, ≤8 nodes), 1 comparison table, and 1 code example showing a representative interaction
-- No section of 2+ paragraphs without a code example, table, diagram, or callout breaking up the prose
-- Every chapter must include at least 1 "Design Decision" callout explaining why something is built the way it is
-- Every chapter must include at least 1 relationship table showing how the focus area connects to other components
-
-## HTML Page Structure
-
-The guide follows a zoom-in/zoom-out navigation pattern expressed as a multi-page HTML book. The `index.html` (Big Picture) is the hub that readers navigate to and from between each focused chapter.
-
-### Output folder
-
-```
-claudedocs/guides/[scope-name]/
-├── index.html              # Big Picture (hub page)
-├── 01-[focus-area].html    # Chapter 1 (spoke page)
-├── 02-[focus-area].html    # Chapter 2 (spoke page)
-├── ...
-├── style.css               # Shared stylesheet (copied from assets/style.css)
-└── images/                 # Optional: generated concept visuals
-```
-
-### index.html (Big Picture)
+Paste this template for each flow section. Replace `FLOW_ID` with a unique identifier (e.g., `reclick-flow`), and replace the `steps` array contents with the actual call chain from Phase 1d.
 
 ```html
-<!DOCTYPE html>
-<html lang="en">
-<!-- Set lang attribute to match the guide's language (e.g., lang="ja" for Japanese) -->
-<!-- <head> content: Read from assets/head.html, replace {{TITLE}} with "Guide: [Scope Name]" -->
-<body>
-  <a href="#main-content" class="skip-link">Skip to main content</a>
-  <nav class="sidebar" aria-label="Guide navigation">
-    <h2>[Scope Name]</h2>
-    <ul>
-      <li><a href="index.html" class="active">Big Picture</a></li>
-      <li><a href="01-[focus].html">[Focus Area 1]</a></li>
-      <li><a href="02-[focus].html">[Focus Area 2]</a></li>
-      <!-- ... -->
-    </ul>
-  </nav>
-  <main id="main-content" class="content">
-    <h1>Guide: [Scope Name]</h1>
-    <p class="meta">Generated: [timestamp]. This is a point-in-time snapshot — verify against current code.</p>
+<!-- Sequence player: [flow title] -->
+<div class="seq-player" id="FLOW_ID">
+  <div class="seq-controls">
+    <span class="seq-step-index" id="FLOW_ID-counter">0 / 0</span>
+    <button class="seq-btn" id="FLOW_ID-prev">←</button>
+    <button class="seq-btn" id="FLOW_ID-next">Next →</button>
+    <button class="seq-btn" id="FLOW_ID-auto">▶</button>
+    <button class="seq-btn" id="FLOW_ID-reset">Reset</button>
+  </div>
+  <div class="seq-step-panel" id="FLOW_ID-panel">
+    <p style="color:#9ca3af;font-style:italic">Press Next to start stepping through the flow.</p>
+  </div>
+</div>
+<script>
+  (() => {
+    const steps = [
+      // Each entry: { title: "short label", body: "prose explanation with <code> tags" }
+      { title: "Step 1 label", body: "Prose: what happens here, with <code>fileName.ts:42</code> reference." },
+      { title: "Step 2 label", body: "Prose: next step in the call chain." },
+      // … add one entry per step from Phase 1d trace
+    ];
 
-    <h2>Big Picture</h2>
-    <!-- What this system/module does, explained with analogies and plain language.
-         A reader with no prior knowledge of this codebase should finish this section
-         with a mental model of the overall structure.
-         No code references yet — this section builds the conceptual foundation. -->
+    const counter = document.getElementById('FLOW_ID-counter');
+    const panel   = document.getElementById('FLOW_ID-panel');
+    const prevBtn = document.getElementById('FLOW_ID-prev');
+    const nextBtn = document.getElementById('FLOW_ID-next');
+    const autoBtn = document.getElementById('FLOW_ID-auto');
+    const resetBtn = document.getElementById('FLOW_ID-reset');
 
-    <div class="mermaid">
-    graph LR
-      %% Major components and their relationships
-    </div>
+    let current = 0;
+    let autoTimer = null;
+    const total = steps.length;
 
-    <!-- Chapter links as a navigable list -->
-    <h2>Focus Areas</h2>
-    <ol>
-      <li><a href="01-[focus].html">[Focus Area 1]</a> — [one-sentence summary]</li>
-      <li><a href="02-[focus].html">[Focus Area 2]</a> — [one-sentence summary]</li>
-    </ol>
+    function render() {
+      counter.textContent = `${current} / ${total}`;
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === total;
+      if (current === 0) {
+        panel.innerHTML = '<p style="color:#9ca3af;font-style:italic">Press Next to start.</p>';
+      } else {
+        const s = steps[current - 1];
+        panel.innerHTML = `<div class="seq-step-index">${current} / ${total} — ${s.title}</div><p>${s.body}</p>`;
+      }
+    }
 
-    <h2>Coverage Boundary</h2>
-    <ul>
-      <li><strong>Covered</strong>: [components/paths explored, with file references]</li>
-      <li><strong>Not covered</strong>: [components/paths NOT explored, and why]</li>
-      <li><strong>Suggested next</strong>: <code>/guide [specific-module]</code> for [area]</li>
-    </ul>
-  </main>
-</body>
-</html>
+    function stopAuto() {
+      if (autoTimer) clearInterval(autoTimer);
+      autoTimer = null;
+      autoBtn.textContent = '▶';
+    }
+
+    prevBtn.addEventListener('click', () => { if (current > 0) { current--; render(); stopAuto(); } });
+    nextBtn.addEventListener('click', () => { if (current < total) { current++; render(); } });
+    autoBtn.addEventListener('click', () => {
+      if (autoTimer) { stopAuto(); return; }
+      if (current === total) current = 0;
+      autoBtn.textContent = '⏸';
+      autoTimer = setInterval(() => {
+        if (current < total) { current++; render(); }
+        else { stopAuto(); }
+      }, 800);
+    });
+    resetBtn.addEventListener('click', () => { current = 0; stopAuto(); render(); });
+
+    render();
+  })();
+</script>
 ```
 
-### NN-[focus-area].html (Chapter Page)
+**Usage**: Repeat one player block per flow section. Each `FLOW_ID` must be unique on the page. The `steps` array mirrors the call chain traced in Phase 1d — one entry per function or state transition visited.
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<!-- Same lang as index.html -->
-<!-- <head> content: Read from assets/head.html, replace {{TITLE}} with "[Focus Area Name]" -->
-<body>
-  <a href="#main-content" class="skip-link">Skip to main content</a>
-  <nav class="sidebar" aria-label="Guide navigation">
-    <!-- Same sidebar as index.html, but with THIS page's link marked class="active" -->
-  </nav>
-  <main id="main-content" class="content">
-    <a href="index.html" class="back-to-hub">← Back to Big Picture</a>
+## Appendix B: Interactive Demo Patterns
 
-    <h1>[Focus Area Name]</h1>
+Choose one pattern based on whether the real code is event-driven (user gestures trigger state) or data-driven (a pipeline transforms data).
 
-    <h2>Where We Are</h2>
-    <p>Of the [N] components in the Big Picture, we're now looking at [X] — the [role].</p>
+### Pattern 1: Stage + State Panels (event-driven state machines)
 
-    <h2>Walkthrough</h2>
-    <!-- Step-by-step narrative following the data flow through this area. Each step:
-         - What it does (plain language, analogies where helpful)
-         - Where it lives (file path + symbol name as <code>)
-         - Why it's designed this way (if visible from the code)
-         - Show actual code for key logic, not just describe it
-         - Include callout boxes for non-obvious design decisions or gotchas -->
+Use when: the scope has a state machine that reacts to user gestures — clicks, drags, keyboard. The Darius board example (`Section 10`) is the canonical reference.
 
-    <h2>Key Code</h2>
-    <!-- The most important code in this area, shown with full context.
-         For each snippet:
-         - File path and symbol name
-         - The actual code (5-25 lines, from the real codebase)
-         - Annotation: what makes this code important, what design decisions it embodies
-         Include type signatures, key interfaces, or critical algorithms.
-         Aim for 2-3 annotated code blocks in this section. -->
+**Structure**:
+- A `<div class="demo-container">` wrapping the whole demo.
+- A `<div class="demo-stage">` with a mock UI: clickable `<div>` elements representing the real UI's interactive targets (buttons, table cells, canvas). These fire state transitions when clicked.
+- A `<div class="demo-state-panels">` grid with one `<div class="demo-panel">` per state variable. Each panel shows the current value of its variable, updated via DOM manipulation on every state change.
+- Optional: a dispatch log `<ol>` showing which actions fired, in order.
+- Inline `<script>` with a plain-object state machine that mirrors the real reducer logic. Event handlers on stage elements call `dispatch(action)`, the dispatch function updates the state object, then calls `render()` which writes current values to the panels.
 
-    <h2>Design Decisions</h2>
-    <!-- Why is this area designed the way it is?
-         For each decision:
-         - What the decision is
-         - Why it was made (evidence from the code)
-         - What the alternative would be and why it wasn't chosen (if visible)
-         Use callout-note boxes for each decision. Aim for 2-3 decisions per chapter. -->
+**State change wiring**:
+```javascript
+// Plain state object (mirrors real atom/store)
+const state = { kind: 'idle' };
 
-    <h2>Connections</h2>
-    <!-- How this area relates to other parts of the system.
-         Use a table showing: Component | Relationship | Integration Point (file:symbol)
-         Or a mermaid diagram showing the dependency/data flow connections.
-         This is more detailed than "Back to the Big Picture" — show specific integration points. -->
+function dispatch(action) {
+  // Mirror the real reducer — same guards, same transitions
+  if (action.type === 'SELECT' && state.kind === 'idle') {
+    state.kind = 'selected';
+    state.id = action.id;
+  }
+  // … other transitions
+  render();
+}
 
-    <h2>Back to the Big Picture</h2>
-    <p>Now that we've seen how [X] works, we know that [insight]. Next, we'll look at [Y], which receives [X]'s output and...</p>
-
-    <nav class="page-nav">
-      <a href="[prev].html">← [Previous Chapter]</a>
-      <a href="index.html">Big Picture</a>
-      <a href="[next].html">[Next Chapter] →</a>
-    </nav>
-  </main>
-</body>
-</html>
+function render() {
+  document.getElementById('state-display').textContent = state.kind;
+  // Update all panels to reflect current state
+}
 ```
 
-**Navigation rules**:
-- First chapter: no "← Previous" link (omit or link to index.html)
-- Last chapter: no "Next →" link (omit)
-- Every chapter: always has "Big Picture" center link and "← Back to Big Picture" at the top
+The key fidelity requirement: the demo's state transitions must match the actual code's reducer guards exactly — same conditions, same result kinds. Verify against Phase 1c before writing.
 
-## Static Assets
+### Pattern 2: Step-through Animation (data-driven pipelines)
 
-CSS and HTML `<head>` templates are maintained as static files in `assets/` to ensure deterministic output. Do not duplicate their content in this file.
+Use when: the scope transforms data through a sequence of stages with no user input in the real code — request/response flows, data processing pipelines, build-time transformations.
 
-- `assets/style.css` — Complete guide stylesheet (grid layout, sidebar, mermaid overlay, callouts, responsive breakpoints, skip-link). Copy to output folder with bash `cp`
-- `assets/head.html` — HTML `<head>` block with CDN links (mermaid 11.4.1, highlight.js 11.11.1 with SRI), initialization scripts, and mermaid click-to-zoom JavaScript. Contains `{{TITLE}}` placeholder — replace with the page title when embedding
+**Structure**:
+- A `<div class="demo-container">` with labeled stage boxes arranged left-to-right or top-to-bottom.
+- An auto-advancing animation driven by the sequence player from Appendix A, where each step highlights a different stage box and shows the data value at that point.
+- Stage boxes use CSS transitions (`transition: background 0.4s, border-color 0.4s`) to animate activation as the player advances.
+- No user interaction beyond the player controls — the user observes, not participates.
 
-**Path discovery**: Use Glob `**/guide-generation/assets/style.css` to locate the assets directory. This works regardless of whether the skill runs from the project root or from a plugin installation path
-
-## Image Generation MCP (Optional)
-
-At the start of Pass 3, use ToolSearch to check if any image generation MCP tools are available (search for keywords like "image", "generate", "create", "visual", "draw").
-
-- **If found**: Generate concept visuals for key architectural concepts where a visual metaphor aids understanding — mental models, system analogies, conceptual overviews. Save images to the `images/` subdirectory within the guide output folder. Embed in HTML with `<img src="images/[name].png" alt="[description]" class="concept-image">`.
-- **If not found**: Skip image generation entirely. The guide is complete with mermaid diagrams and text alone. Do not warn or notify — image generation is a silent enhancement.
-
-**Scope limitation**: mermaid diagrams handle structural/flow diagrams (component relationships, data flow, dependency graphs). Image generation MCP is for conceptual/intuitive visuals that mermaid cannot express (mental model illustrations, metaphorical diagrams, architectural analogies). Do not duplicate what mermaid already covers.
-
-## Document Lifecycle
-
-- **Overwrite**: Re-running on the same scope overwrites the existing guide (no versioning). The calling command handles folder cleanup before invoking this skill
-- **Timestamp**: Always include generation timestamp in the guide header (`<p class="meta">`)
-
-## Integration
-
-- **Static assets**: `assets/style.css` (bash `cp` to output) and `assets/head.html` (Read + `{{TITLE}}` substitution) ensure deterministic CSS and `<head>` output — no LLM generation of these critical templates
-- **Semantic tools**: Serena MCP (`get_symbols_overview`, `find_referencing_symbols`) for precise symbol hierarchy and cross-file reference tracing — run by the main agent
-- **Exploration agents**: `claude-praxis:scout` for broad context scanning and deep-dive exploration (haiku, read-only). Main agent writes the guide
-- **External libraries**: mermaid.js 11.4.1 (jsDelivr CDN) for diagram rendering, highlight.js 11.11.1 (cdnjs CDN, SRI verified) for syntax highlighting. Both loaded client-side with version pinning. CDN URLs and SRI hashes are maintained in `assets/head.html`
-- **Image generation**: Optional MCP-based concept visuals (ToolSearch detection, silent skip if unavailable)
-- **Session cache**: `session-cache:session-cache-protocol` skill (optional) — reduces redundant file reads across agents when available
-- **Invoked by**: `commands/guide.md`
+This pattern is less interactive but correct for code that has no event-driven state machine. It makes the data movement visible without misrepresenting the code's interaction model.
