@@ -1,26 +1,60 @@
 ---
 name: research
-description: Standalone research — investigate problem space without committing to a Design Doc (research is built into /claude-praxis:design)
+description: >-
+  Investigate a topic by searching across the current codebase, related
+  repositories, and the public web. Returns a structured summary with cited
+  sources. Use to broaden context before reading code or making decisions —
+  not to commit to a design.
 disable-model-invocation: false
 ---
 
-Begin the **Research Phase**:
+Begin the **Research Phase**.
 
-The goal of research is NOT just to find "the answer" — it's to understand the **landscape of options** so that the Design Doc's Alternatives Considered section writes itself.
+The goal is a structured survey of a topic with cited sources, NOT a recommendation. The output is reading material that broadens context.
 
-1. **Understand the problem space**: Search the web for prior art, similar implementations, and established patterns. Cite all sources with URLs.
-2. **Understand "what it should be"**: Research is not just about extending the current code. Investigate what the ideal architecture or approach looks like regardless of the current implementation. Best practices, industry standards, and well-designed OSS projects reveal what "should be" — before cost constraints narrow the choices.
-3. **Identify candidate approaches**: Find at least 2-3 distinct ways to solve the problem, including:
-   - The ideal approach (what it should look like if built from scratch)
-   - A pragmatic middle ground (meaningful improvement within reasonable cost)
-   - An incremental approach (extending the current implementation)
-   For each approach: How does it work? Who uses it? What are the trade-offs?
-4. **Compare approaches**: Present a comparison that highlights where approaches differ:
-   > | Approach | Strengths | Weaknesses | Cost | Best suited for |
-   > |----------|-----------|------------|------|-----------------|
-   > | A (ideal) | ... | ... | ... | ... |
-   > | B (pragmatic) | ... | ... | ... | ... |
-   > | C (incremental) | ... | ... | ... | ... |
-5. **Surface constraints**: Identify project-specific constraints that narrow the choices (existing tech stack, team familiarity, performance requirements, timeline, etc.)
-6. **Preliminary recommendation**: Based on the comparison and constraints, suggest which approach fits best — with reasoning. Explicitly address whether the cost of the ideal approach is justified, or if a pragmatic middle ground is more appropriate.
-7. **Identify open questions**: What needs human input or further investigation before committing to a design?
+## Step 1: Clarify scope
+
+Confirm with the user (one quick exchange, not a multi-turn interview):
+- What topic to research
+- What kind of sources matter most (current codebase / OSS prior art / official docs / blog posts)
+- Any explicit "do NOT search" exclusions
+
+If the topic is clear from the invocation, skip to Step 2 with one-line confirmation.
+
+## Step 2: Search across sources
+
+In parallel where possible:
+- **Codebase**: grep / read current project for existing patterns matching the topic
+- **Public web**: WebSearch + WebFetch for OSS implementations, official docs, established patterns
+- **Adjacent repos**: if the user mentioned a related repo (e.g., a sibling project), include its relevant files
+
+Cite every claim. Every finding must include a source — file path with line number for code, URL with title for web sources.
+
+## Step 3: Write structured summary to file
+
+Write the summary to `claudedocs/research/YYYY-MM-DD-[topic-slug].md` (kebab-case slug from the topic, max 60 chars). Also surface a brief inline confirmation to the user (file path + 1-sentence summary of what was found).
+
+File content format:
+
+```
+# Research: [topic]
+
+Generated: YYYY-MM-DD
+
+## Codebase findings
+- [finding] — `[file:line]`
+- ...
+
+## External findings
+- [finding] — [Source Title](URL)
+- ...
+
+## Patterns observed
+[1-2 paragraphs synthesizing what the sources collectively suggest, without recommending one]
+
+## Open questions
+- [question that the sources didn't resolve]
+- ...
+```
+
+Do NOT produce: "preliminary recommendation", "alternatives considered", "ideal vs pragmatic vs incremental" framing. Those belong in a Design Doc downstream (handled by superpowers), not in research output.
