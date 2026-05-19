@@ -145,3 +145,172 @@ th { background: var(--color-table-header-bg); color: var(--color-table-header-t
 .demo-panel-title { font-size: 0.8em; color: var(--color-file-ref); margin-bottom: 4px; }
 .demo-panel-value { font-family: var(--font-code); font-weight: bold; color: var(--color-heading); }
 .demo-tag { display: inline-block; background: var(--color-table-header-bg); color: var(--color-table-header-text); font-size: 0.7em; padding: 2px 6px; border-radius: 3px; margin-left: 6px; }
+
+/* =====================================================================
+   Sequence Player — actor-based message/note flow (Appendix A)
+   Replaces the prior {title, body} slide model. Steps are typed as either
+   `msg` (message between two actors, drawn with arrow) or `note` (internal
+   note on a single actor). Actors get colored pills by type.
+   ===================================================================== */
+.seq-progress {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; margin-left: 8px; font-size: 0.85em; color: var(--color-file-ref);
+}
+.seq-progress-bar { flex: 1; height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+.seq-progress-fill { height: 100%; background: var(--color-accent); width: 0%; transition: width 0.25s ease; }
+.seq-counter { font-family: var(--font-code); }
+.seq-participants {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 10px 12px; background: white;
+  border: 1px solid var(--color-border); border-radius: 4px;
+  margin-bottom: 12px;
+}
+.seq-participants-title { font-size: 0.75em; color: var(--color-file-ref); align-self: center; margin-right: 4px; }
+.seq-actor {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 12px;
+  font-size: 0.85em; font-family: var(--font-code);
+  background: #e5e7eb; color: var(--color-text);
+  border: 1px solid #d1d5db;
+}
+.seq-actor[data-type="user"]     { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+.seq-actor[data-type="hook"]     { background: #dbeafe; border-color: #3b82f6; color: #1e40af; }
+.seq-actor[data-type="atom"]     { background: #ede9fe; border-color: #8b5cf6; color: #5b21b6; }
+.seq-actor[data-type="service"]  { background: #d1fae5; border-color: #10b981; color: #065f46; }
+.seq-actor[data-type="component"]{ background: #fce7f3; border-color: #ec4899; color: #9d174d; }
+.seq-actor[data-type="external"] { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+.seq-participant-detail-type {
+  font-size: 0.7em; opacity: 0.7;
+  padding-left: 4px; border-left: 1px solid currentColor;
+}
+.seq-steps { display: flex; flex-direction: column; gap: 8px; }
+.seq-step {
+  display: grid; grid-template-columns: 28px 1fr; gap: 10px;
+  padding: 10px 12px; background: white;
+  border: 1px solid var(--color-border); border-radius: 4px;
+  opacity: 0.45; transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.seq-step.seq-step-current {
+  opacity: 1; border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+.seq-step-number {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--color-accent); color: white;
+  font-size: 0.8em; font-weight: bold; font-family: var(--font-code);
+}
+.seq-msg-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 4px; }
+.seq-arrow { color: var(--color-accent); font-weight: bold; font-family: var(--font-code); }
+.seq-msg-label { font-weight: 600; color: var(--color-heading); margin: 4px 0; font-size: 0.95em; }
+.seq-step-explain { color: var(--color-text); font-size: 0.9em; line-height: 1.55; }
+.seq-note { background: #fffbeb; border-style: dashed; }
+.seq-note-actor { display: inline-block; margin-bottom: 4px; }
+.seq-note-text { font-style: italic; color: #78350f; margin: 4px 0 6px; font-size: 0.95em; }
+
+/* =====================================================================
+   State Diagram (Appendix C) — handcrafted SVG state machine.
+   Use for state machines too detailed for mermaid stateDiagram-v2.
+   Class names match the SVG template inlined per page.
+   ===================================================================== */
+.state-diagram {
+  margin: 24px 0;
+  padding: 16px;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.state-diagram-svg { display: block; max-width: 100%; height: auto; }
+.state-node {
+  fill: #eff6ff; stroke: var(--color-accent); stroke-width: 2;
+  transition: fill 0.3s, stroke 0.3s;
+}
+.state-node-label { font-family: var(--font-body); font-size: 13px; fill: var(--color-heading); font-weight: 600; text-anchor: middle; }
+.state-node-sub   { font-family: var(--font-code); font-size: 10px; fill: var(--color-file-ref); text-anchor: middle; }
+.state-node.state-active { fill: #fde68a; stroke: #d97706; }
+.state-transition { fill: none; stroke: #6b7280; stroke-width: 1.5; marker-end: url(#state-arrow); }
+.state-transition-label {
+  font-family: var(--font-code); font-size: 11px;
+  fill: var(--color-text);
+  paint-order: stroke fill; stroke: white; stroke-width: 3px; stroke-linejoin: round;
+}
+.state-transition.state-transition-active { stroke: var(--color-accent); stroke-width: 2.5; }
+
+/* =====================================================================
+   Architecture Diagram (Appendix D) — ByteByteGo-inspired system flow.
+   Primitive shape icons (DB cylinder, server rect, queue, etc.), numbered
+   step bubbles overlaid on components, animated arrows showing data flow.
+   ===================================================================== */
+.arch-diagram {
+  margin: 24px 0;
+  padding: 20px;
+  background: linear-gradient(180deg, #fafafa, #f3f4f6);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.arch-svg { display: block; max-width: 100%; height: auto; }
+.arch-band {
+  fill: #f9fafb; stroke: #e5e7eb; stroke-width: 1; stroke-dasharray: 4 4;
+}
+.arch-band-label {
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
+  fill: var(--color-file-ref); text-transform: uppercase; letter-spacing: 0.05em;
+}
+.arch-component {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.arch-component.arch-component-pending { opacity: 0.3; }
+.arch-component-label {
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
+  fill: var(--color-heading); text-anchor: middle;
+}
+.arch-component-sub {
+  font-family: var(--font-code); font-size: 10px;
+  fill: var(--color-file-ref); text-anchor: middle;
+}
+/* Component fills — flat colors, draw.io-like flavor */
+.arch-icon-server   { fill: #dbeafe; stroke: #3b82f6; stroke-width: 1.5; }
+.arch-icon-db       { fill: #ede9fe; stroke: #8b5cf6; stroke-width: 1.5; }
+.arch-icon-queue    { fill: #fef3c7; stroke: #f59e0b; stroke-width: 1.5; }
+.arch-icon-cache    { fill: #fee2e2; stroke: #ef4444; stroke-width: 1.5; }
+.arch-icon-client   { fill: #d1fae5; stroke: #10b981; stroke-width: 1.5; }
+.arch-icon-gateway  { fill: #e0e7ff; stroke: #6366f1; stroke-width: 1.5; }
+.arch-icon-external { fill: #f3f4f6; stroke: #6b7280; stroke-width: 1.5; stroke-dasharray: 4 3; }
+
+.arch-arrow { fill: none; stroke: #6b7280; stroke-width: 2; marker-end: url(#arch-arrow-head); }
+.arch-arrow-animated {
+  stroke-dasharray: 6 4;
+  animation: arch-flow 1.2s linear infinite;
+}
+.arch-arrow.arch-arrow-active { stroke: var(--color-accent); }
+.arch-arrow-label {
+  font-family: var(--font-code); font-size: 10px;
+  fill: var(--color-text);
+  paint-order: stroke fill; stroke: white; stroke-width: 3px; stroke-linejoin: round;
+}
+@keyframes arch-flow {
+  to { stroke-dashoffset: -20; }
+}
+.arch-step-bubble {
+  fill: #f97316; stroke: white; stroke-width: 2;
+  transition: fill 0.3s;
+}
+.arch-step-bubble.arch-step-bubble-active { fill: #ea580c; }
+.arch-step-number {
+  font-family: var(--font-body); font-size: 13px; font-weight: bold;
+  fill: white; text-anchor: middle; dominant-baseline: central;
+  pointer-events: none;
+}
+
+/* Step-by-step caption panel that pairs with .arch-diagram */
+.arch-step-caption {
+  margin-top: 12px; padding: 12px 14px;
+  background: white; border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent); border-radius: 4px;
+  min-height: 60px;
+}
+.arch-step-caption-index { font-family: var(--font-code); font-size: 0.85em; color: var(--color-file-ref); margin-bottom: 4px; }
+.arch-step-caption-title { font-weight: 600; color: var(--color-heading); margin-bottom: 4px; }
+.arch-step-caption-body { font-size: 0.92em; color: var(--color-text); }
