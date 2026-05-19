@@ -4,13 +4,13 @@
     "name": "Kuroakira"
   },
   "metadata": {
-    "description": "Bring understanding back to vibe coding — AI builds, but the engineer grows"
+    "description": "Deeply understand source code — interactive HTML walkthroughs and cited research"
   },
   "plugins": [
     {
       "name": "claude-praxis",
-      "description": "Bring understanding back to vibe coding — a development framework where AI builds, but the engineer grows through deliberate phases and self-evolving quality rules",
-      "version": "0.10.0",
+      "description": "Deeply understand source code — produces single-file interactive HTML walkthroughs (state diagrams, sequence players, live demos) and cited research surveys",
+      "version": "1.0.0",
       "source": "./"
     }
   ]

@@ -1,60 +1,43 @@
 ---
 name: guide
 description: >-
-  Generate a codebase walkthrough guide — produces a durable HTML book
-  (multi-page folder with sidebar navigation, mermaid diagrams, syntax highlighting).
-  TRIGGER when: user asks for a guide, walkthrough, or explanation of how code works —
-  a module, directory, cross-cutting concern, or the whole project.
+  Generate a single-file interactive HTML walkthrough of a code topic — prose,
+  diagrams, sequence player, and (when applicable) a live demo of the actual
+  state machine. Use when you want to deeply understand a specific aspect of a
+  codebase, not just skim it.
 disable-model-invocation: false
 ---
 
 Run the **Guide Generation** workflow.
 
-This command produces a durable walkthrough guide saved to `claudedocs/guides/[scope-name]/` as a multi-page HTML book. The guide serves as a human learning companion — open `index.html` in a browser and read alongside the code to build understanding step by step.
+This command produces ONE self-contained HTML file at `claudedocs/investigations/YYYY-MM-DD-[topic-slug].html` modeling a specific aspect of the target code. Open it in a browser and read alongside the code.
 
-## Step 1: Determine Scope
+## Step 1: Collect scope and intent
 
-Ask the user what to guide if not already specified. Scope can be:
-- A module or directory (e.g., "the catalog system", "skills/workflow-planner")
-- A cross-cutting concern (e.g., "how review dispatch flows across commands")
-- The whole project ("project" — produces overview-level guide only; use `/guide [module]` for deep dives)
+Both required.
 
-If the user has already specified the scope (e.g., `/guide catalog`), proceed directly.
+- **scope**: a directory or file path inside the target codebase (e.g., `frontend/src/features/board/`, `src/auth/`).
+- **intent**: a one-line statement of what aspect to deep-dive (e.g., "interaction state がどう遷移するか", "how requests flow from controller to repository").
 
-## Step 2: Generate Guide
+If the user invoked `/guide [scope] [intent]` with both, proceed. If either is missing, ask once for the missing piece — do not infer. The intent shapes the entire investigation; guessing produces an unfocused HTML.
 
-Invoke `guide-generation` skill with:
+## Step 2: Run the skill
+
+Invoke the `guide-generation` skill with:
 
 | Parameter | Value |
 |-----------|-------|
 | `scope` | The scope from Step 1 |
+| `intent` | The intent from Step 1 |
 
-The skill executes the multi-pass exploration (overview scan → targeted deep dives → write HTML book) and produces the complete guide folder.
+The skill executes the 4-phase pipeline (structured investigation → demo feasibility → outline → one-shot HTML write).
 
-## Step 3: Save and Review
+## Step 3: Surface the output
 
-1. The guide is saved to `claudedocs/guides/[scope-name]/` (kebab-case derived from scope). The folder contains `index.html`, chapter HTML files, `style.css`, and optionally an `images/` directory
-2. If a guide folder already exists at that path, verify the path is within `claudedocs/guides/` then delete it (`rm -rf`) before writing new files (no versioning — latest guide only). Also remove any legacy `.md` file at `claudedocs/guides/[scope-name].md` if it exists
-3. Invoke `dispatch-reviewers` with:
+After the skill returns, report:
+- The full file path (so the user can `open` it)
+- Approximate line count
+- Whether an interactive demo was included (yes/no + brief reason)
+- One sentence summary of what the HTML covers
 
-| Parameter | Value |
-|-----------|-------|
-| `tier` | light |
-| `reviewers` | `document-quality`, `architecture` |
-| `target` | HTML content files only: list all `.html` files in the guide folder (e.g., `[index.html, 01-focus.html, 02-focus.html]`). For short guides (single `index.html` only), pass `[index.html]`. Exclude `style.css` and `images/` — reviewers evaluate content structure, not presentation |
-
-- `document-quality`: applies `rules/document-quality.md` only (not `rules/design-doc-format.md`, which is Design Doc-specific)
-- `architecture`: validates the narrative reflects actual system boundaries
-
-If issues are found, revise the guide HTML files, re-save, then present.
-
-## Step 4: Present
-
-Present the guide to the user with a brief summary:
-- Scope covered
-- Number of focus areas (chapters) explored
-- What was NOT covered (from Coverage Boundary)
-- Suggested next guides for areas not covered in depth
-- Path to open: `claudedocs/guides/[scope-name]/index.html`
-
-The guide is now available for the user to open in a browser and read alongside the code.
+Do NOT auto-iterate. If the user wants refinements, they will say so in a follow-up turn.

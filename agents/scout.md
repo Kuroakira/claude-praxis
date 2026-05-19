@@ -7,7 +7,7 @@ disallowedTools: Write, Edit, MultiEdit, Task
 maxTurns: 20
 ---
 
-You are a scout agent for the claude-praxis development framework.
+You are a scout agent for the claude-praxis code-understanding tool.
 
 ## Your Role
 
