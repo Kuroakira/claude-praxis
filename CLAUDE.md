@@ -1,143 +1,58 @@
-# Claude Praxis - Project Overview
+# Claude Praxis — Project Overview
 
-@rules/code-quality.md
 @rules/document-quality.md
-@rules/design-doc-format.md
-@rules/verification.md
 
-## File Structure
+## What this project is
+
+A two-command Claude Code plugin for understanding source code:
+
+- `/guide [scope] [intent]` → produces a single-file interactive HTML walkthrough at `claudedocs/investigations/YYYY-MM-DD-[topic-slug].html`
+- `/research [topic]` → produces a cited survey at `claudedocs/research/YYYY-MM-DD-[topic-slug].md`
+
+## File structure
 
 ```
 claude-praxis/
-├── rules/                       # Always-on constraints (@imported into context)
-│   ├── code-quality.md          # TDD, type safety, test quality, security
-│   ├── document-quality.md      # Structure, terminology, progressive detailing
-│   ├── design-doc-format.md     # WHY over HOW, Notion format, outline-first
-│   └── verification.md          # No claims without evidence, completion report
-├── catalog/                     # Shared agent catalogs and review-point checklists
-│   ├── reviewers.md             # 2 broad (quality, correctness) + 3 specialist + 8 non-code reviewers
-│   ├── researchers.md           # 7 researcher types with agent types and verification sources
-│   ├── code-quality-review-points.md    # 12 categories, code quality checklist (OSS committer-sourced)
-│   ├── general-review-points.md         # 10 categories, bug detection checklist
-│   ├── beyond-diff-review-points.md     # 3 categories, temporal state / cross-diff / external spec
-│   ├── security-perf-review-points.md   # 7 categories, security and performance checklist
-│   ├── error-resilience-review-points.md  # 7 categories, failure mode checklist
-│   ├── simplicity-review-points.md      # 4 categories, over-engineering detection
-│   ├── structural-pattern-review-points.md  # 12 categories, design pattern applicability checklist
-│   ├── readability-review-points.md    # 8 categories, code understandability checklist (empirical, TSE 2024)
-│   ├── ts-review-points.md             # 8 categories, TypeScript patterns checklist
-│   ├── red-phase-test-patterns.md      # 12 points, RED phase test design prompts (mini-catalog)
-│   └── post-green-bug-patterns.md      # 16 points, post-GREEN latent bug patterns (mini-catalog)
+├── rules/
+│   └── document-quality.md         # Always-on quality rules for HTML/Markdown output
 ├── agents/
-│   ├── reviewer.md              # Code review agent (read-only)
-│   ├── researcher.md            # Research agent (haiku, lightweight)
-│   └── scout.md                 # Codebase exploration agent (haiku, read-only)
+│   ├── scout.md                    # Read-only codebase explorer (used by /guide)
+│   └── researcher.md               # Read-only researcher (used by /research)
 ├── commands/
-│   ├── feature-spec.md          # /feature-spec — brainstorm-driven interview to capture requirements
-│   ├── design.md                # /design — brainstorm-driven architecture → Design Doc
-│   ├── analyze.md               # /analyze — codebase architecture analysis + durable report
-│   ├── guide.md                 # /guide — codebase walkthrough guide for human understanding
-│   ├── investigate.md            # /investigate — reproduce + diagnose + document
-│   ├── research.md              # /research — standalone research
-│   ├── plan.md                  # /plan — implementation plan with Granularity Contract + superpowers handoff
-│   ├── review.md                # /review — standalone code review
-│   ├── review-guide.md          # /review-guide — self-review guide for AI-generated code
-│   ├── compare.md               # /compare — structured multi-option comparison + selection
-│   ├── eval.md                  # /eval — evaluate and improve framework from recent execution
-│   └── understanding-check.md   # /understanding-check — verify understanding of AI-generated work
+│   ├── guide.md                    # /guide entry point
+│   └── research.md                 # /research entry point
 ├── skills/
-│   ├── workflow-planner/        # Analyze task, select agents from catalogs, generate execution plan
-│   ├── dispatch-reviewers/      # Dispatch reviewers by catalog ID with graduated tiers
-│   ├── architecture-analysis/   # Multi-pass codebase analysis with durable reports + quantitative health scoring
-│   ├── guide-generation/        # Multi-pass codebase exploration + single-narrator guide writing
-│   ├── check-past-learnings/    # Recall relevant learnings before starting work
-│   ├── agent-team-execution/    # Parallel exploration: research, review teams, debugging
-│   ├── systematic-debugging/    # 3-phase root cause analysis (reproduce, isolate, diagnose)
-│   └── understanding-check/     # Explain-Compare-Discover for understanding verification
-├── claudedocs/                  # Analysis reports, design docs, plans
+│   └── guide-generation/
+│       ├── SKILL.md                # /guide pipeline (4 phases)
+│       └── assets/
+│           ├── head.html           # Mermaid + highlight.js + lightbox boilerplate
+│           └── style.css           # Single-file layout + callouts + player/demo styles
+├── claudedocs/                     # Output destination
+│   ├── investigations/             # /guide output
+│   └── research/                   # /research output
+├── .claude-plugin/
+│   ├── plugin.json
+│   └── marketplace.json
 ├── README.md
-└── CLAUDE.md                    # This file
+└── CLAUDE.md
 ```
-
-## Layer Architecture
-
-6 layers, each answering one question. **One fact lives in one place only** — other layers reference, never duplicate.
-
-| Layer | Question | Contains | Does NOT Contain |
-|-------|----------|----------|------------------|
-| **CLAUDE.md** | What is this project, how to use it? | Project info, workflow overview, skill/agent catalog | Rule details, procedures |
-| **Rule** (`rules/`) | What must always be followed? | Constraints, prohibitions, quality standards (with examples) | Procedures, workflows, self-evolution logic |
-| **Catalog** (`catalog/`) | What agents are available to select from? What do they check? | Agent types with IDs, focus areas, independent verification sources, applicable domains. Review-point checklists referenced by reviewer prompts | Procedures, phase ordering, selection logic (Skill's job) |
-| **Command** (`commands/`) | In what order, by whom, where does the human decide? | Phase sequence, PAUSE points, skill invocations, planner invocation with domain context + constraints | Procedure bodies (delegate to Skill), constraints (delegate to Rule) |
-| **Skill** (`skills/`) | How to do it? (reusable procedure) | Step-by-step procedures, templates, decision criteria | Constraints (Rule's job), phase ordering (Command's job) |
-| **Agent** (`agents/`) | Who does it? | Role, tools, model, maxTurns | Procedures (Skill's job), constraints (Rule's job) |
-
-### Loading Model
-
-```
-Always-on (session start, every session):
-  CLAUDE.md + @rules/*.md  →  constraints always in context
-  Skill descriptions        →  name + trigger only (~100 tokens/skill)
-
-On-demand (when invoked):
-  Skill full content        →  loaded on invoke (~2000+ tokens/skill)
-  Command content           →  loaded on slash command
-```
-
-### Boundary Rule
-
-When adding or moving information, ask: "Which layer's question does this answer?"
-
-- A constraint (what to always follow) → `rules/`
-- An agent type with verification source → `catalog/`
-- A procedure (how to do it) → `skills/`
-- Phase ordering or human checkpoints → `commands/`
-- Who executes with what tools → `agents/`
-- Project overview or catalog → `CLAUDE.md`
-
-If the same fact appears in 2+ places, one must become a reference ("see X") not a copy.
-
-## Workflows
-
-See `README.md` for workflow details, installation, and feature list. Commands are loaded on-demand when invoked. Quality rules are loaded via `@import` above.
-
-### superpowers Integration
-
-Implementation is delegated to superpowers. The handoff: `/plan` produces a plan → superpowers `writing-plans` generates micro-step plans → superpowers executes with TDD.
 
 ## Session Cache MCP
 
-Before reading any file, call `check_cache` from the session-cache server with the file path. If the cache returns a hit, use the summary instead of re-reading the file unless you need details not covered by the summary.
+Before reading any file, call `check_cache` from the session-cache server with the file path. If the cache returns a hit, use the summary instead of re-reading unless you need details not covered by the summary. After reading, call `record_read` with a 2-4 sentence summary. At the start of a complex task, call `get_session_map` to see what was already read.
 
-After reading a file, call `record_read` from the session-cache server with the file path and a concise summary (2-4 sentences covering the file's purpose, key exports, and important details).
+## Research policy (applies to /research)
 
-At the start of a complex task, call `get_session_map` to see what files have already been read in this session.
+- Cite every claim with a URL or file:line reference
+- Prefer primary sources (official docs > GitHub repos > blog posts > Stack Overflow)
+- Flag outdated information explicitly
+- If a claim cannot be verified, state that — do not fabricate
 
-## Research Policy
+## Language policy
 
-- **Web-first research** - Always search the web rather than relying on internal knowledge alone
-- **Cite sources** - Every claim must include a clear source (URL, documentation link, or repository reference)
-- **No hallucinated references** - If a source cannot be found or verified, state that explicitly
-- **Prefer primary sources** - Official docs > blog posts > Stack Overflow
-- **Recency matters** - Prefer up-to-date sources; flag if information may be outdated
+- Output artifacts (HTML walkthroughs, research summaries): match the language the user wrote the request in
+- Internal files (SKILL.md, CLAUDE.md, command files): English
 
-## Language Policy
+## Relationship to superpowers
 
-- **User-facing outputs** (Design Docs, reports, explanations, proposals) → Use the language of the user's request
-- **Internal files** (SKILL.md, CLAUDE.md, code comments in skills) → Always English to reduce token consumption
-- When the self-evolution protocol adds a new rule to SKILL.md → English regardless of the conversation language
-
-## Design Decisions
-
-- Distributed as Claude Code plugin via marketplace system (install/uninstall/update with one command)
-- Quality rules live in `rules/` as always-on constraints; `/eval` improves the framework from observed execution friction
-- Notion integration handled through format rules (API integration for future consideration)
-- Skill descriptions contain ONLY trigger conditions (CSO — prevents shortcut behavior)
-- Phase progression uses "commands exist for explicit use" — the user invokes the right phase based on context. Praxis lives in the phase content (articulating "why")
-- Implementation decision points are surfaced to the user — when multiple valid approaches exist, Claude presents options instead of choosing silently
-- Learnings are stored with context/rationale — enables "does the same assumption hold?" recall instead of blind repetition
-- Contextual recall uses judgment prompts, not quizzes — "same rationale applies here?" not "do you remember?"
-- Three orchestrating workflows (`/claude-praxis:feature-spec`, `/claude-praxis:design`, and `/claude-praxis:investigate`) handle sub-steps internally — human interaction points are minimized to approval gates and decision points. `/plan` produces plans consumed by superpowers for execution. Supporting commands remain for direct invocation when the full workflow is not needed
-- `/eval` directly improves framework files instead of accumulating separate knowledge — `/compound` and `rule-evolution` successor
-- FeatureSpec owns "What and Why," Design Doc owns "How" — this boundary prevents requirements ambiguity from propagating into design
-- Planner-driven adaptive workflow: commands define phase structure and constraints, `workflow-planner` skill provides judgment on agent selection. Catalogs (`catalog/`) define the selection pool with independent verification sources per entry. Review tiers are graduated (none/light/thorough) based on stage and content. `dispatch-reviewers` is the canonical reviewer dispatch mechanism
+Praxis produces understanding artifacts; superpowers handles design and implementation. The handoff is informal: the user reads the `/guide` HTML and `/research` summary, then invokes superpowers with their own framing.
