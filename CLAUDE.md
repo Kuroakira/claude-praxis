@@ -16,8 +16,8 @@ claude-praxis/
 ├── rules/
 │   └── document-quality.md         # Always-on quality rules for HTML/Markdown output
 ├── agents/
-│   ├── scout.md                    # Read-only codebase explorer (used by /guide)
-│   └── researcher.md               # Read-only researcher (used by /research)
+│   ├── scout.md                    # Read-only codebase explorer (available for delegation when investigating large scopes)
+│   └── researcher.md               # Read-only researcher (available for delegation when surveying large topics)
 ├── commands/
 │   ├── guide.md                    # /guide entry point
 │   └── research.md                 # /research entry point
@@ -28,14 +28,16 @@ claude-praxis/
 │           ├── head.html           # Mermaid + highlight.js + lightbox boilerplate
 │           └── style.css           # Single-file layout + callouts + player/demo styles
 ├── claudedocs/                     # Output destination
-│   ├── investigations/             # /guide output
-│   └── research/                   # /research output
+│   ├── investigations/             # /guide output (created on first /guide run)
+│   └── research/                   # /research output (created on first /research run)
 ├── .claude-plugin/
 │   ├── plugin.json
 │   └── marketplace.json
 ├── README.md
 └── CLAUDE.md
 ```
+
+Note: a legacy `claudedocs/guides/` directory from the previous multi-page output format may exist locally. It is not used by the current tool and can be deleted manually.
 
 ## Session Cache MCP
 
