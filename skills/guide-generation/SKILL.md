@@ -17,6 +17,38 @@ THE READER MUST BE ABLE TO OPEN THE CODE AND VERIFY EACH CLAIM.
 
 No vague descriptions. Every code claim includes a `<span class="file-ref">filename.ts:line-or-symbol</span>` inline.
 
+## Reader Profile
+
+**Assume zero prior knowledge of the topic the intent asks about.** The reader is a complete beginner — not just to this codebase, but to the entire problem space the intent names. If the intent is "how do atoms work in Jotai", assume the reader has never heard of atoms, state management, React hooks, or even what a "store" is in this context. They are smart, but starting from nothing.
+
+Write at a middle-school comprehension level. The reader is not stupid — they are uninitiated. Uninitiated readers cannot infer what jargon means and cannot fill in unstated prerequisites.
+
+- **One idea per sentence.** Short sentences over compound ones.
+- **Analogy before mechanism.** "An atom is like a recipe card — it doesn't hold ingredients itself, it just tells the kitchen what to make. The store is the kitchen." → then show the code.
+- **Concrete example before the abstract pattern.** Walk through one specific call, then generalize.
+- **Define every technical term inline on first use.** Do not say "this is a reducer" without saying what a reducer is. Do not use "memoization", "currying", "selector", "monad", "atom", "subscription", "side effect", etc. without a parenthetical definition.
+- **No framework shorthand.** Do not say "as you know in Jotai..." — the reader does not know. Do not write "the usual store pattern" — write what the store does.
+- **Build vocabulary forward.** Term used in Section 3 must have been defined in Section 1 or 2. Do not reference concepts the reader hasn't met yet.
+- **Litmus test**: a smart reader who has never used this framework (or any similar framework) opens the HTML cold and reads top to bottom. Can they follow every sentence? If no, simplify.
+
+This rule applies to every section, including code-heavy ones. The code itself does not explain. The prose around it does.
+
+## Intent Calibration
+
+**Read the intent before investigating. The intent's abstraction level controls everything downstream** — investigation depth, section count, output length, demo inclusion. Failing to calibrate produces a 1500-line answer to a 1-sentence question, which is harder to read than the source code itself.
+
+Classify the intent into one of three levels:
+
+| Level | Intent signals | Output budget |
+|-------|----------------|---------------|
+| **L1 Conceptual (default)** | "explain", "how does X work", "what is", "mental model", "仕組み", "どう動く", "理解したい" | **3-5 sections, 300-500 lines, NO interactive demo, 1 illustrative trace** |
+| **L2 Mechanism** | "show how X handles Y", "trace the flow when Z", "フロー", "handle", "処理", "implementation" | 5-8 sections, 600-1000 lines, demo optional, 2-3 traces |
+| **L3 Exhaustive** | "all", "complete", "every", "全部", "網羅", "完全", "deep dive", "exhaustive" | 8+ sections, 1000+ lines, demo encouraged |
+
+**Default to L1.** Most questions are conceptual ("how does X work"). Only escalate to L2/L3 when the intent's words explicitly demand it. **When uncertain, drop one level** — better to leave the reader wanting more than to drown them.
+
+**The calibration is binding.** Even if Phase 1 uncovers rich material, do not exceed the level's targets. Surplus findings are context for you, not content for the HTML. The reader's understanding is the goal — exhaustive coverage is not.
+
 ## Parameters
 
 | Parameter | Required | Description |
@@ -26,9 +58,15 @@ No vague descriptions. Every code claim includes a `<span class="file-ref">filen
 
 ## Procedure
 
-### Phase 1: Structured Investigation (mandatory before any HTML)
+### Phase 1: Structured Investigation (scaled to calibrated level)
 
-Complete all 5 substeps before writing a single line of HTML. The investigation builds the mental model the writer draws on.
+Investigation depth scales with the level from Intent Calibration. Do not over-investigate — surplus findings will tempt you to over-write.
+
+| Level | Required substeps | Skip |
+|-------|-------------------|------|
+| L1 | **1a + 1d only** (one happy path through the entry point) | 1b, 1c (beyond the one path), 1e |
+| L2 | **1a, 1b, 1c, 1d** (2-3 paths if branches are essential to the topic) | 1e unless cross-cuts are the topic itself |
+| L3 | **All 5 substeps** | nothing |
 
 **1a. Entry points** — Use Serena `get_symbols_overview` on the scope. Identify what triggers the behavior the intent describes: event handlers, route handlers, public API functions, exported hooks. Record file paths and symbol names.
 
@@ -36,38 +74,61 @@ Complete all 5 substeps before writing a single line of HTML. The investigation 
 
 **1c. State shape** — Locate state holders: atoms, stores, `useState`/`useReducer` hooks, class fields, module-level variables. Extract their initial values and all sites where they are updated. Record file path + line range for each.
 
-**1d. Happy path trace** — Pick one representative interaction the intent describes. Walk the full call chain from event source through every function to the final render or output. List each function visited with its file path and line range. This trace becomes the sequence player content.
+**1d. Happy path trace** — Pick one representative interaction the intent describes. Walk the full call chain from event source through every function to the final render or output. List each function visited with its file path and line range. This trace becomes the sequence player content (or, at L1, the single illustrative example in prose).
 
 **1e. Cross-cuts** — Find places where this scope leaks into other modules: imports of scope's symbols from outside, scope's imports of external state or context. Note boundary crossings that the reader should know about.
 
 Output: a structured internal mental model. Optionally save to `claudedocs/scout-reports/[topic-slug]-investigation.md` as a working artifact; this is not required.
 
-### Phase 2: Demo Feasibility Assessment (AI auto-judgment)
+### Phase 2: Demo Feasibility Assessment (strict trigger)
 
-After Phase 1, decide whether to include an interactive demo. ALL of the following must be true:
+Default: **no demo**. A demo doubles output length and rarely helps conceptual understanding.
 
-- The scope contains state that updates in response to events (state machine, interactive UI, mode toggles, form state).
-- The state can be modeled in vanilla JS without external dependencies — no need to replicate React reconciliation, network calls, or persistent storage.
-- The intent benefits from "touching it" over reading about it — the state transitions are the point.
+Include a demo ONLY when ALL of the following are true:
 
-If **no demo**: proceed to Phase 3 with sequence player only.
+1. **Intent explicitly asks for hands-on**: contains "触る" / "play" / "demo" / "see it working" / "let me try" / "interactive" / "動かして". Mere presence of state in the code is NOT sufficient.
+2. **Calibration level is L2 or L3** (L1 conceptual never gets a demo — the reader needs the mental model, not a toy).
+3. The state can be modeled in vanilla JS without external dependencies — no need to replicate React reconciliation, network calls, or persistent storage.
+
+If **no demo**: proceed to Phase 3 without a demo section. The sequence player is enough.
 
 If **yes demo**: extract the state machine spec from Phase 1c findings into a small JS-replicable representation. Verify the spec against the actual code one more time before writing. Note which pattern from Appendix B applies.
 
-### Phase 3: Outline Generation (internal — not shown to user)
+### Phase 3: Outline Generation (level-aware, internal)
 
-Produce a section outline following the abstract-to-concrete rule from `rules/document-quality.md`:
+The outline is bounded by the calibration level. Do not exceed the section/length budget.
 
-- **Section 1**: Topic overview — intent restated as section title, one-paragraph summary of what the scope does and why it matters.
-- **Section 2**: State shape — what the state IS, with file refs. Table or list of state variants and their payloads.
-- **Section 3**: State machine / flow overview — custom SVG state diagram (Appendix C) or architecture diagram (Appendix D), depending on whether the topic is a state machine or a system flow. Reserve mermaid for the simplest cases (see Phase 4 diagram-choice table).
-- **Section 4+**: One section per major flow identified in Phase 1d, each with a sequence player showing the step-by-step call chain.
-- **Section N-1**: Cross-cuts and constraints — where this design creates friction or has known limitations. Material for downstream design work.
-- **Section N**: Interactive Demo — included only when Phase 2 said yes.
+**L1 outline (3-5 sections, 300-500 lines)**: the reader leaves with a working mental model — nothing more.
+
+1. Topic overview + analogy (no code yet) — 1 paragraph.
+2. The mental model — one labeled diagram (custom SVG or simple mermaid `graph LR`, 4-6 nodes) + 2-3 paragraphs naming the key pieces.
+3. One illustrative example — a single concrete walk-through from Phase 1d, told as prose with 2-3 small code snippets and file refs. **No sequence player at L1** — prose is enough.
+4. (Optional) Why this design — 1-2 paragraphs on the *why* if it's non-obvious.
+
+**L2 outline (5-8 sections, 600-1000 lines)**: the reader can trace specific flows on their own.
+
+1. Topic overview + analogy.
+2. State shape — what the state IS, table form.
+3. Overview diagram — custom SVG state diagram (Appendix C) or architecture diagram (Appendix D).
+4-6. One section per significant flow (2-3 max), each with a sequence player from Appendix A.
+7. (Optional) Cross-cuts / constraints — 1 paragraph each.
+8. (Conditional) Interactive demo — only if Phase 2 said yes.
+
+**L3 outline (8+ sections, 1000+ lines OK)**: exhaustive reference.
+
+Same as L2 plus: all major flows get their own section, cross-cuts get a dedicated section, edge cases get callouts, interactive demo encouraged.
+
+**Section count rule of thumb**: every section earns its place by answering a question the reader would actually ask. If a section's content is "and there's also this internal mechanism", it does not earn a place — fold it into a callout or drop it.
 
 ### Phase 4: Write the HTML (one-shot, single narrator)
 
-The main agent writes the entire HTML in one turn. No subagent delegation for writing. Required structure:
+The main agent writes the entire HTML in one turn. No subagent delegation for writing.
+
+**Stop-when-answered rule**: after drafting each section, ask "does the reader now understand the topic the intent asks about?" If yes, stop adding sections — even if you have more material from Phase 1, even if the level's section budget hasn't been hit. Writing under-budget at L1 is fine when the topic is small. Writing over-budget at L1 is a failure regardless of how good the extra material is.
+
+**Reader-profile check while writing**: every paragraph passes the middle-schooler test. If a paragraph names a framework concept or pattern without defining it inline, rewrite it. If a paragraph builds on a concept that the reader hasn't been introduced to yet, restructure or define-on-first-use.
+
+Required structure:
 
 **`<head>`**: Copy from `assets/head.html`, substitute `{{TITLE}}` with the intent (Japanese OK).
 
