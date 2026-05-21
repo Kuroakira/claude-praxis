@@ -1,6 +1,6 @@
 ---
 name: guide-generation
-description: Use when generating single-file interactive HTML walkthroughs of a code topic — produces one self-contained .html with prose, diagrams, sequence player, and (when applicable) a live interactive demo. Invoked by /guide command.
+description: Use when generating single-file interactive HTML walkthroughs of a code topic — produces one self-contained .html with prose, hand-laid-out SVG diagrams, step-through sequence sub-patterns, and (when applicable) a live interactive demo. Invoked by /guide command.
 user-invocable: false
 ---
 
@@ -33,6 +33,82 @@ Write at a middle-school comprehension level. The reader is not stupid — they 
 
 This rule applies to every section, including code-heavy ones. The code itself does not explain. The prose around it does.
 
+## Persona Card
+
+The Reader Profile above is the universal regime — what writing must look like for any beginner. The Persona Card is the per-guide instance: a writer-only contract composed in Phase 1 substep 1f, used to constrain term introduction during writing.
+
+**The card is internal.** It is NOT surfaced in the output HTML. It exists to discipline the writer.
+
+The writer fills three fields once Phase 1 investigation has surfaced the code's symbols (after substep 1e):
+
+| Field | Required content |
+|-------|-----------------|
+| **Knows already** (≥2 items) | Prerequisite knowledge the reader has before opening the guide |
+| **Has never seen** (≥3 items) | Terms / concepts from the code or domain that the reader has never encountered |
+| **Why reading** (1 sentence) | What the reader will be able to do / answer after finishing the guide |
+
+**The contract**: every "Has never seen" term MUST be inline-defined the first time it appears in the body. The Stop-when-answered rule (Phase 4) is satisfied when "Why reading" is answered — adding more material beyond that is a failure regardless of how good the extra material is.
+
+Example for a guide about Jotai atoms:
+
+- **Knows already**: React component basics, useState
+- **Has never seen**: atom, store, primitive atom vs derived atom, subscription
+- **Why reading**: Understand how Jotai atoms differ from useState and when to choose them
+
+## Visual-First
+
+Every section that explains a mechanism MUST open with a diagram. The diagram is the primary explanation; prose supports it and references it.
+
+A **mechanism section** is any section whose title is shaped like "How X works" / "X flow" / "X transition" / "X lifecycle", or that contains `<pre><code>` blocks demonstrating logic.
+
+**Allowed exceptions** (no diagram required):
+
+- Overview / 概要 section (analogy first; overview diagram optional)
+- "Why this design" rationale section
+- Reader-facing Scope callout, if used
+
+This rule binds at all levels including L1. A small (4-6 step) UML sub-pattern displaces ~50 lines of equivalent prose with ~20 lines of SVG markup — net neutral or smaller on the L1 budget.
+
+## Meaningful Animation
+
+Every animation in the output HTML must convey one of:
+
+- **State change** — a badge, color, or position represents a state and updates when the state changes
+- **Data movement** — something visibly travels from one location to another
+- **Causation** — one element's change triggers another's visible change
+
+**Banned patterns** (enumeration, not exhaustive):
+
+- Opacity step-through on text (any pattern that advances by fading text rows in or out)
+- Text fade-in / slide-in for sequential reveal
+- Typewriter / per-character text reveals
+- Decorative spin / pulse / bounce with no semantic tie to content
+
+**Approved patterns**:
+
+- `stroke-dashoffset` path draw — arrow drawing itself (message in motion)
+- Marching-ants / dashed-flow on a path — existing `arch-flow` (data in transit)
+- Position translation of a dot/token from one actor to another
+- State badge text / color transition on a receiver
+- `state-active` toggle on state-diagram nodes
+- Progressive component activation — existing Appendix D (component appears at step N)
+
+If an animation does not fit the principle AND is not in the approved list, do not add it.
+
+## 1-Item-1-Content
+
+Every container in the output HTML holds exactly one focus. This rule applies at all container levels:
+
+| Container | Constraint |
+|-----------|------------|
+| Section (`<h2>...`) | One question answered. Title containing "and" / "や" / "+" is a split signal |
+| Callout (`<div class="note">`, `<div class="insight">`) | One gotcha per `.note`. One design decision per `.insight`. Never bundle |
+| Step caption | Title = 1 verb phrase. Body = 1 fact OR 1 why (not both) |
+| Paragraph | 1 idea (also enforced by `rules/document-quality.md`) |
+| Diagram | 1 abstraction level (also enforced by `rules/document-quality.md`) |
+
+**Self-check phrase**: when summarizing a container, if you need "X **and also** Y", split the container.
+
 ## Intent Calibration
 
 **Read the intent before investigating. The intent's abstraction level controls everything downstream** — investigation depth, section count, output length, demo inclusion. Failing to calibrate produces a 1500-line answer to a 1-sentence question, which is harder to read than the source code itself.
@@ -64,9 +140,11 @@ Investigation depth scales with the level from Intent Calibration. Do not over-i
 
 | Level | Required substeps | Skip |
 |-------|-------------------|------|
-| L1 | **1a + 1d only** (one happy path through the entry point) | 1b, 1c (beyond the one path), 1e |
-| L2 | **1a, 1b, 1c, 1d** (2-3 paths if branches are essential to the topic) | 1e unless cross-cuts are the topic itself |
-| L3 | **All 5 substeps** | nothing |
+| L1 | **1a + 1d + 1f** (one happy path + Persona Card) | 1b, 1c (beyond the one path), 1e |
+| L2 | **1a, 1b, 1c, 1d, 1f** (2-3 paths if branches are essential to the topic) | 1e unless cross-cuts are the topic itself |
+| L3 | **All 6 substeps** | nothing |
+
+Substep 1f (Persona Card) is required at every level — composing it is the contract that constrains term introduction.
 
 **1a. Entry points** — Use Serena `get_symbols_overview` on the scope. Identify what triggers the behavior the intent describes: event handlers, route handlers, public API functions, exported hooks. Record file paths and symbol names.
 
@@ -74,11 +152,13 @@ Investigation depth scales with the level from Intent Calibration. Do not over-i
 
 **1c. State shape** — Locate state holders: atoms, stores, `useState`/`useReducer` hooks, class fields, module-level variables. Extract their initial values and all sites where they are updated. Record file path + line range for each.
 
-**1d. Happy path trace** — Pick one representative interaction the intent describes. Walk the full call chain from event source through every function to the final render or output. List each function visited with its file path and line range. This trace becomes the sequence player content (or, at L1, the single illustrative example in prose).
+**1d. Happy path trace** — Pick one representative interaction the intent describes. Walk the full call chain from event source through every function to the final render or output. List each function visited with its file path and line range. This trace becomes the sub-pattern content (the messages in A1 or the dot-transitions in A2).
 
 **1e. Cross-cuts** — Find places where this scope leaks into other modules: imports of scope's symbols from outside, scope's imports of external state or context. Note boundary crossings that the reader should know about.
 
-Output: a structured internal mental model. Optionally save to `claudedocs/scout-reports/[topic-slug]-investigation.md` as a working artifact; this is not required.
+**1f. Persona Card** — Compose the topic-specific Persona Card defined in the [Persona Card](#persona-card) section. Use the symbols surfaced in 1a-1c to populate "Has never seen" with the specific terms the reader will meet. The card is a writer-only artifact — not surfaced in the output HTML. Required at all levels.
+
+Output: a structured internal mental model + the Persona Card. Optionally save to `claudedocs/scout-reports/[topic-slug]-investigation.md` as a working artifact; this is not required.
 
 ### Phase 2: Demo Feasibility Assessment (strict trigger)
 
@@ -90,9 +170,14 @@ Include a demo ONLY when ALL of the following are true:
 2. **Calibration level is L2 or L3** (L1 conceptual never gets a demo — the reader needs the mental model, not a toy).
 3. The state can be modeled in vanilla JS without external dependencies — no need to replicate React reconciliation, network calls, or persistent storage.
 
-If **no demo**: proceed to Phase 3 without a demo section. The sequence player is enough.
+If **no demo**: proceed to Phase 3 without a demo section. The UML sequence sub-pattern (Appendix A) is enough for tracing flows.
 
-If **yes demo**: extract the state machine spec from Phase 1c findings into a small JS-replicable representation. Verify the spec against the actual code one more time before writing. Note which pattern from Appendix B applies.
+If **yes demo**: choose between two forms:
+
+- **Appendix B Pattern 1** (user-driven interactive) — when the topic is an event-driven state machine reacting to clicks. The reader participates.
+- **Stage sub-pattern of Appendix A** (auto-advancing) — when the topic is a data pipeline or state accumulation with no user input. The reader observes.
+
+Extract the state spec from Phase 1c findings into a small JS-replicable representation. Verify against the actual code before writing.
 
 ### Phase 3: Outline Generation (level-aware, internal)
 
@@ -102,7 +187,7 @@ The outline is bounded by the calibration level. Do not exceed the section/lengt
 
 1. Topic overview + analogy (no code yet) — 1 paragraph.
 2. The mental model — one labeled diagram (custom SVG or simple mermaid `graph LR`, 4-6 nodes) + 2-3 paragraphs naming the key pieces.
-3. One illustrative example — a single concrete walk-through from Phase 1d, told as prose with 2-3 small code snippets and file refs. **No sequence player at L1** — prose is enough.
+3. One illustrative example — a single concrete walk-through from Phase 1d using a small (4-6 step) UML sequence sub-pattern from Appendix A. The diagram leads; 2-3 small code snippets with file refs support it as prose.
 4. (Optional) Why this design — 1-2 paragraphs on the *why* if it's non-obvious.
 
 **L2 outline (5-8 sections, 600-1000 lines)**: the reader can trace specific flows on their own.
@@ -110,7 +195,7 @@ The outline is bounded by the calibration level. Do not exceed the section/lengt
 1. Topic overview + analogy.
 2. State shape — what the state IS, table form.
 3. Overview diagram — custom SVG state diagram (Appendix C) or architecture diagram (Appendix D).
-4-6. One section per significant flow (2-3 max), each with a sequence player from Appendix A.
+4-6. One section per significant flow (2-3 max), each opening with a sub-pattern from Appendix A (UML sequence by default; Stage diagram only when all Stage triggers hold).
 7. (Optional) Cross-cuts / constraints — 1 paragraph each.
 8. (Conditional) Interactive demo — only if Phase 2 said yes.
 
@@ -142,20 +227,28 @@ Required structure:
 - `<div class="note">` for gotchas and non-obvious constraints
 - `<div class="insight">` for design decisions and "why not X" explanations
 
-**Diagram choice**: pick the format that matches the content. Do NOT default to mermaid.
+**Diagram choice**: pick the format that matches the content. mermaid is forbidden for any content with flow / arrows / message passing.
 
 | Content | Format | Why |
 |---------|--------|-----|
-| Sequence of events between actors (call chain, request flow, dispatch trace) | **Sequence player** (Appendix A) | Step-through reveals one interaction at a time. Mermaid `sequenceDiagram` is static and visually dense |
-| State machine with guards, transitions, and multiple kinds | **Custom SVG state diagram** (Appendix C) | Hand-laid-out SVG carries far more semantic load (active-state highlighting, named transitions, guard annotations) than mermaid `stateDiagram-v2` |
-| System architecture showing how components hand off data (request lifecycle across server/db/queue/cache) | **Architecture diagram** (Appendix D) | ByteByteGo-style: primitive shape icons + numbered step bubbles + animated data-flow arrows. Mermaid `flowchart` cannot show data movement or animate sequencing |
-| Simple high-level overview where layout doesn't matter (3-5 boxes, no animation, no numbered steps) | `<div class="mermaid">` with `graph LR` or `graph TD` | Cheapest to write. Reserve for the "context map" / "where this fits" diagram only |
+| Actor-to-actor message order (call chain, request flow, dispatch trace) | **UML sequence sub-pattern** (Appendix A) | Vertical lanes + horizontal arrows that draw on advance. Preserves call-chain history; current step highlighted |
+| Actors with visible state accumulation, ≤4 actors, spatial position has meaning | **Stage sub-pattern** (Appendix A) | Moving dots + state badge updates on receivers. Shows the result emerging |
+| State machine with multiple states and transitions (static structure of *all* states) | **Custom SVG state diagram** (Appendix C) | One diagram shows the entire state machine. Different from Stage sub-pattern, which shows one specific run over time |
+| System architecture — components handing off data (server / db / queue / cache) | **Architecture diagram** (Appendix D) | Primitive shape icons + numbered step bubbles + animated data-flow arrows |
+| Concept classification tree (taxonomy, is-a, no flow) | `<div class="mermaid">` with `graph TD` | Safe when no arrows cross. mermaid auto-layout works for pure trees |
+| Anything else with flow / arrows / message passing | **Hand-laid-out SVG required** — mermaid forbidden |
 
-**Mermaid is the fallback, not the default.** When you reach for `<div class="mermaid">`, ask: does this content have actors, steps, or state changes? If yes, switch to a richer format.
+**mermaid is forbidden for flow / arrows / message passing.** Auto-layout tangles lines, defeating the purpose of HTML output (which exists precisely to escape that constraint). mermaid is only allowed for flow-free concept trees. Any other diagram is hand-laid-out SVG.
 
-**Sequence player**: For each flow section (Phase 1d trace), include the player markup and inline JS from Appendix A. Adapt the `participants` and `steps` arrays to the actual call chain. Color-code participants by type (user / hook / atom / service / component / external).
+**Sequence sub-pattern selection**: For each flow section (Phase 1d trace), default to the **UML sub-pattern** of Appendix A. Switch to the **Stage sub-pattern** only when all three triggers hold:
 
-**Interactive demo** (only when Phase 2 said yes): Include the demo container markup, inline JS state machine, and event handlers wired to clickable elements. Use the pattern from Appendix B that matches the real code. Demo state transitions must match the actual reducer/state machine logic found in Phase 1c.
+1. Every step produces a visible state change on the receiver (badge / counter / list / color)
+2. The actor's spatial position carries semantic meaning
+3. Actor count ≤4
+
+If both fit, choose UML (safer default). Color-code actors by type (user / hook / atom / service / component / external).
+
+**Interactive demo** (only when Phase 2 said yes): use the form chosen in Phase 2. **Appendix B Pattern 1** for user-driven event handlers wired to clickable elements with a state machine; **Appendix A Stage sub-pattern** for auto-advancing data pipelines or accumulating state. Demo state transitions must match the actual reducer / state machine logic found in Phase 1c.
 
 ## Output Path
 
@@ -170,13 +263,13 @@ The skill writes ONE file. No accompanying CSS/JS files, no folder.
 
 If the final HTML would exceed 1500 lines, split into a multi-page bundle at `claudedocs/investigations/YYYY-MM-DD-[topic-slug]/` with `index.html` plus `NN-[section].html` files. This is rare — most topics fit in one file. Do not pre-emptively split; only split when the single-file estimate actually exceeds the threshold.
 
-## Appendix A: Sequence Player Template (actor-based)
+## Appendix A: Sequence Sub-Patterns (SVG)
 
-Sequence flows are rendered as actor pills + typed steps. Each step is either a `msg` (one actor calls another, drawn with an arrow) or a `note` (something happens inside one actor). Steps are pre-rendered into the DOM; the player advances by highlighting one at a time.
+Two SVG-based sub-patterns. Pick using the trigger in Phase 4 — default to **UML sub-pattern (A1)**; switch to **Stage sub-pattern (A2)** only when all three Stage conditions hold (visible state change per step / spatial meaning / ≤4 actors).
 
-Paste this block for each flow section. Replace `FLOW_ID` with a unique identifier (e.g., `reclick-flow`), populate `participants` with the actors involved, and populate `steps` with one entry per function call or internal action from the Phase 1d trace.
+Both sub-patterns share the actor-type taxonomy below and share a single caption box (Title + Body) that updates per step. Mermaid `sequenceDiagram` is forbidden — its auto-layout tangles lines once messages cross.
 
-**Actor types** (drive color coding via the `data-type` attribute on `.seq-actor`):
+**Actor types** — apply to both sub-patterns. Drive color coding via the `data-type` attribute on `<g class="uml-actor">` / `<g class="stage-actor">`:
 
 | `type` | Use for | Color |
 |--------|---------|-------|
@@ -187,107 +280,147 @@ Paste this block for each flow section. Replace `FLOW_ID` with a unique identifi
 | `component` | React components / view components | pink |
 | `external` | Browser API, network, third-party SDK | red |
 
+Aim for 6-15 steps per player — fewer feels thin, more becomes hard to follow.
+
+### Sub-pattern A1: UML Sequence Diagram
+
+Vertical actor lanes with horizontal message arrows. The player advances by drawing the next arrow (`stroke-dashoffset` animation, ~600ms) and showing a lifeline activation bar on the receiver. Previously-drawn arrows remain visible in muted color; only the current arrow is highlighted.
+
+**When to use**: actor-to-actor message order is the story (call chain, request flow, dispatch trace). Default sub-pattern.
+
+**Mechanics**:
+
+- All `<path class="uml-arrow">` arrows pre-rendered with `stroke-dasharray = pathLength` + `stroke-dashoffset = pathLength` (initially invisible)
+- On Next: previous arrows keep `stroke-dashoffset = 0` in muted color. Current arrow animates `stroke-dashoffset → 0` and is colored as `uml-msg-current` (highlighted)
+- On Prev: latest arrow's `stroke-dashoffset` returns to pathLength (un-draws)
+- Lifeline activation bar (thin rectangle on receiver's lane) is visible only while that step is current
+
+Replace `FLOW_ID` with a unique identifier per diagram. Adjust the SVG to fit the actual actor count and message count.
+
 ```html
-<!-- Sequence player: [flow title] -->
-<div class="seq-player" id="FLOW_ID">
-  <div class="seq-controls">
-    <div class="seq-progress">
-      <span class="seq-counter" id="FLOW_ID-counter">0 / 0</span>
-      <div class="seq-progress-bar"><div class="seq-progress-fill" id="FLOW_ID-progress"></div></div>
-    </div>
+<!-- UML sequence sub-pattern: [flow title] -->
+<div class="uml-seq" id="FLOW_ID">
+  <svg viewBox="0 0 720 360" class="uml-seq-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="FLOW_ID-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+      </marker>
+    </defs>
+
+    <!-- Actor lanes — one <g class="uml-actor"> per actor. data-type drives color. -->
+    <g class="uml-actor" data-actor="user" data-type="user">
+      <rect class="uml-actor-box" x="20"  y="20" width="120" height="36" rx="6"/>
+      <text class="uml-actor-label" x="80"  y="43">User</text>
+      <line class="uml-lifeline" x1="80"  y1="56" x2="80"  y2="340"/>
+    </g>
+    <g class="uml-actor" data-actor="useDrag" data-type="hook">
+      <rect class="uml-actor-box" x="200" y="20" width="160" height="36" rx="6"/>
+      <text class="uml-actor-label" x="280" y="43">useElementDrag</text>
+      <line class="uml-lifeline" x1="280" y1="56" x2="280" y2="340"/>
+    </g>
+    <g class="uml-actor" data-actor="modeAtom" data-type="atom">
+      <rect class="uml-actor-box" x="420" y="20" width="180" height="36" rx="6"/>
+      <text class="uml-actor-label" x="510" y="43">modeAtom</text>
+      <line class="uml-lifeline" x1="510" y1="56" x2="510" y2="340"/>
+    </g>
+
+    <!-- Lifeline activation bars — visible only when their step is current. -->
+    <rect class="uml-activation" data-step="1" x="274" y="90"  width="12" height="40"/>
+    <rect class="uml-activation" data-step="2" x="504" y="160" width="12" height="40"/>
+
+    <!-- Message arrows — one <g class="uml-msg"> per arrow. pathLength is used for the draw animation. -->
+    <g class="uml-msg" data-step="1">
+      <path class="uml-arrow" d="M80,110 L274,110" pathLength="200" marker-end="url(#FLOW_ID-arrow)"/>
+      <text class="uml-msg-label" x="177" y="100">mouseDown</text>
+    </g>
+    <g class="uml-msg" data-step="2">
+      <path class="uml-arrow" d="M280,180 L504,180" pathLength="230" marker-end="url(#FLOW_ID-arrow)"/>
+      <text class="uml-msg-label" x="392" y="170">SELECT_ELEMENT</text>
+    </g>
+    <!-- … one <g class="uml-msg" data-step="N"> per message from Phase 1d -->
+  </svg>
+
+  <!-- Step caption + controls -->
+  <div class="uml-caption">
+    <div class="uml-caption-index" id="FLOW_ID-counter">0 / 0</div>
+    <div class="uml-caption-title" id="FLOW_ID-title">Press Next to start.</div>
+    <div class="uml-caption-body"  id="FLOW_ID-body"></div>
+  </div>
+  <div class="seq-controls" style="margin-top:8px">
     <button class="seq-btn" id="FLOW_ID-prev">←</button>
     <button class="seq-btn" id="FLOW_ID-next">Next →</button>
     <button class="seq-btn" id="FLOW_ID-auto">▶</button>
     <button class="seq-btn" id="FLOW_ID-reset">Reset</button>
   </div>
-  <div class="seq-participants" id="FLOW_ID-participants">
-    <span class="seq-participants-title">登場人物</span>
-    <!-- Participant pills get injected here by the script below -->
-  </div>
-  <div class="seq-steps" id="FLOW_ID-steps">
-    <!-- Step rows get injected here by the script below -->
-  </div>
 </div>
 <script>
   (() => {
-    // ── Edit these two arrays per flow ──────────────────────────────────
-    const participants = [
-      { id: 'user',         label: 'User',                detail: 'human' },
-      { id: 'useDrag',      label: 'useElementDrag',      detail: 'hook' },
-      { id: 'useTransition',label: 'useElementModeTransitions', detail: 'hook' },
-      { id: 'modeAtom',     label: 'boardInteractionModeAtom',  detail: 'atom (reducer)' },
+    // ── Edit per flow ───────────────────────────────────────────────────
+    // One entry per <g class="uml-msg"> in the SVG above. Order must match data-step.
+    // Title: 1 verb phrase. Body: 1-2 sentences. Use <code>…</code> for symbols.
+    const captions = [
+      { title: 'User clicks the selected element',
+        body: 'A mousedown fires on an already-selected element. <code>useElementDrag.onMouseDown</code> picks it up.' },
+      { title: 'Hook dispatches SELECT_ELEMENT',
+        body: 'The hook sends an action into the atom reducer, which updates the interaction mode.' },
+      // …
     ];
-
-    // type: 'msg' → { from, to, label, explain }
-    // type: 'note' → { actor, text, explain }
-    const steps = [
-      { type: 'msg',  from: 'user', to: 'useDrag',
-        label: 'mouseDown on selected element',
-        explain: '対象 element が selected の状態で mousedown。<code>useElementDrag.onMouseDown</code> が走る。' },
-      { type: 'note', actor: 'useDrag',
-        text: 'wasAlreadySingleSelected = true を記録',
-        explain: 'click vs drag を後で判定するため、mousedown 時点で「これは sole-selected だった」を保存。' },
-      // … one entry per step from Phase 1d
-    ];
-
-    // Type assignment — map participant.id → type for color coding
-    const typeOf = {
-      user: 'user', useDrag: 'hook', useTransition: 'hook', modeAtom: 'atom',
-    };
     // ── End edit zone ───────────────────────────────────────────────────
 
     const $ = (id) => document.getElementById(id);
-    const root = $('FLOW_ID');
-    const partsEl = $('FLOW_ID-participants');
-    const stepsEl = $('FLOW_ID-steps');
+    const root = document.getElementById('FLOW_ID');
     const counter = $('FLOW_ID-counter');
-    const progress = $('FLOW_ID-progress');
+    const titleEl = $('FLOW_ID-title');
+    const bodyEl  = $('FLOW_ID-body');
     const prevBtn = $('FLOW_ID-prev');
     const nextBtn = $('FLOW_ID-next');
     const autoBtn = $('FLOW_ID-auto');
     const resetBtn = $('FLOW_ID-reset');
 
-    function actorPill(id, label, detail) {
-      const t = typeOf[id] || 'service';
-      return `<span class="seq-actor" data-actor="${id}" data-type="${t}">${label}` +
-             (detail ? `<span class="seq-participant-detail-type">${detail}</span>` : '') +
-             `</span>`;
-    }
-
-    // Render participants bar
-    participants.forEach(p => partsEl.insertAdjacentHTML('beforeend', actorPill(p.id, p.label, p.detail)));
-
-    // Render all step rows up front; we toggle .seq-step-current to advance.
-    steps.forEach((s, i) => {
-      const n = i + 1;
-      let html = `<div class="seq-step seq-step-${s.type}" data-step="${n}">`;
-      html += `<div class="seq-step-number">${n}</div><div>`;
-      if (s.type === 'msg') {
-        html += `<div class="seq-msg-line">${actorPill(s.from, s.from)}<span class="seq-arrow">→</span>${actorPill(s.to, s.to)}</div>`;
-        html += `<div class="seq-msg-label">${s.label}</div>`;
-      } else {
-        html += `<div class="seq-note-actor">${actorPill(s.actor, s.actor)} (内部)</div>`;
-        html += `<div class="seq-note-text">${s.text}</div>`;
-      }
-      html += `<div class="seq-step-explain">${s.explain}</div></div></div>`;
-      stepsEl.insertAdjacentHTML('beforeend', html);
+    // Initialise each arrow's stroke-dasharray so the draw animation works.
+    root.querySelectorAll('.uml-arrow').forEach(path => {
+      const len = parseFloat(path.getAttribute('pathLength') || '200');
+      path.style.strokeDasharray = len;
+      path.style.strokeDashoffset = len;
     });
 
     let current = 0; let autoTimer = null;
-    const total = steps.length;
+    const total = captions.length;
 
     function render() {
       counter.textContent = `${current} / ${total}`;
-      progress.style.width = `${(current / total) * 100}%`;
       prevBtn.disabled = current === 0;
       nextBtn.disabled = current === total;
-      stepsEl.querySelectorAll('.seq-step').forEach((el, i) => {
-        el.classList.toggle('seq-step-current', i + 1 <= current);
+
+      // Arrows: < current → drawn + muted, === current → drawn + highlighted, > current → invisible.
+      root.querySelectorAll('.uml-msg').forEach(g => {
+        const step = parseInt(g.dataset.step, 10);
+        const path = g.querySelector('.uml-arrow');
+        const len = parseFloat(path.getAttribute('pathLength') || '200');
+        if (step < current) {
+          path.style.strokeDashoffset = 0;
+          g.classList.remove('uml-msg-current'); g.classList.add('uml-msg-past');
+        } else if (step === current) {
+          path.style.strokeDashoffset = 0;
+          g.classList.add('uml-msg-current'); g.classList.remove('uml-msg-past');
+        } else {
+          path.style.strokeDashoffset = len;
+          g.classList.remove('uml-msg-current', 'uml-msg-past');
+        }
       });
-      // Scroll the current step into view inside the player
-      if (current > 0) {
-        const target = stepsEl.querySelector(`[data-step="${current}"]`);
-        if (target) target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+      // Activation bars: visible only when their step is exactly current.
+      root.querySelectorAll('.uml-activation').forEach(bar => {
+        const step = parseInt(bar.dataset.step, 10);
+        bar.classList.toggle('uml-activation-active', step === current);
+      });
+
+      if (current === 0) {
+        titleEl.textContent = 'Press Next to start.';
+        bodyEl.innerHTML = '';
+      } else {
+        titleEl.textContent = captions[current - 1].title;
+        bodyEl.innerHTML = captions[current - 1].body;
       }
     }
 
@@ -301,7 +434,7 @@ Paste this block for each flow section. Replace `FLOW_ID` with a unique identifi
       autoBtn.textContent = '⏸';
       autoTimer = setInterval(() => {
         if (current < total) { current++; render(); } else { stopAuto(); }
-      }, 900);
+      }, 1100);
     });
     resetBtn.addEventListener('click', () => { current = 0; stopAuto(); render(); });
 
@@ -310,11 +443,201 @@ Paste this block for each flow section. Replace `FLOW_ID` with a unique identifi
 </script>
 ```
 
-**Usage**: Repeat one player block per flow section. Each `FLOW_ID` must be unique on the page (also rename the four `$(FLOW_ID-…)` lookups). The number of `steps` entries should match the function/transition count from Phase 1d. Aim for 6-15 steps per player — fewer feels thin, more becomes hard to follow.
+**Adaptation notes:**
 
-## Appendix B: Interactive Demo Patterns
+- Add one `<g class="uml-actor">` per actor. Position them left-to-right at evenly-spaced x-coordinates; the `<line class="uml-lifeline">` descends from the actor box to the bottom of the SVG.
+- Add one `<g class="uml-msg" data-step="N">` per message. The `<path class="uml-arrow">` runs from the sender's lifeline x to the receiver's lifeline x at the y for that step. Set `pathLength` to a stable value (the actual pixel length is fine; ~200 is a sane default).
+- Add one `<rect class="uml-activation" data-step="N">` per step on the receiver's lane (centred on the lifeline). It appears only while that step is current.
+- Each `FLOW_ID` must be unique on the page. The marker `id` and all `$(FLOW_ID-…)` lookups must be renamed together.
+- Self-call (an actor calling itself): draw the arrow as a small clockwise arc on the same lane instead of crossing to another lane.
 
-Choose one pattern based on whether the real code is event-driven (user gestures trigger state) or data-driven (a pipeline transforms data).
+### Sub-pattern A2: Stage Diagram
+
+Actors arranged spatially as drawn boxes. Each step animates a dot from sender to receiver; on arrival, the receiver's state badge updates visibly (counter / state text / list-item append / color change).
+
+**When to use**: ALL THREE must hold —
+
+1. Every step produces a visible state change on the receiver
+2. The actor's spatial position carries semantic meaning (e.g., upstream / downstream layer, role)
+3. Actor count ≤4
+
+If any condition fails, use A1 instead. If a step has no visible badge update, the topic does not qualify for A2.
+
+**Mechanics**:
+
+- Each actor is a `<g class="stage-actor">` with `<rect>` body, label, and a `<text class="stage-actor-badge">` whose `textContent` updates per step
+- On Next: a single `<circle class="stage-dot">` animates from sender's centre to receiver's centre via `requestAnimationFrame` (~600ms). After arrival, receiver's badge updates
+- Cumulative: badge changes persist. Prev applies the reverse and removes the latest visible change
+- Initial badge values are read from the SVG on first render and used as the reset baseline
+
+```html
+<!-- Stage sub-pattern: [flow title] -->
+<div class="stage-seq" id="STAGE_ID">
+  <svg viewBox="0 0 720 220" class="stage-seq-svg" xmlns="http://www.w3.org/2000/svg">
+    <!-- Actors. Each badge is updated by the script per step. -->
+    <g class="stage-actor" data-actor="reducer" data-type="hook">
+      <rect class="stage-actor-box" x="60"  y="60" width="160" height="100" rx="8"/>
+      <text class="stage-actor-label" x="140" y="95">Reducer</text>
+      <text class="stage-actor-badge" id="STAGE_ID-badge-reducer" x="140" y="130">idle</text>
+    </g>
+    <g class="stage-actor" data-actor="middleware" data-type="service">
+      <rect class="stage-actor-box" x="280" y="60" width="160" height="100" rx="8"/>
+      <text class="stage-actor-label" x="360" y="95">Middleware</text>
+      <text class="stage-actor-badge" id="STAGE_ID-badge-middleware" x="360" y="130">queued: 0</text>
+    </g>
+    <g class="stage-actor" data-actor="store" data-type="atom">
+      <rect class="stage-actor-box" x="500" y="60" width="160" height="100" rx="8"/>
+      <text class="stage-actor-label" x="580" y="95">Store</text>
+      <text class="stage-actor-badge" id="STAGE_ID-badge-store" x="580" y="130">[ ]</text>
+    </g>
+
+    <!-- The moving dot — animated by the script. -->
+    <circle class="stage-dot" id="STAGE_ID-dot" cx="140" cy="110" r="8"/>
+  </svg>
+
+  <div class="uml-caption">
+    <div class="uml-caption-index" id="STAGE_ID-counter">0 / 0</div>
+    <div class="uml-caption-title" id="STAGE_ID-title">Press Next to start.</div>
+    <div class="uml-caption-body"  id="STAGE_ID-body"></div>
+  </div>
+  <div class="seq-controls" style="margin-top:8px">
+    <button class="seq-btn" id="STAGE_ID-prev">←</button>
+    <button class="seq-btn" id="STAGE_ID-next">Next →</button>
+    <button class="seq-btn" id="STAGE_ID-auto">▶</button>
+    <button class="seq-btn" id="STAGE_ID-reset">Reset</button>
+  </div>
+</div>
+<script>
+  (() => {
+    // ── Edit per flow ───────────────────────────────────────────────────
+    // actorCentre must match the <g class="stage-actor"> centres in the SVG above.
+    const actorCentre = {
+      reducer:    { x: 140, y: 110 },
+      middleware: { x: 360, y: 110 },
+      store:      { x: 580, y: 110 },
+    };
+    // Each step: dot animates from→to, then badge updates per `forward`.
+    // `reverse` is applied when going backward (Prev). Title + body match the caption rule.
+    const steps = [
+      { from: 'reducer', to: 'middleware',
+        forward: { middleware: 'queued: 1' },
+        reverse: { middleware: 'queued: 0' },
+        title: 'Reducer dispatches an action',
+        body: 'The reducer emits the action. The middleware receives and queues it.' },
+      { from: 'middleware', to: 'store',
+        forward: { middleware: 'queued: 0', store: '[ "ADD" ]' },
+        reverse: { middleware: 'queued: 1', store: '[ ]' },
+        title: 'Middleware drains queue to store',
+        body: 'The queued action is applied to the store, mutating its visible state.' },
+      // …
+    ];
+    // ── End edit zone ───────────────────────────────────────────────────
+
+    const $ = (id) => document.getElementById(id);
+    const root = document.getElementById('STAGE_ID');
+    const dot = $('STAGE_ID-dot');
+    const counter = $('STAGE_ID-counter');
+    const titleEl = $('STAGE_ID-title');
+    const bodyEl  = $('STAGE_ID-body');
+    const prevBtn = $('STAGE_ID-prev');
+    const nextBtn = $('STAGE_ID-next');
+    const autoBtn = $('STAGE_ID-auto');
+    const resetBtn = $('STAGE_ID-reset');
+
+    // Capture the initial badge text once so Reset / Prev can restore baseline.
+    const baseline = {};
+    root.querySelectorAll('.stage-actor-badge').forEach(el => {
+      const key = el.id.replace('STAGE_ID-badge-', '');
+      baseline[key] = el.textContent;
+    });
+
+    function setBadge(actor, value) {
+      const el = document.getElementById('STAGE_ID-badge-' + actor);
+      if (el) el.textContent = value;
+    }
+
+    function rebuildBadgesTo(stepIndex) {
+      // Replay forward updates from step 1..stepIndex over the baseline.
+      Object.entries(baseline).forEach(([k, v]) => setBadge(k, v));
+      for (let i = 0; i < stepIndex; i++) {
+        Object.entries(steps[i].forward).forEach(([k, v]) => setBadge(k, v));
+      }
+    }
+
+    function animateDot(from, to, onDone) {
+      const a = actorCentre[from]; const b = actorCentre[to];
+      const duration = 600; const start = performance.now();
+      dot.style.opacity = 1;
+      function step(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const ease = t * (2 - t); // easeOutQuad
+        dot.setAttribute('cx', a.x + (b.x - a.x) * ease);
+        dot.setAttribute('cy', a.y + (b.y - a.y) * ease);
+        if (t < 1) requestAnimationFrame(step);
+        else { dot.style.opacity = 0; if (onDone) onDone(); }
+      }
+      requestAnimationFrame(step);
+    }
+
+    let current = 0; let autoTimer = null;
+    const total = steps.length;
+
+    function render(animate) {
+      counter.textContent = `${current} / ${total}`;
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === total;
+
+      if (current === 0) {
+        titleEl.textContent = 'Press Next to start.';
+        bodyEl.innerHTML = '';
+        rebuildBadgesTo(0);
+        dot.style.opacity = 0;
+        return;
+      }
+
+      const s = steps[current - 1];
+      titleEl.textContent = s.title;
+      bodyEl.innerHTML = s.body;
+
+      if (animate) {
+        // Show state up to (current-1), animate the dot, then apply this step's forward update.
+        rebuildBadgesTo(current - 1);
+        animateDot(s.from, s.to, () => rebuildBadgesTo(current));
+      } else {
+        rebuildBadgesTo(current);
+        dot.style.opacity = 0;
+      }
+    }
+
+    function stopAuto() { if (autoTimer) clearInterval(autoTimer); autoTimer = null; autoBtn.textContent = '▶'; }
+
+    prevBtn.addEventListener('click', () => { if (current > 0) { current--; stopAuto(); render(false); } });
+    nextBtn.addEventListener('click', () => { if (current < total) { current++; render(true); } });
+    autoBtn.addEventListener('click', () => {
+      if (autoTimer) { stopAuto(); return; }
+      if (current === total) current = 0;
+      autoBtn.textContent = '⏸';
+      autoTimer = setInterval(() => {
+        if (current < total) { current++; render(true); } else { stopAuto(); }
+      }, 1400);
+    });
+    resetBtn.addEventListener('click', () => { current = 0; stopAuto(); render(false); });
+
+    render(false);
+  })();
+</script>
+```
+
+**Adaptation notes:**
+
+- Position actors with their centres on a meaningful spatial axis (left-to-right pipeline, central reducer with peripheral observers, etc.). The spatial layout should reinforce the actor's role.
+- `actorCentre` x/y values must match the centre of each actor's box in the SVG.
+- Each `STAGE_ID` is unique per diagram; rename the marker, badge ids, dot id, and all `$(STAGE_ID-…)` lookups together.
+- If a step's receiver has no badge change, the topic does not qualify for A2 — convert that diagram to A1.
+
+## Appendix B: Interactive Demo Pattern
+
+Appendix B covers the user-driven interactive demo only. For data-driven step-through animation (formerly Pattern 2), use the **Stage sub-pattern of Appendix A** — it provides moving dots + state badge updates with the same step-through controls.
 
 ### Pattern 1: Stage + State Panels (event-driven state machines)
 
@@ -349,18 +672,6 @@ function render() {
 ```
 
 The key fidelity requirement: the demo's state transitions must match the actual code's reducer guards exactly — same conditions, same result kinds. Verify against Phase 1c before writing.
-
-### Pattern 2: Step-through Animation (data-driven pipelines)
-
-Use when: the scope transforms data through a sequence of stages with no user input in the real code — request/response flows, data processing pipelines, build-time transformations.
-
-**Structure**:
-- A `<div class="demo-container">` with labeled stage boxes arranged left-to-right or top-to-bottom.
-- An auto-advancing animation driven by the sequence player from Appendix A, where each step highlights a different stage box and shows the data value at that point.
-- Stage boxes use CSS transitions (`transition: background 0.4s, border-color 0.4s`) to animate activation as the player advances.
-- No user interaction beyond the player controls — the user observes, not participates.
-
-This pattern is less interactive but correct for code that has no event-driven state machine. It makes the data movement visible without misrepresenting the code's interaction model.
 
 ## Appendix C: Custom State Diagram Template (SVG)
 
@@ -424,7 +735,7 @@ The template provides four state nodes laid out in a row with transitions betwee
 
 **Notes:**
 - Add `class="state-active"` to a `<rect class="state-node">` to highlight that node (e.g., when the interactive demo's current state is `editing`).
-- Add `class="state-transition-active"` to a `<path>` to highlight a transition (useful when the sequence player advances).
+- Add `class="state-transition-active"` to a `<path>` to highlight a transition (useful when an Appendix A sub-pattern advances).
 - Keep `viewBox` proportional to your node layout. The SVG scales responsively; the `style-css` declares `.state-diagram-svg { max-width: 100%; height: auto; }`.
 - Guard conditions go in the transition label as `EVENT [guard]` (e.g., `ENTER_EDIT_MODE [kind=selected]`). Keep labels short — long ones overflow.
 - If the diagram exceeds ~8 states, split into two sub-diagrams instead of cramming.
@@ -574,7 +885,7 @@ Use these inline SVG shapes — they replicate the draw.io look ByteByteGo uses 
     </g>
   </svg>
 
-  <!-- Step caption + controls (reuses .seq-btn from the sequence player CSS) -->
+  <!-- Step caption + controls (reuses the shared .seq-controls / .seq-btn rules) -->
   <div class="arch-step-caption" id="ARCH_ID-caption">
     <div class="arch-step-caption-index" id="ARCH_ID-counter">0 / 4</div>
     <div class="arch-step-caption-title" id="ARCH_ID-title">Press Next to start.</div>
@@ -667,4 +978,4 @@ Use these inline SVG shapes — they replicate the draw.io look ByteByteGo uses 
 - Replace `ARCH_ID` with a unique slug per diagram if a single page has multiple architecture diagrams.
 - The `<defs>` icon library only needs to be inlined once per page (the first `.arch-diagram` SVG). Subsequent diagrams can `<use href="#icon-server"/>` etc. without re-defining.
 - Skip the layer bands (`.arch-band`) when the diagram is single-tier. Use them when the topic explicitly contrasts client / server / data layers.
-- For pure data-pipeline content with no user interaction, this template is the visual companion to Appendix B Pattern 2 — pair them so the player advances both the architecture animation and the optional code-trace simultaneously.
+- For pure data-pipeline content at the system level (server / db / queue / cache), this architecture template covers it. For actor-level pipelines (reducers, middleware, observers), use the Appendix A Stage sub-pattern instead — the two have different scopes (system vs. actor) and should not be combined in one diagram.

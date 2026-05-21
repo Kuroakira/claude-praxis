@@ -107,14 +107,7 @@ th { background: var(--color-table-header-bg); color: var(--color-table-header-t
   cursor: pointer;
 }
 
-/* Sequence player UI (used in Phase 4 sections describing multi-step flows) */
-.seq-player {
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 16px;
-  margin: 16px 0;
-  background: #fafafa;
-}
+/* Shared player controls — used by Appendix A (UML + Stage) and Appendix D (Architecture). */
 .seq-controls { display: flex; gap: 8px; margin-bottom: 12px; }
 .seq-btn {
   padding: 6px 14px;
@@ -126,14 +119,7 @@ th { background: var(--color-table-header-bg); color: var(--color-table-header-t
   font-family: var(--font-body);
 }
 .seq-btn:hover { background: var(--color-accent); color: white; }
-.seq-step-panel {
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 12px;
-  min-height: 100px;
-}
-.seq-step-index { color: var(--color-file-ref); font-size: 0.85em; margin-bottom: 6px; }
+.seq-btn:disabled { opacity: 0.4; cursor: default; background: white; color: var(--color-accent); }
 
 /* Interactive demo container (used when Phase 2 says yes) */
 .demo-container { border: 2px solid var(--color-accent); border-radius: 8px; padding: 20px; margin: 24px 0; background: #f9fafb; }
@@ -147,66 +133,103 @@ th { background: var(--color-table-header-bg); color: var(--color-table-header-t
 .demo-tag { display: inline-block; background: var(--color-table-header-bg); color: var(--color-table-header-text); font-size: 0.7em; padding: 2px 6px; border-radius: 3px; margin-left: 6px; }
 
 /* =====================================================================
-   Sequence Player — actor-based message/note flow (Appendix A)
-   Replaces the prior {title, body} slide model. Steps are typed as either
-   `msg` (message between two actors, drawn with arrow) or `note` (internal
-   note on a single actor). Actors get colored pills by type.
+   Appendix A — Sequence Sub-Patterns (SVG)
+   Two sub-patterns share a caption box and an actor-type colour palette.
+   A1 (UML)  : vertical lanes + horizontal arrows that draw on advance.
+   A2 (Stage): spatial actors + moving dot + state-badge accumulation.
    ===================================================================== */
-.seq-progress {
-  display: flex; align-items: center; gap: 8px;
-  flex: 1; margin-left: 8px; font-size: 0.85em; color: var(--color-file-ref);
+
+/* ---- Shared caption box (used by both A1 and A2) ---- */
+.uml-caption {
+  margin-top: 12px; padding: 12px 14px;
+  background: white; border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent); border-radius: 4px;
+  min-height: 60px;
 }
-.seq-progress-bar { flex: 1; height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
-.seq-progress-fill { height: 100%; background: var(--color-accent); width: 0%; transition: width 0.25s ease; }
-.seq-counter { font-family: var(--font-code); }
-.seq-participants {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  padding: 10px 12px; background: white;
-  border: 1px solid var(--color-border); border-radius: 4px;
-  margin-bottom: 12px;
+.uml-caption-index { font-family: var(--font-code); font-size: 0.85em; color: var(--color-file-ref); margin-bottom: 4px; }
+.uml-caption-title { font-weight: 600; color: var(--color-heading); margin-bottom: 4px; }
+.uml-caption-body  { font-size: 0.92em; color: var(--color-text); line-height: 1.55; }
+
+/* ---- Actor-type colour palette (shared by A1 and A2) ----
+   Token: stroke = box outline, fill = box background, text = label / badge text. */
+.uml-actor[data-type="user"]      .uml-actor-box,
+.stage-actor[data-type="user"]    .stage-actor-box   { fill: #fef3c7; stroke: #f59e0b; }
+.uml-actor[data-type="hook"]      .uml-actor-box,
+.stage-actor[data-type="hook"]    .stage-actor-box   { fill: #dbeafe; stroke: #3b82f6; }
+.uml-actor[data-type="atom"]      .uml-actor-box,
+.stage-actor[data-type="atom"]    .stage-actor-box   { fill: #ede9fe; stroke: #8b5cf6; }
+.uml-actor[data-type="service"]   .uml-actor-box,
+.stage-actor[data-type="service"] .stage-actor-box   { fill: #d1fae5; stroke: #10b981; }
+.uml-actor[data-type="component"] .uml-actor-box,
+.stage-actor[data-type="component"] .stage-actor-box { fill: #fce7f3; stroke: #ec4899; }
+.uml-actor[data-type="external"]  .uml-actor-box,
+.stage-actor[data-type="external"] .stage-actor-box  { fill: #fee2e2; stroke: #ef4444; stroke-dasharray: 4 3; }
+.uml-actor-box, .stage-actor-box { stroke-width: 1.5; }
+
+/* ===== A1 — UML sequence diagram ===== */
+.uml-seq {
+  margin: 24px 0;
+  padding: 16px;
+  background: linear-gradient(180deg, #fafafa, #f3f4f6);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow-x: auto;
 }
-.seq-participants-title { font-size: 0.75em; color: var(--color-file-ref); align-self: center; margin-right: 4px; }
-.seq-actor {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 10px; border-radius: 12px;
-  font-size: 0.85em; font-family: var(--font-code);
-  background: #e5e7eb; color: var(--color-text);
-  border: 1px solid #d1d5db;
+.uml-seq-svg { display: block; max-width: 100%; height: auto; }
+.uml-actor-label {
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
+  fill: var(--color-heading); text-anchor: middle;
 }
-.seq-actor[data-type="user"]     { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
-.seq-actor[data-type="hook"]     { background: #dbeafe; border-color: #3b82f6; color: #1e40af; }
-.seq-actor[data-type="atom"]     { background: #ede9fe; border-color: #8b5cf6; color: #5b21b6; }
-.seq-actor[data-type="service"]  { background: #d1fae5; border-color: #10b981; color: #065f46; }
-.seq-actor[data-type="component"]{ background: #fce7f3; border-color: #ec4899; color: #9d174d; }
-.seq-actor[data-type="external"] { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
-.seq-participant-detail-type {
-  font-size: 0.7em; opacity: 0.7;
-  padding-left: 4px; border-left: 1px solid currentColor;
+.uml-lifeline {
+  stroke: #9ca3af; stroke-width: 1; stroke-dasharray: 3 4;
 }
-.seq-steps { display: flex; flex-direction: column; gap: 8px; }
-.seq-step {
-  display: grid; grid-template-columns: 28px 1fr; gap: 10px;
-  padding: 10px 12px; background: white;
-  border: 1px solid var(--color-border); border-radius: 4px;
-  opacity: 0.45; transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s;
+.uml-activation {
+  fill: var(--color-accent); fill-opacity: 0; stroke: none;
+  transition: fill-opacity 0.2s;
 }
-.seq-step.seq-step-current {
-  opacity: 1; border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+.uml-activation.uml-activation-active { fill-opacity: 0.85; }
+
+.uml-arrow {
+  fill: none; stroke: #9ca3af; stroke-width: 1.5;
+  transition: stroke-dashoffset 0.6s ease, stroke 0.2s, stroke-width 0.2s;
 }
-.seq-step-number {
-  display: flex; align-items: center; justify-content: center;
-  width: 24px; height: 24px; border-radius: 50%;
-  background: var(--color-accent); color: white;
-  font-size: 0.8em; font-weight: bold; font-family: var(--font-code);
+.uml-msg-past .uml-arrow {
+  stroke: #9ca3af;
 }
-.seq-msg-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 4px; }
-.seq-arrow { color: var(--color-accent); font-weight: bold; font-family: var(--font-code); }
-.seq-msg-label { font-weight: 600; color: var(--color-heading); margin: 4px 0; font-size: 0.95em; }
-.seq-step-explain { color: var(--color-text); font-size: 0.9em; line-height: 1.55; }
-.seq-note { background: #fffbeb; border-style: dashed; }
-.seq-note-actor { display: inline-block; margin-bottom: 4px; }
-.seq-note-text { font-style: italic; color: #78350f; margin: 4px 0 6px; font-size: 0.95em; }
+.uml-msg-current .uml-arrow {
+  stroke: var(--color-accent); stroke-width: 2.5;
+}
+.uml-msg-label {
+  font-family: var(--font-code); font-size: 11px;
+  fill: var(--color-text);
+  paint-order: stroke fill; stroke: white; stroke-width: 3px; stroke-linejoin: round;
+  text-anchor: middle;
+}
+
+/* ===== A2 — Stage diagram ===== */
+.stage-seq {
+  margin: 24px 0;
+  padding: 16px;
+  background: linear-gradient(180deg, #fafafa, #f3f4f6);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.stage-seq-svg { display: block; max-width: 100%; height: auto; }
+.stage-actor-label {
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  fill: var(--color-heading); text-anchor: middle;
+}
+.stage-actor-badge {
+  font-family: var(--font-code); font-size: 11px;
+  fill: var(--color-text); text-anchor: middle;
+  transition: fill 0.2s;
+}
+.stage-dot {
+  fill: var(--color-accent); stroke: white; stroke-width: 1.5;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
 
 /* =====================================================================
    State Diagram (Appendix C) — handcrafted SVG state machine.
