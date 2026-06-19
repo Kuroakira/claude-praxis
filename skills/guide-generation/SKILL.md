@@ -140,9 +140,9 @@ Investigation depth scales with the level from Intent Calibration. Do not over-i
 
 | Level | Required substeps | Skip |
 |-------|-------------------|------|
-| L1 | **1a + 1d + 1f** (one happy path + Persona Card) | 1b, 1c (beyond the one path), 1e |
-| L2 | **1a, 1b, 1c, 1d, 1f** (2-3 paths if branches are essential to the topic) | 1e unless cross-cuts are the topic itself |
-| L3 | **All 6 substeps** | nothing |
+| L1 | **1a + 1d + 1f** (one happy path + Persona Card), plus **1e2 if the topic is structural** | 1b, 1c (beyond the one path), 1e |
+| L2 | **1a, 1b, 1c, 1d, 1f**, plus **1e2 if structural** (2-3 paths if branches are essential to the topic) | 1e unless cross-cuts are the topic itself |
+| L3 | **All substeps** including 1e2 | nothing |
 
 Substep 1f (Persona Card) is required at every level — composing it is the contract that constrains term introduction.
 
@@ -155,6 +155,8 @@ Substep 1f (Persona Card) is required at every level — composing it is the con
 **1d. Happy path trace** — Pick one representative interaction the intent describes. Walk the full call chain from event source through every function to the final render or output. List each function visited with its file path and line range. This trace becomes the sub-pattern content (the messages in A1 or the dot-transitions in A2).
 
 **1e. Cross-cuts** — Find places where this scope leaks into other modules: imports of scope's symbols from outside, scope's imports of external state or context. Note boundary crossings that the reader should know about.
+
+**1e2. Containment shape** (only when the topic is structural — see Appendix E "Level selection by target type") — Derive the nesting from real code, not from a mental model. For an application: read the directory / deployable-unit structure. For a library or single module: use Serena `get_symbols_overview` to get symbol containment. Record, per box, its label + file-ref + which box contains it. Note any relationship worth an arrow (dependency or data flow) with its verb. This becomes the Appendix E diagram(s). If the code has no real containment to show, skip — do not invent a hierarchy.
 
 **1f. Persona Card** — Compose the topic-specific Persona Card defined in the [Persona Card](#persona-card) section. Use the symbols surfaced in 1a-1c to populate "Has never seen" with the specific terms the reader will meet. The card is a writer-only artifact — not surfaced in the output HTML. Required at all levels.
 
@@ -186,7 +188,7 @@ The outline is bounded by the calibration level. Do not exceed the section/lengt
 **L1 outline (3-5 sections, 300-500 lines)**: the reader leaves with a working mental model — nothing more.
 
 1. Topic overview + analogy (no code yet) — 1 paragraph.
-2. The mental model — one labeled diagram (custom SVG or simple mermaid `graph LR`, 4-6 nodes) + 2-3 paragraphs naming the key pieces.
+2. The mental model — one labeled diagram + 2-3 paragraphs naming the key pieces. **If the topic is structural (what-is-inside-what), use a containment diagram (Appendix E) here** — it is the natural home for the structure axis. Otherwise a custom SVG or simple mermaid `graph LR` (4-6 nodes).
 3. One illustrative example — a single concrete walk-through from Phase 1d using a small (4-6 step) UML sequence sub-pattern from Appendix A. The diagram leads; 2-3 small code snippets with file refs support it as prose.
 4. (Optional) Why this design — 1-2 paragraphs on the *why* if it's non-obvious.
 
@@ -194,7 +196,7 @@ The outline is bounded by the calibration level. Do not exceed the section/lengt
 
 1. Topic overview + analogy.
 2. State shape — what the state IS, table form.
-3. Overview diagram — custom SVG state diagram (Appendix C) or architecture diagram (Appendix D).
+3. Overview diagram — pick by axis: **containment diagram (Appendix E)** when the overview is structural (what contains what), custom SVG state diagram (Appendix C) for a state machine, or architecture diagram (Appendix D) for system data flow.
 4-6. One section per significant flow (2-3 max), each opening with a sub-pattern from Appendix A (UML sequence by default; Stage diagram only when all Stage triggers hold).
 7. (Optional) Cross-cuts / constraints — 1 paragraph each.
 8. (Conditional) Interactive demo — only if Phase 2 said yes.
@@ -235,6 +237,7 @@ Required structure:
 | Actors with visible state accumulation, ≤4 actors, spatial position has meaning | **Stage sub-pattern** (Appendix A) | Moving dots + state badge updates on receivers. Shows the result emerging |
 | State machine with multiple states and transitions (static structure of *all* states) | **Custom SVG state diagram** (Appendix C) | One diagram shows the entire state machine. Different from Stage sub-pattern, which shows one specific run over time |
 | System architecture — components handing off data (server / db / queue / cache) | **Architecture diagram** (Appendix D) | Primitive shape icons + numbered step bubbles + animated data-flow arrows |
+| Static containment — what is *inside* what (system ⊃ module ⊃ symbol); the structure axis | **Containment diagram** (Appendix E) | Nested boxes inside a parent-boundary frame. Shows shape, not behavior. Hand-laid SVG; labelled arrows optional |
 | Concept classification tree (taxonomy, is-a, no flow) | `<div class="mermaid">` with `graph TD` | Safe when no arrows cross. mermaid auto-layout works for pure trees |
 | Anything else with flow / arrows / message passing | **Hand-laid-out SVG required** — mermaid forbidden |
 
