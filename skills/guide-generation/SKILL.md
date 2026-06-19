@@ -140,9 +140,9 @@ Investigation depth scales with the level from Intent Calibration. Do not over-i
 
 | Level | Required substeps | Skip |
 |-------|-------------------|------|
-| L1 | **1a + 1d + 1f** (one happy path + Persona Card) | 1b, 1c (beyond the one path), 1e |
-| L2 | **1a, 1b, 1c, 1d, 1f** (2-3 paths if branches are essential to the topic) | 1e unless cross-cuts are the topic itself |
-| L3 | **All 6 substeps** | nothing |
+| L1 | **1a + 1d + 1f** (one happy path + Persona Card), plus **1e2 if the topic is structural** | 1b, 1c (beyond the one path), 1e |
+| L2 | **1a, 1b, 1c, 1d, 1f**, plus **1e2 if structural** (2-3 paths if branches are essential to the topic) | 1e unless cross-cuts are the topic itself |
+| L3 | **All substeps** including 1e2 | nothing |
 
 Substep 1f (Persona Card) is required at every level — composing it is the contract that constrains term introduction.
 
@@ -155,6 +155,8 @@ Substep 1f (Persona Card) is required at every level — composing it is the con
 **1d. Happy path trace** — Pick one representative interaction the intent describes. Walk the full call chain from event source through every function to the final render or output. List each function visited with its file path and line range. This trace becomes the sub-pattern content (the messages in A1 or the dot-transitions in A2).
 
 **1e. Cross-cuts** — Find places where this scope leaks into other modules: imports of scope's symbols from outside, scope's imports of external state or context. Note boundary crossings that the reader should know about.
+
+**1e2. Containment shape** (only when the topic is structural — see Appendix E "Level selection by target type") — Derive the nesting from real code, not from a mental model. For an application: read the directory / deployable-unit structure. For a library or single module: use Serena `get_symbols_overview` to get symbol containment. Record, per box, its label + file-ref + which box contains it. Note any relationship worth an arrow (dependency or data flow) with its verb. This becomes the Appendix E diagram(s). If the code has no real containment to show, skip — do not invent a hierarchy.
 
 **1f. Persona Card** — Compose the topic-specific Persona Card defined in the [Persona Card](#persona-card) section. Use the symbols surfaced in 1a-1c to populate "Has never seen" with the specific terms the reader will meet. The card is a writer-only artifact — not surfaced in the output HTML. Required at all levels.
 
@@ -186,7 +188,7 @@ The outline is bounded by the calibration level. Do not exceed the section/lengt
 **L1 outline (3-5 sections, 300-500 lines)**: the reader leaves with a working mental model — nothing more.
 
 1. Topic overview + analogy (no code yet) — 1 paragraph.
-2. The mental model — one labeled diagram (custom SVG or simple mermaid `graph LR`, 4-6 nodes) + 2-3 paragraphs naming the key pieces.
+2. The mental model — one labeled diagram + 2-3 paragraphs naming the key pieces. **If the topic is structural (what-is-inside-what), use a containment diagram (Appendix E) here** — it is the natural home for the structure axis. Otherwise a custom SVG or simple mermaid `graph LR` (4-6 nodes).
 3. One illustrative example — a single concrete walk-through from Phase 1d using a small (4-6 step) UML sequence sub-pattern from Appendix A. The diagram leads; 2-3 small code snippets with file refs support it as prose.
 4. (Optional) Why this design — 1-2 paragraphs on the *why* if it's non-obvious.
 
@@ -194,7 +196,7 @@ The outline is bounded by the calibration level. Do not exceed the section/lengt
 
 1. Topic overview + analogy.
 2. State shape — what the state IS, table form.
-3. Overview diagram — custom SVG state diagram (Appendix C) or architecture diagram (Appendix D).
+3. Overview diagram — pick by axis: **containment diagram (Appendix E)** when the overview is structural (what contains what), custom SVG state diagram (Appendix C) for a state machine, or architecture diagram (Appendix D) for system data flow.
 4-6. One section per significant flow (2-3 max), each opening with a sub-pattern from Appendix A (UML sequence by default; Stage diagram only when all Stage triggers hold).
 7. (Optional) Cross-cuts / constraints — 1 paragraph each.
 8. (Conditional) Interactive demo — only if Phase 2 said yes.
@@ -235,6 +237,7 @@ Required structure:
 | Actors with visible state accumulation, ≤4 actors, spatial position has meaning | **Stage sub-pattern** (Appendix A) | Moving dots + state badge updates on receivers. Shows the result emerging |
 | State machine with multiple states and transitions (static structure of *all* states) | **Custom SVG state diagram** (Appendix C) | One diagram shows the entire state machine. Different from Stage sub-pattern, which shows one specific run over time |
 | System architecture — components handing off data (server / db / queue / cache) | **Architecture diagram** (Appendix D) | Primitive shape icons + numbered step bubbles + animated data-flow arrows |
+| Static containment — what is *inside* what (system ⊃ module ⊃ symbol); the structure axis | **Containment diagram** (Appendix E) | Nested boxes inside a parent-boundary frame. Shows shape, not behavior. Hand-laid SVG; labelled arrows optional |
 | Concept classification tree (taxonomy, is-a, no flow) | `<div class="mermaid">` with `graph TD` | Safe when no arrows cross. mermaid auto-layout works for pure trees |
 | Anything else with flow / arrows / message passing | **Hand-laid-out SVG required** — mermaid forbidden |
 
@@ -979,3 +982,75 @@ Use these inline SVG shapes — they replicate the draw.io look ByteByteGo uses 
 - The `<defs>` icon library only needs to be inlined once per page (the first `.arch-diagram` SVG). Subsequent diagrams can `<use href="#icon-server"/>` etc. without re-defining.
 - Skip the layer bands (`.arch-band`) when the diagram is single-tier. Use them when the topic explicitly contrasts client / server / data layers.
 - For pure data-pipeline content at the system level (server / db / queue / cache), this architecture template covers it. For actor-level pipelines (reducers, middleware, observers), use the Appendix A Stage sub-pattern instead — the two have different scopes (system vs. actor) and should not be combined in one diagram.
+
+
+## Appendix E: Containment Diagram Template (SVG)
+
+Use when the question is **structural** — "what is inside what". This is the only **structure-axis** diagram type; every other diagram (Appendix A/C/D, mermaid) is **flow-axis** (order, transition, data movement over time). See `CONTEXT.md` → Diagram Axes.
+
+**Static, one level per section.** Each diagram shows one containment level drawn inside its **parent boundary** (a dashed frame labelled with the enclosing unit). The next-deeper section draws a new diagram where the previously-inner box becomes the new parent boundary. There is no zoom and no progressive reveal — a map is most useful fully visible.
+
+**Every box maps to real code.** Each box carries a `file-ref` (file / symbol). Nesting reflects actual code containment (directory structure, Serena `get_symbols_overview` symbol containment) — never an invented hierarchy. A conceptual-only grouping box (no code behind it) is rare and drawn with `class="containment-box containment-box-conceptual"` and no file-ref.
+
+**Level selection by target type** (do not draw levels the target lacks):
+
+| Target | Levels to draw |
+|--------|----------------|
+| Application / system | whole system + external actors → deployable units → modules |
+| Library / single module (e.g. Jotai) | the module-and-its-internals level (the main one). No deployable-unit level — it does not exist |
+
+**Relationship arrows** are optional but, when present, MUST be labelled with a verb. They turn the map into an index into the flow-axis diagrams (a labelled edge here is detailed step-by-step by an Appendix A player elsewhere):
+
+- **Static dependency** (`class="containment-rel containment-rel-dep"`, solid) — `uses` / `imports` / `extends`
+- **Runtime data flow** (`class="containment-rel containment-rel-flow"`, dashed) — `dispatches` / `reads` / `notifies`
+
+Cap relationship arrows at **5 per diagram**. More than that means the structure axis is being polluted by flow — move that detail to an Appendix A player.
+
+```html
+<!-- Appendix E: Containment diagram — [level title] -->
+<div class="containment-diagram">
+  <svg viewBox="0 0 720 360" class="containment-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="containment-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+      </marker>
+    </defs>
+
+    <!-- Parent boundary: the unit that contains everything shown (drawn as context). -->
+    <rect class="containment-boundary" x="20" y="20" width="680" height="320" rx="10"/>
+    <text class="containment-boundary-label" x="34" y="40">jotai/core (the store module)</text>
+
+    <!-- Child boxes: one real code unit each. file-ref required. -->
+    <g class="containment-unit">
+      <rect class="containment-box" x="60" y="80" width="180" height="90" rx="6"/>
+      <text class="containment-box-label" x="150" y="120">atom()</text>
+      <text class="containment-box-ref"   x="150" y="140">atom.ts:12</text>
+    </g>
+    <g class="containment-unit">
+      <rect class="containment-box" x="480" y="80" width="180" height="90" rx="6"/>
+      <text class="containment-box-label" x="570" y="120">createStore()</text>
+      <text class="containment-box-ref"   x="570" y="140">store.ts:40</text>
+    </g>
+    <g class="containment-unit">
+      <rect class="containment-box" x="270" y="220" width="180" height="90" rx="6"/>
+      <text class="containment-box-label" x="360" y="260">useAtom()</text>
+      <text class="containment-box-ref"   x="360" y="280">react.ts:88</text>
+    </g>
+
+    <!-- Relationship arrows: every arrow labelled. Solid = dependency, dashed = data flow. -->
+    <path class="containment-rel containment-rel-dep"  d="M300,220 L180,172"/>
+    <text class="containment-rel-label" x="232" y="188">reads</text>
+    <path class="containment-rel containment-rel-flow" d="M420,220 L540,172"/>
+    <text class="containment-rel-label" x="486" y="188">subscribes</text>
+  </svg>
+</div>
+```
+
+**Adaptation notes:**
+
+- Draw the **parent boundary** first as a dashed `<rect class="containment-boundary">` filling most of the viewBox; its label names the enclosing unit. For a top-level Context diagram, the boundary is the whole system and external actors sit *outside* it.
+- One `<g class="containment-unit">` per child. The box `<rect>` sits fully inside the boundary; the label and file-ref are centred (`text-anchor:middle` is in the CSS, so x is the box centre).
+- Keep total boxes **≤ 15** (the `document-quality.md` node ceiling). If a level has more, raise abstraction — group children and detail the group in a deeper section.
+- Relationship arrow paths run between box edges. Pick `-dep` (solid) or `-flow` (dashed) per the meaning, and always add a `<text class="containment-rel-label">` at the path midpoint.
+- The `marker-end` is supplied by CSS; no inline `marker-end` needed.
+- The diagram is static — no `<script>`. Multiple containment diagrams may appear on one page; the `containment-arrow` marker only needs to be defined once but re-defining it per SVG is harmless.
