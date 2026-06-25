@@ -1,6 +1,7 @@
 # Claude Praxis — Project Overview
 
 @rules/document-quality.md
+@rules/japanese-writing.md
 
 ## What this project is
 
@@ -14,7 +15,8 @@ A two-command Claude Code plugin for understanding source code:
 ```
 claude-praxis/
 ├── rules/
-│   └── document-quality.md         # Always-on quality rules for HTML/Markdown output
+│   ├── document-quality.md         # Always-on quality rules for HTML/Markdown output
+│   └── japanese-writing.md         # Japanese prose rules (applied only when output language is Japanese)
 ├── agents/
 │   ├── scout.md                    # Read-only codebase explorer (available for delegation when investigating large scopes)
 │   └── researcher.md               # Read-only researcher (available for delegation when surveying large topics)

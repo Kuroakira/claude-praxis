@@ -32,6 +32,11 @@ Cite every claim. Every finding must include a source — file path with line nu
 
 ## Step 3: Write structured summary to file
 
+Before writing, read the plugin's quality rules and follow them while composing the summary:
+
+- `${CLAUDE_PLUGIN_ROOT}/rules/document-quality.md` — always applies.
+- `${CLAUDE_PLUGIN_ROOT}/rules/japanese-writing.md` — applies **only when the output language is Japanese** (the output matches the language the user wrote the request in). The research summary is Markdown, so all of that file's rules apply, including the formatting rules.
+
 Write the summary to `claudedocs/research/YYYY-MM-DD-[topic-slug].md` (kebab-case slug from the topic, max 60 chars). Also surface a brief inline confirmation to the user (file path + 1-sentence summary of what was found).
 
 File content format:

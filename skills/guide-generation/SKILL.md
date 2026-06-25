@@ -17,6 +17,15 @@ THE READER MUST BE ABLE TO OPEN THE CODE AND VERIFY EACH CLAIM.
 
 No vague descriptions. Every code claim includes a `<span class="file-ref">filename.ts:line-or-symbol</span>` inline.
 
+## Quality Rules
+
+Before writing any prose, read the plugin's quality rules and follow them:
+
+- `${CLAUDE_PLUGIN_ROOT}/rules/document-quality.md` — always applies.
+- `${CLAUDE_PLUGIN_ROOT}/rules/japanese-writing.md` — applies **only when the output language is Japanese** (the output language matches the language the user wrote the request in). When writing Japanese HTML prose, apply everything except the source-manuscript formatting rules ("一文ごとに改行", footnotes); the file's own 適用範囲メモ states which rules carry to HTML.
+
+These files are part of the plugin and ship with it. Read them at the start of Phase 4 (the write phase) so their constraints are in context while you compose prose.
+
 ## Reader Profile
 
 **Assume zero prior knowledge of the topic the intent asks about.** The reader is a complete beginner — not just to this codebase, but to the entire problem space the intent names. If the intent is "how do atoms work in Jotai", assume the reader has never heard of atoms, state management, React hooks, or even what a "store" is in this context. They are smart, but starting from nothing.
